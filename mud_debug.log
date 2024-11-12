@@ -1,0 +1,153 @@
+2024-11-12 12:37:48,271 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=64237).
+2024-11-12 12:39:03,453 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=64331).
+2024-11-12 12:39:06,077 - DEBUG - Received input: b'Array'
+2024-11-12 12:39:06,077 - INFO - User Array logged in.
+2024-11-12 12:39:08,226 - DEBUG - Received input: b'1salvice'
+2024-11-12 12:39:08,227 - DEBUG - Player Array is now tracked in room 1000.
+2024-11-12 12:39:08,227 - DEBUG - Room displayed for Array: The Celestial Garden
+2024-11-12 12:39:08,227 - INFO - User Array successfully logged in.
+2024-11-12 12:39:09,679 - DEBUG - Received input: b'shutdown'
+2024-11-12 12:39:09,679 - INFO - Executing command shutdown for user Array with args [].
+2024-11-12 12:39:09,680 - INFO - User Array initiated shutdown.
+2024-11-12 12:47:37,903 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=64935).
+2024-11-12 12:47:40,028 - DEBUG - Received input: b'Array'
+2024-11-12 12:47:40,029 - INFO - User Array logged in.
+2024-11-12 12:47:43,062 - DEBUG - Received input: b'1salvice'
+2024-11-12 12:47:43,062 - DEBUG - Player Array is now tracked in room 1000.
+2024-11-12 12:47:43,062 - DEBUG - Room displayed for Array: The Celestial Garden
+2024-11-12 12:47:43,063 - INFO - User Array successfully logged in.
+2024-11-12 12:47:45,616 - DEBUG - Received input: b'east'
+2024-11-12 12:47:45,617 - INFO - Executing command east for user Array with args [].
+2024-11-12 12:47:52,427 - DEBUG - Received input: b'goto 2001'
+2024-11-12 12:47:52,427 - INFO - Executing command goto for user Array with args ['2001'].
+2024-11-12 12:47:53,998 - DEBUG - Received input: b'look'
+2024-11-12 12:47:53,998 - INFO - Executing command look for user Array with args [].
+2024-11-12 12:47:57,001 - DEBUG - Received input: b'copyover'
+2024-11-12 12:47:57,001 - INFO - Executing command copyover for user Array with args [].
+2024-11-12 12:47:57,001 - INFO - User Array initiated copyover.
+2024-11-12 12:48:45,051 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=65029).
+2024-11-12 12:48:47,827 - DEBUG - Received input: b'Array'
+2024-11-12 12:48:47,828 - INFO - User Array logged in.
+2024-11-12 12:48:49,006 - DEBUG - Received input: b'1salvice'
+2024-11-12 12:48:49,007 - DEBUG - Player Array is now tracked in room 1000.
+2024-11-12 12:48:49,007 - DEBUG - Room displayed for Array: The Celestial Garden
+2024-11-12 12:48:49,007 - INFO - User Array successfully logged in.
+2024-11-12 12:51:09,167 - DEBUG - Received input: b'copyover'
+2024-11-12 12:51:09,167 - INFO - Executing command copyover for user Array with args [].
+2024-11-12 12:51:09,168 - INFO - User Array initiated copyover.
+2024-11-12 12:51:11,904 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=65222).
+2024-11-12 12:51:14,915 - DEBUG - Received input: b'array'
+2024-11-12 12:51:14,916 - INFO - New user array is registering.
+2024-11-12 12:51:18,840 - DEBUG - Received input: b'1salvice'
+2024-11-12 12:51:18,851 - DEBUG - Player array is now tracked in room 1000.
+2024-11-12 12:51:18,851 - DEBUG - Room displayed for array: The Celestial Garden
+2024-11-12 12:51:18,852 - INFO - User array registered successfully.
+2024-11-12 12:51:21,510 - DEBUG - Received input: b'copyover'
+2024-11-12 12:51:21,510 - INFO - Executing command copyover for user array with args [].
+2024-11-12 12:51:21,512 - INFO - User array initiated copyover.
+2024-11-12 12:51:24,231 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=65225).
+2024-11-12 12:51:26,199 - DEBUG - Received input: b'Array'
+2024-11-12 12:51:26,199 - INFO - User Array logged in.
+2024-11-12 12:51:27,278 - DEBUG - Received input: b'1salvice'
+2024-11-12 12:51:27,279 - DEBUG - Player Array is now tracked in room 1000.
+2024-11-12 12:51:27,279 - DEBUG - Room displayed for Array: The Celestial Garden
+2024-11-12 12:51:27,279 - INFO - User Array successfully logged in.
+2024-11-12 12:51:31,709 - DEBUG - Received input: b'copyover'
+2024-11-12 12:51:31,709 - INFO - Executing command copyover for user Array with args [].
+2024-11-12 12:51:31,710 - INFO - User Array initiated copyover.
+2024-11-12 12:52:13,339 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=65298).
+2024-11-12 12:52:14,976 - DEBUG - Received input: b'Array'
+2024-11-12 12:52:14,976 - INFO - User Array logged in.
+2024-11-12 12:52:16,111 - DEBUG - Received input: b'1salvice'
+2024-11-12 12:52:16,112 - DEBUG - Player Array is now tracked in room 1000.
+2024-11-12 12:52:16,112 - DEBUG - Room displayed for Array: The Celestial Garden
+2024-11-12 12:52:16,112 - INFO - User Array successfully logged in.
+2024-11-12 12:53:50,056 - DEBUG - Received input: b'copyover'
+2024-11-12 12:53:50,056 - INFO - Executing command copyover for user Array with args [].
+2024-11-12 12:53:50,057 - INFO - User Array initiated copyover.
+2024-11-12 12:53:52,877 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=65416).
+2024-11-12 12:53:54,569 - DEBUG - Received input: b'Array'
+2024-11-12 12:53:54,570 - INFO - User Array logged in.
+2024-11-12 12:53:55,704 - DEBUG - Received input: b'1salvice'
+2024-11-12 12:53:55,705 - DEBUG - Player Array is now tracked in room 1000.
+2024-11-12 12:53:55,706 - DEBUG - Room displayed for Array: The Celestial Garden
+2024-11-12 12:53:55,706 - INFO - User Array successfully logged in.
+2024-11-12 12:53:57,677 - DEBUG - Received input: b'copyover'
+2024-11-12 12:53:57,677 - INFO - Executing command copyover for user Array with args [].
+2024-11-12 12:53:57,678 - INFO - User Array initiated copyover.
+2024-11-12 13:44:28,476 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=53283).
+2024-11-12 13:44:32,745 - DEBUG - Received input: b'Array'
+2024-11-12 13:44:32,746 - INFO - User Array logged in.
+2024-11-12 13:44:34,126 - DEBUG - Received input: b'1salvice'
+2024-11-12 13:44:34,126 - DEBUG - Player Array is now tracked in room 1000.
+2024-11-12 13:44:34,127 - DEBUG - Room displayed for Array: The Celestial Garden
+2024-11-12 13:44:34,127 - INFO - User Array successfully logged in.
+2024-11-12 13:45:38,924 - DEBUG - Received input: b'copyover'
+2024-11-12 13:45:38,925 - INFO - Executing command copyover for user Array with args [].
+2024-11-12 13:45:38,926 - INFO - User Array initiated copyover.
+2024-11-12 13:45:41,754 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=53375).
+2024-11-12 13:46:00,608 - DEBUG - Received input: b'1salvice'
+2024-11-12 13:46:00,609 - INFO - New user 1salvice is registering.
+2024-11-12 13:46:06,227 - DEBUG - Received input: b'sdfasdf'
+2024-11-12 13:46:06,237 - DEBUG - Player 1salvice is now tracked in room 1000.
+2024-11-12 13:46:06,238 - DEBUG - Room displayed for 1salvice: The Celestial Garden
+2024-11-12 13:46:06,238 - INFO - User 1salvice registered successfully.
+2024-11-12 13:46:08,938 - DEBUG - Received input: b'copyover'
+2024-11-12 13:46:08,938 - INFO - Executing command copyover for user 1salvice with args [].
+2024-11-12 13:46:08,939 - INFO - User 1salvice initiated copyover.
+2024-11-12 13:46:12,019 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=53400).
+2024-11-12 13:46:12,033 - DEBUG - Received input: b'Array'
+2024-11-12 13:46:12,033 - INFO - User Array logged in.
+2024-11-12 13:46:12,046 - DEBUG - Received input: b'1salvice'
+2024-11-12 13:46:12,047 - DEBUG - Player Array is now tracked in room 1000.
+2024-11-12 13:46:12,047 - DEBUG - Room displayed for Array: The Celestial Garden
+2024-11-12 13:46:12,047 - INFO - User Array successfully logged in.
+2024-11-12 14:51:33,686 - DEBUG - Received input: b'copyover'
+2024-11-12 14:51:33,687 - INFO - Executing command copyover for user Array with args [].
+2024-11-12 14:51:33,687 - INFO - User Array initiated copyover.
+2024-11-12 15:23:12,481 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=61118).
+2024-11-12 15:23:12,484 - DEBUG - Received input: b'Array'
+2024-11-12 15:23:12,485 - ERROR - Error processing input b'Array': 'NinjaMUDProtocol' object has no attribute 'handle_username'
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\shinobi_mud_0.3.6.py", line 77, in lineReceived
+    self.handle_username(line)
+AttributeError: 'NinjaMUDProtocol' object has no attribute 'handle_username'
+2024-11-12 15:23:32,028 - DEBUG - Received input: b'Array'
+2024-11-12 15:23:32,028 - ERROR - Error processing input b'Array': 'NinjaMUDProtocol' object has no attribute 'handle_username'
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\shinobi_mud_0.3.6.py", line 77, in lineReceived
+    self.handle_username(line)
+AttributeError: 'NinjaMUDProtocol' object has no attribute 'handle_username'
+2024-11-12 15:23:34,711 - DEBUG - Received input: b'Manorbis'
+2024-11-12 15:23:34,711 - ERROR - Error processing input b'Manorbis': 'NinjaMUDProtocol' object has no attribute 'handle_username'
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\shinobi_mud_0.3.6.py", line 77, in lineReceived
+    self.handle_username(line)
+AttributeError: 'NinjaMUDProtocol' object has no attribute 'handle_username'
+2024-11-12 15:29:52,431 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=61602).
+2024-11-12 15:29:55,225 - DEBUG - Received input: b'Array'
+2024-11-12 15:29:55,226 - INFO - New user Array is registering.
+2024-11-12 15:29:58,600 - DEBUG - Received input: b'1salvice'
+2024-11-12 15:29:58,611 - DEBUG - Player Array is now tracked in room 1000.
+2024-11-12 15:29:58,611 - ERROR - Room with ID 1000 not found for user Array.
+2024-11-12 15:29:58,611 - INFO - User Array registered successfully.
+2024-11-12 15:30:04,148 - DEBUG - Received input: b'status'
+2024-11-12 15:30:04,149 - INFO - Executing command status for user Array with args [].
+2024-11-12 15:33:38,748 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=61888).
+2024-11-12 15:33:41,802 - DEBUG - Received input: b'Array'
+2024-11-12 15:33:41,803 - INFO - New user Array is registering.
+2024-11-12 15:33:43,745 - DEBUG - Received input: b'1salvice'
+2024-11-12 15:33:43,753 - DEBUG - Player Array is now tracked in room 1000.
+2024-11-12 15:33:43,754 - DEBUG - Room displayed for Array: Default Room
+2024-11-12 15:33:43,754 - INFO - User Array registered successfully.
+2024-11-12 15:33:47,607 - DEBUG - Received input: b'status'
+2024-11-12 15:33:47,608 - INFO - Executing command status for user Array with args [].
+2024-11-12 15:42:58,398 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=62581).
+2024-11-12 15:43:00,585 - DEBUG - Received input: b'Array'
+2024-11-12 15:43:00,586 - INFO - New user Array is registering.
+2024-11-12 15:43:03,001 - DEBUG - Received input: b'1salvice'
+2024-11-12 15:43:03,012 - DEBUG - Player Array is now tracked in room 1000.
+2024-11-12 15:43:03,013 - DEBUG - Room displayed for Array: Default Room
+2024-11-12 15:43:03,013 - INFO - User Array registered successfully.
+2024-11-12 15:43:07,347 - DEBUG - Received input: b'status'
+2024-11-12 15:43:07,348 - INFO - Executing command status for user Array with args [].
