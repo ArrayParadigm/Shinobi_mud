@@ -23,8 +23,6 @@ def handle_look(protocol, players_in_rooms=None):
     protocol.sendLine(f"Exits: {exits}".encode('utf-8'))
 
 def handle_movement(protocol, direction):
-    protocol.untrack_player()  # Remove player from the current room
-    
     vnum = protocol.current_room
     zone_file = find_zone_by_vnum(vnum)
     if not zone_file:
@@ -45,15 +43,8 @@ def handle_movement(protocol, direction):
         return
 
     protocol.current_room = next_vnum
-    protocol.track_player()  # Add player to the new room
-    
-    # Save the new room to the database
-    protocol.cursor.execute("UPDATE players SET current_room=? WHERE username=?", (protocol.current_room, protocol.username))
-    protocol.cursor.connection.commit()
-    
     protocol.sendLine(f"Moved to room {next_vnum}.".encode('utf-8'))
-    
-    protocol.display_room()  # Call display_room to show other players as well
+    handle_look(protocol)
 
 COMMANDS = {
     "look": handle_look,
@@ -63,24 +54,21 @@ COMMANDS = {
     "west": lambda protocol, players_in_rooms=None: handle_movement(protocol, "west"),
 }
 
-def handle_status(protocol, players_in_rooms=None):
+def handle_status(protocol, cursor, players_in_rooms=None):
     try:
-        protocol.cursor.execute(
-            "SELECT health, stamina, chakra, strength, dexterity, agility, intelligence, wisdom, dojo_alignment "
-            "FROM players WHERE username=?",
-            (protocol.username,))
-        stats = protocol.cursor.fetchone()
+        cursor.execute("SELECT health, stamina, chakra, strength, dexterity, agility, intelligence, wisdom, dojo_alignment FROM players WHERE username=?", (protocol.username,))
+        stats = cursor.fetchone()
         if stats:
             protocol.sendLine(f"Stats for {protocol.username}:".encode('utf-8'))
             protocol.sendLine(f"Health: {stats[0]}, Stamina: {stats[1]}, Chakra: {stats[2]}".encode('utf-8'))
             protocol.sendLine(f"Strength: {stats[3]}, Dexterity: {stats[4]}, Agility: {stats[5]}".encode('utf-8'))
-            protocol.sendLine(f"Intelligence: {stats[6]}, Wisdom: {stats[7]}, Dojo Alignment: {stats[8]}".encode('utf-8'))
+            protocol.sendLine(f"Intelligence: {stats[6]}, Wisdom: {stats[7]}".encode('utf-8'))
+            protocol.sendLine(f"Dojo Alignment: {stats[8]}".encode('utf-8'))
         else:
             protocol.sendLine(b"No stats found for your character.")
     except Exception as e:
         protocol.sendLine(f"Error retrieving stats: {e}".encode('utf-8'))
 
-
 COMMANDS.update({
-    "status": lambda protocol, players_in_rooms=None: handle_status(protocol, players_in_rooms)
+    "status": handle_status,
 })

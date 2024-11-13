@@ -1,0 +1,17 @@
+{
+    "name": "Expanse",
+    "range": {
+        "start": 2000,
+        "end": 2099
+    },
+    "rooms": {
+        "2000": {
+            "description": "The entrance to the expanse",
+            "exits": {}
+        },
+        "2001": {
+            "description": "Void room",
+            "exits": {}
+        }
+    }
+}

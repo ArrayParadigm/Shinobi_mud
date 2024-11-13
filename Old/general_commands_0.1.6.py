@@ -23,8 +23,7 @@ def handle_look(protocol, players_in_rooms=None):
     protocol.sendLine(f"Exits: {exits}".encode('utf-8'))
 
 def handle_movement(protocol, direction):
-    protocol.untrack_player()  # Remove player from the current room
-    
+    protocol.untrack_player()
     vnum = protocol.current_room
     zone_file = find_zone_by_vnum(vnum)
     if not zone_file:
@@ -45,15 +44,10 @@ def handle_movement(protocol, direction):
         return
 
     protocol.current_room = next_vnum
-    protocol.track_player()  # Add player to the new room
-    
-    # Save the new room to the database
-    protocol.cursor.execute("UPDATE players SET current_room=? WHERE username=?", (protocol.current_room, protocol.username))
-    protocol.cursor.connection.commit()
-    
+    protocol.track_player()
     protocol.sendLine(f"Moved to room {next_vnum}.".encode('utf-8'))
-    
-    protocol.display_room()  # Call display_room to show other players as well
+    handle_look(protocol)
+
 
 COMMANDS = {
     "look": handle_look,

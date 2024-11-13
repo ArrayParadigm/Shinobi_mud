@@ -1,14 +1,11 @@
+
 def handle_say(protocol, message, players_in_rooms):
     if not message or not message.strip():
         protocol.sendLine(b"You must specify a message.")
         return
-    
     current_room = protocol.current_room
-    if current_room in players_in_rooms:
-        for player in players_in_rooms[current_room]:
-            player.sendLine(f'{protocol.username} says, "{message.strip()}"'.encode('utf-8'))
-    else:
-        protocol.sendLine(b"No one else is here to hear you.")
+    for player in players_in_rooms.get(current_room, []):
+        player.sendLine(f'{protocol.username} says, "{message.strip()}"'.encode('utf-8'))
 
 def handle_ooc(protocol, message, players_in_rooms):
     if not message or not message.strip():
