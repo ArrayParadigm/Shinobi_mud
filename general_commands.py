@@ -1,5 +1,7 @@
 
 from admin_commands import find_zone_by_vnum
+from admin_commands import ensure_room_exists
+
 import json
 
 def handle_look(protocol, players_in_rooms=None):
@@ -23,8 +25,6 @@ def handle_look(protocol, players_in_rooms=None):
     protocol.sendLine(f"Exits: {exits}".encode('utf-8'))
 
 def handle_movement(protocol, direction):
-    protocol.untrack_player()  # Remove player from the current room
-    
     vnum = protocol.current_room
     zone_file = find_zone_by_vnum(vnum)
     if not zone_file:
@@ -44,16 +44,19 @@ def handle_movement(protocol, direction):
         protocol.sendLine(b"No exit in that direction.")
         return
 
+    # Ensure target room exists before moving
+    if not ensure_room_exists(next_vnum, protocol):
+        return
+
     protocol.current_room = next_vnum
-    protocol.track_player()  # Add player to the new room
-    
-    # Save the new room to the database
-    protocol.cursor.execute("UPDATE players SET current_room=? WHERE username=?", (protocol.current_room, protocol.username))
+    protocol.track_player()
+    protocol.cursor.execute(
+        "UPDATE players SET current_room=? WHERE username=?", 
+        (protocol.current_room, protocol.username)
+    )
     protocol.cursor.connection.commit()
-    
     protocol.sendLine(f"Moved to room {next_vnum}.".encode('utf-8'))
-    
-    protocol.display_room()  # Call display_room to show other players as well
+    protocol.display_room()
 
 COMMANDS = {
     "look": handle_look,

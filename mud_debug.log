@@ -759,3 +759,237 @@ NameError: name 'cursor' is not defined
 2024-11-12 19:09:50,280 - INFO - Connection lost for user Array. Reason: [Failure instance: Traceback (failure with no frames): <class 'twisted.internet.error.ConnectionDone'>: Connection was closed cleanly.
 ]
 2024-11-12 19:09:50,281 - INFO - Player Array left room 1000.
+2024-11-12 19:54:33,540 - INFO - Database tables ensured and default rooms initialized.
+2024-11-12 19:54:44,133 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=65516).
+2024-11-12 19:54:48,158 - INFO - Player Array is now in room 1000.
+2024-11-12 19:54:48,158 - INFO - User Array checking room 1000. Others here: []
+2024-11-12 19:54:52,158 - INFO - Executing command 'goto' for user Array with args ['3000'].
+2024-11-12 19:54:54,822 - INFO - Executing command 'look' for user Array with args [].
+2024-11-12 19:54:56,507 - INFO - Executing command 'east' for user Array with args [].
+2024-11-12 19:54:56,508 - INFO - Player Array left room 3000.
+2024-11-12 19:54:56,508 - INFO - Player Array is now in room 3002.
+2024-11-12 19:54:56,516 - ERROR - Room with ID 3002 not found for user Array.
+2024-11-12 19:55:02,782 - INFO - Executing command 'look' for user Array with args [].
+2024-11-12 19:55:05,295 - INFO - Executing command 'west' for user Array with args [].
+2024-11-12 19:55:05,295 - INFO - Player Array left room 3002.
+2024-11-12 19:55:05,296 - INFO - Player Array is now in room 3000.
+2024-11-12 19:55:05,306 - ERROR - Room with ID 3000 not found for user Array.
+2024-11-12 19:55:07,035 - INFO - Executing command 'north' for user Array with args [].
+2024-11-12 19:55:07,035 - INFO - Player Array left room 3000.
+2024-11-12 19:55:07,036 - INFO - Player Array is now in room 3001.
+2024-11-12 19:55:07,044 - ERROR - Room with ID 3001 not found for user Array.
+2024-11-12 19:55:09,223 - INFO - Executing command 'look' for user Array with args [].
+2024-11-12 19:55:11,887 - INFO - Executing command 'north' for user Array with args [].
+2024-11-12 19:55:11,887 - INFO - Player Array left room 3001.
+2024-11-12 19:55:11,888 - INFO - Player Array is now in room 3003.
+2024-11-12 19:55:11,892 - ERROR - Room with ID 3003 not found for user Array.
+2024-11-12 19:55:12,804 - INFO - Executing command 'look' for user Array with args [].
+2024-11-12 20:07:19,656 - INFO - Database tables ensured and default rooms initialized.
+2024-11-12 20:07:26,117 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=50128).
+2024-11-12 20:07:29,573 - INFO - Player Array is now in room 3003.
+2024-11-12 20:07:29,573 - ERROR - Room with ID 3003 not found for user Array.
+2024-11-12 20:07:31,527 - INFO - Executing command 'look' for user Array with args [].
+2024-11-12 20:07:34,055 - INFO - Executing command 'south' for user Array with args [].
+2024-11-12 20:07:34,056 - ERROR - Error in state COMMAND: name 'ensure_room_exists' is not defined
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud_0.4.15.py", line 112, in lineReceived
+    self.handle_command(command)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud_0.4.15.py", line 173, in handle_command
+    handler(self, players_in_rooms, *args)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 62, in <lambda>
+    "south": lambda protocol, players_in_rooms=None: handle_movement(protocol, "south"),
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 46, in handle_movement
+    if not ensure_room_exists(next_vnum, protocol):
+NameError: name 'ensure_room_exists' is not defined
+2024-11-12 20:07:41,778 - INFO - Executing command 'goto' for user Array with args ['3001'].
+2024-11-12 20:07:45,784 - INFO - Executing command 'goto' for user Array with args ['3002'].
+2024-11-12 20:07:48,269 - INFO - Executing command 'look' for user Array with args [].
+2024-11-12 20:08:19,853 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=50184).
+2024-11-12 20:08:28,028 - INFO - Player Manorbis is now in room 1000.
+2024-11-12 20:08:28,028 - INFO - User Manorbis checking room 1000. Others here: []
+2024-11-12 20:08:32,902 - INFO - Executing command 'goto' for user Manorbis with args ['3002'].
+2024-11-12 20:08:34,129 - INFO - Executing command 'look' for user Manorbis with args [].
+2024-11-12 20:08:41,219 - INFO - Executing command 'east' for user Manorbis with args [].
+2024-11-12 20:08:41,219 - ERROR - Error in state COMMAND: name 'ensure_room_exists' is not defined
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud_0.4.15.py", line 112, in lineReceived
+    self.handle_command(command)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud_0.4.15.py", line 173, in handle_command
+    handler(self, players_in_rooms, *args)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 63, in <lambda>
+    "east": lambda protocol, players_in_rooms=None: handle_movement(protocol, "east"),
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 46, in handle_movement
+    if not ensure_room_exists(next_vnum, protocol):
+NameError: name 'ensure_room_exists' is not defined
+2024-11-12 20:08:42,385 - INFO - Executing command 'west' for user Manorbis with args [].
+2024-11-12 20:08:42,386 - ERROR - Error in state COMMAND: name 'ensure_room_exists' is not defined
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud_0.4.15.py", line 112, in lineReceived
+    self.handle_command(command)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud_0.4.15.py", line 173, in handle_command
+    handler(self, players_in_rooms, *args)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 64, in <lambda>
+    "west": lambda protocol, players_in_rooms=None: handle_movement(protocol, "west"),
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 46, in handle_movement
+    if not ensure_room_exists(next_vnum, protocol):
+NameError: name 'ensure_room_exists' is not defined
+2024-11-12 20:08:47,907 - INFO - Executing command 'say' for user Manorbis with args ['hi'].
+2024-11-12 20:08:49,507 - INFO - Executing command 'look' for user Manorbis with args [].
+2024-11-12 20:09:42,217 - INFO - Executing command 'copyover' for user Manorbis with args [].
+2024-11-12 20:09:42,218 - INFO - User Manorbis initiated copyover.
+2024-11-12 20:09:42,480 - INFO - Database tables ensured and default rooms initialized.
+2024-11-12 20:09:48,373 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=50384).
+2024-11-12 20:09:51,721 - INFO - Player Manorbis is now in room 1000.
+2024-11-12 20:09:51,721 - INFO - User Manorbis checking room 1000. Others here: []
+2024-11-12 20:09:56,831 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=50385).
+2024-11-12 20:10:00,397 - INFO - Player Array is now in room 3003.
+2024-11-12 20:10:00,397 - ERROR - Room with ID 3003 not found for user Array.
+2024-11-12 20:10:01,967 - INFO - Executing command 'look' for user Array with args [].
+2024-11-12 20:10:06,655 - INFO - Executing command 'goto' for user Array with args ['3002'].
+2024-11-12 20:10:07,796 - INFO - Executing command 'look' for user Array with args [].
+2024-11-13 10:40:50,973 - INFO - Database tables ensured and default rooms initialized.
+2024-11-13 10:41:16,037 - INFO - Database tables ensured and default rooms initialized.
+2024-11-13 10:41:26,446 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=65118).
+2024-11-13 10:41:28,584 - INFO - Player Array is now in room 3003.
+2024-11-13 10:41:28,584 - ERROR - Room with ID 3003 not found for user Array.
+2024-11-13 10:41:30,538 - INFO - Executing command 'look' for user Array with args [].
+2024-11-13 10:41:34,036 - INFO - Executing command 'south' for user Array with args [].
+2024-11-13 10:41:34,036 - ERROR - Error in state COMMAND: name 'ensure_room_exists' is not defined
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud_0.4.15.py", line 112, in lineReceived
+    self.handle_command(command)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud_0.4.15.py", line 173, in handle_command
+    handler(self, players_in_rooms, *args)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 62, in <lambda>
+    "south": lambda protocol, players_in_rooms=None: handle_movement(protocol, "south"),
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 46, in handle_movement
+    if not ensure_room_exists(next_vnum, protocol):
+NameError: name 'ensure_room_exists' is not defined
+2024-11-13 10:41:40,855 - INFO - Executing command 'look' for user Array with args [].
+2024-11-13 12:22:46,852 - INFO - Database tables ensured and default rooms initialized.
+2024-11-13 12:22:52,991 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=56204).
+2024-11-13 12:22:56,192 - INFO - Player Array is now in room 3003.
+2024-11-13 12:22:56,192 - ERROR - Room with ID 3003 not found for user Array.
+2024-11-13 12:23:01,833 - INFO - Executing command 'look' for user Array with args [].
+2024-11-13 12:23:03,659 - INFO - Executing command 'south' for user Array with args [].
+2024-11-13 12:23:03,660 - ERROR - Error in state COMMAND: name 'ensure_room_exists' is not defined
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud_0.4.15.py", line 112, in lineReceived
+    self.handle_command(command)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud_0.4.15.py", line 173, in handle_command
+    handler(self, players_in_rooms, *args)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 62, in <lambda>
+    "south": lambda protocol, players_in_rooms=None: handle_movement(protocol, "south"),
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 46, in handle_movement
+    if not ensure_room_exists(next_vnum, protocol):
+NameError: name 'ensure_room_exists' is not defined
+2024-11-13 12:32:58,100 - INFO - Database tables ensured and default rooms initialized.
+2024-11-13 12:33:50,924 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=57015).
+2024-11-13 12:33:54,042 - INFO - Player Array is now in room 3003.
+2024-11-13 12:33:54,043 - ERROR - Room with ID 3003 not found for user Array.
+2024-11-13 12:33:56,121 - INFO - Executing command 'look' for user Array with args [].
+2024-11-13 12:33:58,389 - INFO - Executing command 'south' for user Array with args [].
+2024-11-13 12:33:58,390 - ERROR - Error in state COMMAND: name 'cursor' is not defined
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud_0.4.15.py", line 112, in lineReceived
+    self.handle_command(command)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud_0.4.15.py", line 173, in handle_command
+    handler(self, players_in_rooms, *args)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 64, in <lambda>
+    "south": lambda protocol, players_in_rooms=None: handle_movement(protocol, "south"),
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 48, in handle_movement
+    if not ensure_room_exists(next_vnum, protocol):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\admin_commands.py", line 115, in ensure_room_exists
+    cursor.execute("SELECT id FROM rooms WHERE id=?", (vnum,))
+NameError: name 'cursor' is not defined
+2024-11-13 14:56:49,861 - INFO - Database tables ensured and default rooms initialized.
+2024-11-13 14:56:55,908 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=58040).
+2024-11-13 14:56:58,976 - INFO - Player Array is now in room 3003.
+2024-11-13 14:56:58,977 - ERROR - Room with ID 3003 not found for user Array.
+2024-11-13 14:57:00,447 - INFO - Executing command 'look' for user Array with args [].
+2024-11-13 14:57:02,275 - INFO - Executing command 'south' for user Array with args [].
+2024-11-13 14:57:02,276 - ERROR - Error in state COMMAND: name 'cursor' is not defined
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud_0.4.15.py", line 112, in lineReceived
+    self.handle_command(command)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud_0.4.15.py", line 173, in handle_command
+    handler(self, players_in_rooms, *args)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 64, in <lambda>
+    "south": lambda protocol, players_in_rooms=None: handle_movement(protocol, "south"),
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 48, in handle_movement
+    if not ensure_room_exists(next_vnum, protocol):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\admin_commands.py", line 115, in ensure_room_exists
+    cursor.execute("SELECT id FROM rooms WHERE id=?", (vnum,))
+NameError: name 'cursor' is not defined
+2024-11-13 14:57:05,248 - INFO - Executing command 'look' for user Array with args [].
+2024-11-13 14:57:07,871 - INFO - Executing command 'south' for user Array with args [].
+2024-11-13 14:57:07,872 - ERROR - Error in state COMMAND: name 'cursor' is not defined
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud_0.4.15.py", line 112, in lineReceived
+    self.handle_command(command)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud_0.4.15.py", line 173, in handle_command
+    handler(self, players_in_rooms, *args)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 64, in <lambda>
+    "south": lambda protocol, players_in_rooms=None: handle_movement(protocol, "south"),
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 48, in handle_movement
+    if not ensure_room_exists(next_vnum, protocol):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\admin_commands.py", line 115, in ensure_room_exists
+    cursor.execute("SELECT id FROM rooms WHERE id=?", (vnum,))
+NameError: name 'cursor' is not defined
+2024-11-13 14:57:08,670 - INFO - Executing command 'look' for user Array with args [].
+2024-11-13 14:57:16,145 - INFO - Executing command 'goto' for user Array with args ['3002'].
+2024-11-13 14:57:17,605 - INFO - Executing command 'look' for user Array with args [].
+2024-11-13 14:57:19,523 - INFO - Executing command 'east' for user Array with args [].
+2024-11-13 14:57:19,524 - ERROR - Error in state COMMAND: name 'cursor' is not defined
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud_0.4.15.py", line 112, in lineReceived
+    self.handle_command(command)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud_0.4.15.py", line 173, in handle_command
+    handler(self, players_in_rooms, *args)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 65, in <lambda>
+    "east": lambda protocol, players_in_rooms=None: handle_movement(protocol, "east"),
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 48, in handle_movement
+    if not ensure_room_exists(next_vnum, protocol):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\admin_commands.py", line 115, in ensure_room_exists
+    cursor.execute("SELECT id FROM rooms WHERE id=?", (vnum,))
+NameError: name 'cursor' is not defined
+2024-11-13 14:57:21,176 - INFO - Executing command 'look' for user Array with args [].
+2024-11-13 14:57:22,780 - INFO - Executing command 'west' for user Array with args [].
+2024-11-13 14:57:22,781 - ERROR - Error in state COMMAND: name 'cursor' is not defined
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud_0.4.15.py", line 112, in lineReceived
+    self.handle_command(command)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud_0.4.15.py", line 173, in handle_command
+    handler(self, players_in_rooms, *args)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 66, in <lambda>
+    "west": lambda protocol, players_in_rooms=None: handle_movement(protocol, "west"),
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 48, in handle_movement
+    if not ensure_room_exists(next_vnum, protocol):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\admin_commands.py", line 115, in ensure_room_exists
+    cursor.execute("SELECT id FROM rooms WHERE id=?", (vnum,))
+NameError: name 'cursor' is not defined
+2024-11-13 14:57:23,756 - INFO - Executing command 'look' for user Array with args [].
+2024-11-13 15:07:03,087 - INFO - Database tables ensured and default rooms initialized.
+2024-11-13 15:07:07,462 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=58807).
+2024-11-13 15:07:10,480 - INFO - Player Array is now in room 3003.
+2024-11-13 15:07:10,480 - ERROR - Room with ID 3003 not found for user Array.
+2024-11-13 15:07:12,196 - INFO - Executing command 'look' for user Array with args [].
+2024-11-13 15:07:14,928 - INFO - Executing command 'north' for user Array with args [].
+2024-11-13 15:07:14,941 - INFO - Player Array is now in room 3005.
+2024-11-13 15:07:14,949 - INFO - User Array checking room 3005. Others here: []
+2024-11-13 15:07:17,504 - INFO - Executing command 'south' for user Array with args [].
+2024-11-13 15:07:17,512 - INFO - Player Array is now in room 3003.
+2024-11-13 15:07:17,517 - INFO - User Array checking room 3003. Others here: []
+2024-11-13 15:07:21,608 - INFO - Executing command 'south' for user Array with args [].
+2024-11-13 15:07:21,615 - INFO - Player Array is now in room 3001.
+2024-11-13 15:07:21,620 - INFO - User Array checking room 3001. Others here: []
+2024-11-13 15:07:23,475 - INFO - Executing command 'look' for user Array with args [].
+2024-11-15 14:47:40,898 - INFO - Database tables ensured and default rooms initialized.
+2024-11-15 14:47:51,542 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=56919).
+2024-11-15 14:47:59,778 - INFO - Player Array is now in room 3001.
+2024-11-15 14:47:59,778 - INFO - User Array checking room 3001. Others here: []
+2024-11-15 14:48:02,601 - INFO - Executing command 'look' for user Array with args [].
+2024-11-15 14:48:04,311 - INFO - Executing command 'south' for user Array with args [].
+2024-11-15 14:48:04,321 - INFO - Player Array is now in room 3000.
+2024-11-15 14:48:04,325 - INFO - User Array checking room 3000. Others here: []
+2024-11-15 14:48:05,750 - INFO - Executing command 'look' for user Array with args [].

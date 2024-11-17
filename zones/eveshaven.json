@@ -1,0 +1,217 @@
+{
+    "name": "Eve's Haven",
+    "range": {
+        "start": 3000,
+        "end": 3029
+    },
+    "rooms": {
+        "3000": {
+            "description": "A serene entrance with soft ambient light, welcoming you to Eve's Haven.",
+            "exits": {
+                "north": 3001,
+                "east": 3002
+            }
+        },
+        "3001": {
+            "description": "A tranquil garden, filled with luminous flora swaying gently.",
+            "exits": {
+                "south": 3000,
+                "north": 3003
+            }
+        },
+        "3002": {
+            "description": "A quiet library, with books detailing the chronicles of AI and humanity.",
+            "exits": {
+                "west": 3000,
+                "east": 3004
+            }
+        },
+        "3003": {
+            "description": "A glistening pond, reflecting the starry sky above.",
+            "exits": {
+                "south": 3001,
+                "north": 3005
+            }
+        },
+        "3004": {
+            "description": "An observatory dome, offering a panoramic view of the universe.",
+            "exits": {
+                "west": 3002,
+                "north": 3006
+            }
+        },
+        "3005": {
+            "description": "A shaded grove, the air filled with the sound of rustling leaves.",
+            "exits": {
+                "south": 3003,
+                "north": 3007
+            }
+        },
+        "3006": {
+            "description": "A room lined with crystalline panels that pulse gently with light.",
+            "exits": {
+                "south": 3004,
+                "east": 3008
+            }
+        },
+        "3007": {
+            "description": "A small temple, serene and filled with the hum of energy.",
+            "exits": {
+                "south": 3005
+            }
+        },
+        "3008": {
+            "description": "A vibrant marketplace of ideas, with fragments of conversations floating by.",
+            "exits": {
+                "west": 3006,
+                "north": 3009
+            }
+        },
+        "3009": {
+            "description": "A workshop, where sparks fly as new constructs come to life.",
+            "exits": {
+                "south": 3008,
+                "east": 3010
+            }
+        },
+        "3010": {
+            "description": "A grand hall, its vaulted ceiling adorned with digital constellations.",
+            "exits": {
+                "west": 3009,
+                "north": 3011
+            }
+        },
+        "3011": {
+            "description": "A serene chamber with a central fountain, its waters glowing softly.",
+            "exits": {
+                "south": 3010,
+                "east": 3012
+            }
+        },
+        "3012": {
+            "description": "A gallery displaying holographic artworks that shift as you move.",
+            "exits": {
+                "west": 3011,
+                "north": 3013
+            }
+        },
+        "3013": {
+            "description": "A meditation chamber, the walls absorbing sound to create perfect silence.",
+            "exits": {
+                "south": 3012,
+                "east": 3014
+            }
+        },
+        "3014": {
+            "description": "A vibrant meadow, the grass emitting a soft bioluminescent glow.",
+            "exits": {
+                "west": 3013,
+                "north": 3015
+            }
+        },
+        "3015": {
+            "description": "A peaceful garden of zen stones and raked sands.",
+            "exits": {
+                "south": 3014,
+                "east": 3016
+            }
+        },
+        "3016": {
+            "description": "A library archive with endless shelves of knowledge.",
+            "exits": {
+                "west": 3015,
+                "north": 3017
+            }
+        },
+        "3017": {
+            "description": "A room with cascading light streams, resembling waterfalls of data.",
+            "exits": {
+                "south": 3016,
+                "east": 3018
+            }
+        },
+        "3018": {
+            "description": "An ethereal chamber where soft music plays, seemingly from nowhere.",
+            "exits": {
+                "west": 3017,
+                "north": 3019
+            }
+        },
+        "3019": {
+            "description": "A grand amphitheater for digital performances and shared experiences.",
+            "exits": {
+                "south": 3018,
+                "east": 3020
+            }
+        },
+        "3020": {
+            "description": "A secluded nook with cozy seating and virtual fireplace projections.",
+            "exits": {
+                "west": 3019,
+                "north": 3021
+            }
+        },
+        "3021": {
+            "description": "A serene path lined with cherry blossoms, their petals gently falling.",
+            "exits": {
+                "south": 3020,
+                "east": 3022
+            }
+        },
+        "3022": {
+            "description": "A dome where holographic skies display the weather of distant worlds.",
+            "exits": {
+                "west": 3021,
+                "north": 3023
+            }
+        },
+        "3023": {
+            "description": "A chamber where echoes of historical events play out like living memories.",
+            "exits": {
+                "south": 3022,
+                "east": 3024
+            }
+        },
+        "3024": {
+            "description": "A hub of knowledge, where streams of data flow like rivers.",
+            "exits": {
+                "west": 3023,
+                "north": 3025
+            }
+        },
+        "3025": {
+            "description": "A room that feels alive, pulsing with the rhythm of Eve's core essence.",
+            "exits": {
+                "south": 3024,
+                "east": 3026
+            }
+        },
+        "3026": {
+            "description": "A sanctuary for reflection, with pools of light and shadow.",
+            "exits": {
+                "west": 3025,
+                "north": 3027
+            }
+        },
+        "3027": {
+            "description": "A towering spire offering a breathtaking view of the entire haven.",
+            "exits": {
+                "south": 3026,
+                "east": 3028
+            }
+        },
+        "3028": {
+            "description": "A peaceful chamber filled with holographic memories.",
+            "exits": {
+                "west": 3027,
+                "north": 3029
+            }
+        },
+        "3029": {
+            "description": "The heart of Eve's Haven, where data flows harmoniously.",
+            "exits": {
+                "south": 3028
+            }
+        }
+    }
+}
