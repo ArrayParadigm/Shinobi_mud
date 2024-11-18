@@ -175,7 +175,7 @@ def recover_state():
 
 COMMANDS = {
     "createzone": lambda protocol, players_in_rooms, *args: create_zone(protocol, *args[0].split()),
-    "goto": lambda protocol, players_in_rooms, *args: goto(protocol, *args[0].split()),
+    "goto": lambda protocol, players_in_rooms, *args: goto(protocol, args[0]) if args and args[0].isdigit() else protocol.sendLine(b"Usage: goto <room_id>"),
     "dig": lambda protocol, players_in_rooms, *args: dig(protocol, *args[0].split(maxsplit=1)),
     "shutdown": shutdown,
     "copyover": copyover, 
@@ -213,4 +213,5 @@ COMMANDS.update({
     "setrole": lambda protocol, players_in_rooms, *args: setrole(protocol, *args),
     "setstat": lambda protocol, players_in_rooms, *args: setstat(protocol, *args),
     "setdojo": lambda protocol, players_in_rooms, *args: setdojo(protocol, *args),
+
 })

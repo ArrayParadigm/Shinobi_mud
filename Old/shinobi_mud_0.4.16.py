@@ -28,6 +28,27 @@ logging.basicConfig(
 conn = sqlite3.connect('mud_game_10_rooms.db')
 cursor = conn.cursor()
 
+def process_command(player, command, command_type='general'):
+    command = command.lower().strip()
+
+    # Define all command dictionaries
+    command_dicts = {
+        'general': general_commands,
+        'admin': admin_commands,
+        'social': social_commands,
+        'warrior': warrior_commands,
+        'mage': mage_commands,
+        # Add more class-specific commands here
+    }
+
+    # Get the command set based on command_type
+    command_dict = command_dicts.get(command_type, general_commands)
+
+    if command in command_dict:
+        command_dict[command](player)
+    else:
+        player.send(f"Unknown {command_type} command: {command}")
+
 
 def ensure_tables_exist():
     try:

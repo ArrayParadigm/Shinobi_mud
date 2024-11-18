@@ -993,3 +993,29 @@ NameError: name 'cursor' is not defined
 2024-11-15 14:48:04,321 - INFO - Player Array is now in room 3000.
 2024-11-15 14:48:04,325 - INFO - User Array checking room 3000. Others here: []
 2024-11-15 14:48:05,750 - INFO - Executing command 'look' for user Array with args [].
+2024-11-16 23:50:53,871 - INFO - Database tables ensured and default rooms initialized.
+2024-11-16 23:51:00,005 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=59231).
+2024-11-16 23:51:06,036 - INFO - Player Array is now in room 3000.
+2024-11-16 23:51:06,036 - INFO - User Array checking room 3000. Others here: []
+2024-11-16 23:51:08,210 - INFO - Executing command 'look' for user Array with args [].
+2024-11-16 23:51:09,821 - INFO - Executing command 'north' for user Array with args [].
+2024-11-16 23:51:09,822 - INFO - Player Array is now in room 3001.
+2024-11-16 23:51:09,831 - INFO - User Array checking room 3001. Others here: []
+2024-11-16 23:51:12,221 - INFO - Executing command 'south' for user Array with args [].
+2024-11-16 23:51:12,222 - INFO - Player Array is now in room 3000.
+2024-11-16 23:51:12,225 - INFO - User Array checking room 3000. Others here: []
+2024-11-16 23:51:13,616 - WARNING - Unknown command 'l' received from Array.
+2024-11-16 23:51:14,980 - WARNING - Unknown command 'loo' received from Array.
+2024-11-16 23:51:16,134 - INFO - Executing command 'look' for user Array with args [].
+2024-11-16 23:51:19,063 - INFO - Executing command 'north' for user Array with args [].
+2024-11-16 23:51:19,064 - INFO - Player Array is now in room 3001.
+2024-11-16 23:51:19,069 - INFO - User Array checking room 3001. Others here: []
+2024-11-16 23:51:21,156 - INFO - Executing command 'look' for user Array with args [].
+2024-11-16 23:53:31,514 - INFO - Executing command 'goto' for user Array with args ['3005'].
+2024-11-16 23:53:37,918 - INFO - Executing command 'goto' for user Array with args ['3100'].
+2024-11-16 23:53:44,211 - INFO - Executing command 'goto' for user Array with args ['3099'].
+2024-11-16 23:53:47,128 - INFO - Executing command 'goto' for user Array with args ['3098'].
+2024-11-16 23:53:51,461 - WARNING - Unknown command 'zone' received from Array.
+2024-11-16 23:53:56,566 - INFO - Connection lost for user Array. Reason: [Failure instance: Traceback (failure with no frames): <class 'twisted.internet.error.ConnectionDone'>: Connection was closed cleanly.
+]
+2024-11-16 23:53:56,566 - INFO - Player Array left room 3005.

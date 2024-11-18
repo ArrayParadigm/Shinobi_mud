@@ -6,14 +6,32 @@ import hashlib
 import logging
 import json
 
+DEBUG_MODE = True #True allows for debugging options, whereas false will remove those
+
 # Import commands from various modules
 from general_commands import COMMANDS as general_commands
 from admin_commands import COMMANDS as admin_commands
 from social_commands import COMMANDS as social_commands
+#from warrior_commands import COMMANDS as warrior_commands
+#from mage_commands import COMMANDS as mage_commands
 
-# Combine commands into one registry
-COMMAND_REGISTRY = {**general_commands, **admin_commands, **social_commands}
+# Combine all commands for runtime
+COMMAND_REGISTRY = {**general_commands, **admin_commands, **social_commands}#, **warrior_commands, **mage_commands}
 
+# Add this utility function for cross-checking
+def get_all_commands():
+    """Aggregates all commands for cross-check validation."""
+    return {
+        cmd 
+        for command_set in [general_commands, admin_commands, social_commands]#, warrior_commands, mage_commands]
+        for cmd in command_set
+    }
+
+# Cross-check command consistency during startup
+ALL_COMMANDS = get_all_commands()
+
+# Log all registered commands during startup for verification
+logging.debug(f"All registered commands: {sorted(ALL_COMMANDS)}")
 # Setup for enhanced logging
 logging.basicConfig(
     level=logging.DEBUG,
@@ -28,6 +46,45 @@ logging.basicConfig(
 conn = sqlite3.connect('mud_game_10_rooms.db')
 cursor = conn.cursor()
 
+def debug_log(message):
+    if DEBUG_MODE:
+        logging.debug(message)
+
+
+def process_command(player, command):
+    command = command.lower().strip()
+    
+    # Split command into command and arguments
+    parts = command.split(' ', 1)
+    cmd = parts[0]  # Extract command name
+    args = parts[1:] if len(parts) > 1 else []  # Extract arguments if present
+
+# Add "command_sets" here when adding new classes or necessary command items.
+    command_sets = {
+        'general': general_commands,
+        'admin': admin_commands,
+        'social': social_commands,
+#       'warrior': warrior_commands,
+#       'mage': mage_commands,
+    }
+    
+    if player.is_admin:
+        combined_commands = {cmd: handler for commands in command_sets.values() for cmd, handler in commands.items()}
+    else:
+        role_commands = command_sets.get(player.player_class.lower(), {})
+        combined_commands = {**general_commands, **role_commands}
+    
+    handler = combined_commands.get(cmd)
+    if handler:
+        logging.info(f"Executing command '{cmd}' for player {player.username} with args {args}")
+        try:
+            handler(player, *args)  # Pass player and arguments to the command handler
+        except Exception as e:
+            logging.error(f"Error executing command '{cmd}' for {player.username}: {e}", exc_info=True)
+            player.sendLine(b"An error occurred while executing your command.")
+    else:
+        player.sendLine(f"Unknown command: {cmd}".encode('utf-8'))
+        logging.warning(f"Unknown command '{cmd}' issued by player {player.username}")
 
 def ensure_tables_exist():
     try:
@@ -49,6 +106,7 @@ def ensure_tables_exist():
             wisdom INTEGER DEFAULT 5,
             dojo_alignment TEXT DEFAULT 'None'
         )''')
+        debug_log("Creating player due to lack of existence.")
 
         # Create rooms table if it doesn't exist
         cursor.execute('''CREATE TABLE IF NOT EXISTS rooms (
@@ -65,9 +123,10 @@ def ensure_tables_exist():
 
         conn.commit()
         logging.info("Database tables ensured and default rooms initialized.")
+        debug_log("Database tables ensured and default rooms initialized.")
     except Exception as e:
         logging.error(f"Failed to ensure database tables: {e}")
-
+        debug_log("Failed to ensure database tables.")
 
 ensure_tables_exist()
 players_in_rooms = {}
@@ -81,11 +140,15 @@ class NinjaMUDProtocol(basic.LineReceiver):
         self.state = "GET_USERNAME"
         self.character_creation_data = {}
         self.username = None
-        self.current_room = 2000
-        self.is_admin = False
+        self.current_room = 3001
+        self.is_admin = True
+        self.player_class = 'newbie' # Default to a basic Class
 
+
+#TODO: add in MOTD readme file, with welcome message
     def connectionMade(self):
         logging.info("New connection established from %s.", self.transport.getPeer())
+        debug_log("New connection established from [self.transport.getPeer()}.")
         self.sendLine(b"Welcome to Ninja MUD!")
         self.sendLine(b"Please enter your username:")
         
@@ -138,6 +201,8 @@ class NinjaMUDProtocol(basic.LineReceiver):
 
         if player:
             self.current_room = player[3]  # Load the last saved room from the database
+            self.is_admin = bool(player[3])
+            self.player_class = player[5]
             self.sendLine(b"Login successful!")
             self.state = "COMMAND"
             self.track_player()
@@ -162,18 +227,11 @@ class NinjaMUDProtocol(basic.LineReceiver):
         self.state = "CONFIRM_PASSWORD"
         
     def handle_command(self, command):
-        """Handles user commands during gameplay."""
-        parts = command.strip().split(' ', 1)
-        cmd = parts[0].lower()
-        args = parts[1:] if len(parts) > 1 else []
-    
-        handler = COMMAND_REGISTRY.get(cmd)
-        if handler:
-            logging.info(f"Executing command '{cmd}' for user {self.username} with args {args}.")
-            handler(self, players_in_rooms, *args)
-        else:
-            logging.warning(f"Unknown command '{cmd}' received from {self.username}.")
-            self.sendLine(b"Unknown command.")
+        try:
+            process_command(self, command)
+        except Exception as e:
+            logging.error(f"Error while handling command '{command}' for {self.username}: {e}", exc_info=True)
+            self.sendLine(b"An error occurred while processing your command.")
 
     def display_room(self):
         """Displays current room details."""
