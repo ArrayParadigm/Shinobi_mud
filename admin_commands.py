@@ -94,7 +94,6 @@ def find_zone_by_vnum(vnum):
     return None
 
 def ensure_room_exists(vnum, protocol):
-    cursor = protocol.cursor  # Use protocol's cursor
     zone_file = find_zone_by_vnum(vnum)
     
     if not zone_file:
@@ -105,21 +104,13 @@ def ensure_room_exists(vnum, protocol):
         zone_data = json.load(file)
 
     if str(vnum) not in zone_data["rooms"]:
+        # If the room doesn't exist in JSON, auto-generate it.
         zone_data["rooms"][str(vnum)] = {"description": "Void room", "exits": {}}
         with open(zone_file, "w") as file:
             json.dump(zone_data, file, indent=4)
         protocol.sendLine(b"Room initialized in zone file.")
 
-    cursor.execute("SELECT id FROM rooms WHERE id=?", (vnum,))
-    if not cursor.fetchone():
-        cursor.execute(
-            "INSERT INTO rooms (id, name, description, exits) VALUES (?, ?, ?, ?)",
-            (vnum, f"Room {vnum}", "This room was auto-added.", "{}")
-        )
-        protocol.cursor.connection.commit()
-        protocol.sendLine(b"Room initialized in database.")
     return True
-
 
 def next_free_vnum(zone_data):
     start, end = zone_data["range"]["start"], zone_data["range"]["end"]

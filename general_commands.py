@@ -27,6 +27,7 @@ def handle_look(protocol, players_in_rooms=None):
 def handle_movement(protocol, direction):
     vnum = protocol.current_room
     zone_file = find_zone_by_vnum(vnum)
+    
     if not zone_file:
         protocol.sendLine(b"Current room is not in a valid zone.")
         return
@@ -36,27 +37,38 @@ def handle_movement(protocol, direction):
 
     current_room = zone_data["rooms"].get(str(vnum))
     if not current_room:
-        protocol.sendLine(b"Current room not found.")
+        protocol.sendLine(b"Current room not found in zone data.")
         return
 
-    next_vnum = current_room["exits"].get(direction)
+    next_vnum = current_room.get("exits", {}).get(direction)
     if not next_vnum:
         protocol.sendLine(b"No exit in that direction.")
         return
 
     # Ensure target room exists before moving
-    if not ensure_room_exists(next_vnum, protocol):
-        return
+    if ensure_room_exists(next_vnum, protocol):
+        # Update the player's current room
+        previous_room = protocol.current_room
+        protocol.current_room = int(next_vnum)
+        protocol.untrack_player(previous_room)
+        protocol.track_player()
+        protocol.cursor.execute(
+            "UPDATE players SET current_room=? WHERE username=?", 
+            (protocol.current_room, protocol.username)
+        )
+        protocol.cursor.connection.commit()
+        protocol.sendLine(f"Moved to room {next_vnum}.".encode('utf-8'))
+        protocol.display_room()
 
-    protocol.current_room = next_vnum
-    protocol.track_player()
-    protocol.cursor.execute(
-        "UPDATE players SET current_room=? WHERE username=?", 
-        (protocol.current_room, protocol.username)
-    )
-    protocol.cursor.connection.commit()
-    protocol.sendLine(f"Moved to room {next_vnum}.".encode('utf-8'))
-    protocol.display_room()
+#    protocol.current_room = next_vnum
+#    protocol.track_player()
+#    protocol.cursor.execute(
+#        "UPDATE players SET current_room=? WHERE username=?", 
+#        (protocol.current_room, protocol.username)
+#    )
+#    protocol.cursor.connection.commit()
+#    protocol.sendLine(f"Moved to room {next_vnum}.".encode('utf-8'))
+#    protocol.display_room()
 
 COMMANDS = {
     "look": handle_look,

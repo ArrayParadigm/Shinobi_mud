@@ -50,6 +50,13 @@ def debug_log(message):
     if DEBUG_MODE:
         logging.debug(message)
 
+def preload_zones():
+    zone_directory = "zones"
+    for file_name in os.listdir(zone_directory):
+        if file_name.endswith(".json"):
+            with open(os.path.join(zone_directory, file_name), "r") as file:
+                zone_data = json.load(file)
+                logging.info(f"Preloaded zone: {zone_data['name']}")
 
 def process_command(player, command):
     command = command.lower().strip()
@@ -128,6 +135,9 @@ def ensure_tables_exist():
         logging.error(f"Failed to ensure database tables: {e}")
         debug_log("Failed to ensure database tables.")
 
+preload_zones()
+logging.info("Zones loaded")
+debug_log("Zones loaded after preload_zones()")
 ensure_tables_exist()
 players_in_rooms = {}
 
@@ -234,24 +244,24 @@ class NinjaMUDProtocol(basic.LineReceiver):
             self.sendLine(b"An error occurred while processing your command.")
 
     def display_room(self):
-        """Displays current room details."""
-        cursor.execute("SELECT * FROM rooms WHERE id=?", (self.current_room,))
-        room = cursor.fetchone()
+        """Displays current room details from zone files only."""
+        zone_file = find_zone_by_vnum(self.current_room)
+        if not zone_file:
+            self.sendLine(b"Room not found in any zone.")
+            return
     
-        if room:
-            self.sendLine(f"You are in {room[1]}. {room[2]}".encode('utf-8'))
-            try:
-                # Safely parse the exits using json.loads
-                exits = json.loads(room[3])
-                exits_list = ", ".join(exits.keys())
+        with open(zone_file, "r") as file:
+            zone_data = json.load(file)
+            room_data = zone_data["rooms"].get(str(self.current_room))
+    
+            if room_data:
+                self.sendLine(f"Room {self.current_room}: {room_data['description']}".encode('utf-8'))
+                exits_list = ", ".join(room_data["exits"].keys()) or "None"
                 self.sendLine(f"Exits: {exits_list}".encode('utf-8'))
-            except json.JSONDecodeError as e:
-                logging.error(f"Failed to parse exits for room {self.current_room}: {e}")
-                self.sendLine(b"Exits: (none or error reading exits)")
-            self.list_players_in_room()
-        else:
-            logging.error(f"Room with ID {self.current_room} not found for user {self.username}.")
-            self.sendLine(b"Room not found.")
+                self.list_players_in_room()
+            else:
+                logging.error(f"Room with ID {self.current_room} not found for user {self.username}.")
+                self.sendLine(b"Room not found.")
         
     def track_player(self):
         if self.current_room not in players_in_rooms:
@@ -260,12 +270,15 @@ class NinjaMUDProtocol(basic.LineReceiver):
             players_in_rooms[self.current_room].append(self)
         logging.info(f"Player {self.username} is now in room {self.current_room}.")
 
-    def untrack_player(self):
-        if self.current_room in players_in_rooms and self in players_in_rooms[self.current_room]:
-            players_in_rooms[self.current_room].remove(self)
-            if not players_in_rooms[self.current_room]:
-                del players_in_rooms[self.current_room]
-        logging.info(f"Player {self.username} left room {self.current_room}.")
+    def untrack_player(self, room=None):
+        if room is None:
+            room = self.current_room
+        if room in players_in_rooms and self in players_in_rooms[room]:
+            players_in_rooms[room].remove(self)
+            if not players_in_rooms[room]:
+                del players_in_rooms[room]
+        logging.info(f"Player {self.username} left room {room}.")
+
 
     def confirm_password(self, password):
         if self.character_creation_data['password'] == password:
