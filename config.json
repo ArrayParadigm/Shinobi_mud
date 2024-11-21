@@ -1,0 +1,6 @@
+{
+    "db_file": "mud_game_10_rooms.db",
+    "motd_file": "motd.txt",
+    "server_port": 4000,
+    "zone_directory": "zones"
+}

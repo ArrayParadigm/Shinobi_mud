@@ -1019,3 +1019,103 @@ NameError: name 'cursor' is not defined
 2024-11-16 23:53:56,566 - INFO - Connection lost for user Array. Reason: [Failure instance: Traceback (failure with no frames): <class 'twisted.internet.error.ConnectionDone'>: Connection was closed cleanly.
 ]
 2024-11-16 23:53:56,566 - INFO - Player Array left room 3005.
+2024-11-20 23:40:27,998 - INFO - Total commands loaded: 0
+2024-11-20 23:40:27,999 - DEBUG - All registered commands: []
+2024-11-20 23:40:28,000 - INFO - Zones loaded
+2024-11-20 23:40:28,000 - DEBUG - Zones loaded after preload_zones()
+2024-11-20 23:40:28,000 - INFO - Initializing Ninja MUD Server...
+2024-11-20 23:40:28,000 - INFO - Logging initialized.
+2024-11-20 23:40:28,001 - DEBUG - Creating player due to lack of existence.
+2024-11-20 23:40:28,001 - INFO - Database tables ensured and default rooms initialized.
+2024-11-20 23:40:28,001 - DEBUG - Database tables ensured and default rooms initialized.
+2024-11-20 23:40:28,001 - INFO - Database connection established using mud_game_10_rooms.db.
+2024-11-20 23:41:45,692 - INFO - Total commands loaded: 0
+2024-11-20 23:41:45,692 - DEBUG - All registered commands: []
+2024-11-20 23:41:45,693 - INFO - Zones loaded
+2024-11-20 23:41:45,693 - DEBUG - Zones loaded after preload_zones()
+2024-11-20 23:41:45,693 - INFO - Initializing Ninja MUD Server...
+2024-11-20 23:41:45,693 - INFO - Logging initialized.
+2024-11-20 23:41:45,694 - DEBUG - Creating player due to lack of existence.
+2024-11-20 23:41:45,694 - INFO - Database tables ensured and default rooms initialized.
+2024-11-20 23:41:45,695 - DEBUG - Database tables ensured and default rooms initialized.
+2024-11-20 23:41:45,695 - INFO - Database connection established using mud_game_10_rooms.db.
+2024-11-20 23:41:45,695 - INFO - Preloaded zone: Eve's Haven
+2024-11-20 23:41:45,704 - INFO - Preloaded zone: Expanse
+2024-11-20 23:41:45,712 - INFO - Zone data preloaded from zones.
+2024-11-20 23:44:50,676 - INFO - Total commands loaded: 0
+2024-11-20 23:44:50,676 - DEBUG - All registered commands: []
+2024-11-20 23:44:50,677 - INFO - Zones loaded
+2024-11-20 23:44:50,677 - DEBUG - Zones loaded after preload_zones()
+2024-11-20 23:44:50,677 - INFO - Initializing Ninja MUD Server...
+2024-11-20 23:44:50,679 - INFO - Logging initialized.
+2024-11-20 23:44:50,679 - DEBUG - Creating player due to lack of existence.
+2024-11-20 23:44:50,679 - INFO - Database tables ensured and default rooms initialized.
+2024-11-20 23:44:50,680 - DEBUG - Database tables ensured and default rooms initialized.
+2024-11-20 23:44:50,680 - INFO - Database connection established using mud_game_10_rooms.db.
+2024-11-20 23:44:50,680 - INFO - Preloaded zone: Eve's Haven
+2024-11-20 23:44:50,680 - INFO - Preloaded zone: Expanse
+2024-11-20 23:44:50,680 - INFO - Zone data preloaded from zones.
+2024-11-20 23:44:50,686 - INFO - Total commands loaded: 0
+2024-11-20 23:44:50,686 - DEBUG - All registered commands: []
+2024-11-20 23:44:50,687 - INFO - Zones loaded
+2024-11-20 23:44:50,687 - DEBUG - Zones loaded after preload_zones()
+2024-11-20 23:44:50,687 - INFO - Loaded commands from general_commands
+2024-11-20 23:47:20,402 - INFO - Total commands loaded: 0
+2024-11-20 23:47:20,402 - DEBUG - All registered commands: []
+2024-11-20 23:47:20,403 - INFO - Zones loaded
+2024-11-20 23:47:20,403 - DEBUG - Zones loaded after preload_zones()
+2024-11-20 23:47:20,403 - INFO - Initializing Ninja MUD Server...
+2024-11-20 23:47:20,403 - INFO - Logging initialized.
+2024-11-20 23:47:20,404 - DEBUG - Creating player due to lack of existence.
+2024-11-20 23:47:20,404 - INFO - Database tables ensured and default rooms initialized.
+2024-11-20 23:47:20,405 - DEBUG - Database tables ensured and default rooms initialized.
+2024-11-20 23:47:20,405 - INFO - Database connection established using mud_game_10_rooms.db.
+2024-11-20 23:47:20,405 - INFO - Preloaded zone: Eve's Haven
+2024-11-20 23:47:20,406 - INFO - Preloaded zone: Expanse
+2024-11-20 23:47:20,406 - INFO - Zone data preloaded from zones.
+2024-11-20 23:47:20,407 - INFO - Total commands loaded: 0
+2024-11-20 23:47:20,407 - DEBUG - All registered commands: []
+2024-11-20 23:47:20,408 - INFO - Zones loaded
+2024-11-20 23:47:20,408 - DEBUG - Zones loaded after preload_zones()
+2024-11-20 23:47:20,408 - INFO - Loaded commands from general_commands
+2024-11-20 23:47:20,411 - INFO - Loaded commands from admin_commands
+2024-11-20 23:47:20,413 - INFO - Loaded commands from social_commands
+2024-11-20 23:47:20,413 - INFO - Commands loaded: 17
+2024-11-20 23:47:20,415 - INFO - Loaded utility: ensure_room_exists
+2024-11-20 23:47:20,415 - INFO - Loaded utility: find_zone_by_vnum
+2024-11-20 23:47:20,415 - INFO - Loaded utility: next_free_vnum
+2024-11-20 23:47:20,415 - INFO - Loaded utility: reverse_dir
+2024-11-20 23:47:20,415 - INFO - Utilities loaded: 4
+2024-11-20 23:47:20,415 - WARNING - MOTD file not found. Using default message.
+2024-11-20 23:47:20,416 - INFO - Ninja MUD Server initialized successfully.
+2024-11-20 23:47:20,416 - INFO - Ninja MUD Server running on port 4000.
+2024-11-20 23:47:30,549 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=56902).
+2024-11-20 23:47:30,549 - DEBUG - New connection established from [self.transport.getPeer()}.
+2024-11-20 23:47:34,370 - INFO - Player Array is now in room 3000.
+2024-11-20 23:47:34,371 - ERROR - Error in state COMMAND: name 'find_zone_by_vnum' is not defined
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 208, in lineReceived
+    self.handle_password(command)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 252, in handle_password
+    self.display_room()
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 281, in display_room
+    zone_file = find_zone_by_vnum(self.current_room)
+NameError: name 'find_zone_by_vnum' is not defined
+2024-11-20 23:47:36,431 - INFO - Executing command 'look' for player Array with args []
+2024-11-20 23:47:36,431 - ERROR - Error executing command 'look' for Array: name 'find_zone_by_vnum' is not defined
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 127, in process_command
+    handler(player, *args)  # Pass player and arguments to the command handler
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 8, in handle_look
+    zone_file = find_zone_by_vnum(vnum)
+NameError: name 'find_zone_by_vnum' is not defined
+2024-11-20 23:47:39,802 - INFO - Executing command 'north' for player Array with args []
+2024-11-20 23:47:39,802 - ERROR - Error executing command 'north' for Array: name 'find_zone_by_vnum' is not defined
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 127, in process_command
+    handler(player, *args)  # Pass player and arguments to the command handler
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 74, in <lambda>
+    "north": lambda protocol, players_in_rooms=None: handle_movement(protocol, "north"),
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 28, in handle_movement
+    zone_file = find_zone_by_vnum(vnum)
+NameError: name 'find_zone_by_vnum' is not defined

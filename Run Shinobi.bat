@@ -1,5 +1,5 @@
 @echo off
-for %%f in (shinobi_mud_*.py) do (
+for %%f in (shinobi_mud.py) do (
     python %%f
     goto :end
 )

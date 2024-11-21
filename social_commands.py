@@ -1,3 +1,5 @@
+from shinobi_mud import UTILITIES
+
 def handle_say(protocol, message, players_in_rooms):
     if not message or not message.strip():
         protocol.sendLine(b"You must specify a message.")

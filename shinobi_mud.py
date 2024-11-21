@@ -4,38 +4,73 @@ from twisted.internet import protocol, reactor
 from twisted.protocols import basic
 import hashlib
 import logging
+import importlib
 import json
+import inspect
 
-DEBUG_MODE = True #True allows for debugging options, whereas false will remove those
+DEBUG_MODE = True  # True allows for debugging options; False disables them
 
-# Import commands from various modules
-from general_commands import COMMANDS as general_commands
-from admin_commands import COMMANDS as admin_commands
-from social_commands import COMMANDS as social_commands
-#from warrior_commands import COMMANDS as warrior_commands
-#from mage_commands import COMMANDS as mage_commands
+logging.basicConfig(
+    level=logging.DEBUG if DEBUG_MODE else logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.FileHandler("mud_debug.log"),
+        logging.StreamHandler()
+    ]
+)
 
-# Combine all commands for runtime
-COMMAND_REGISTRY = {**general_commands, **admin_commands, **social_commands}#, **warrior_commands, **mage_commands}
+COMMAND_REGISTRY = {}
+UTILITIES = {}
+players_in_rooms = {}
+
+# List of explicitly approved command modules
+COMMAND_MODULES = [
+    "general_commands",
+    "admin_commands",
+    "social_commands",
+    # Add new command modules here
+]
+
+def load_commands():
+    """Dynamically loads COMMANDS from explicitly listed modules."""
+    for module_name in COMMAND_MODULES:
+        try:
+            # Import the module
+            module = importlib.import_module(module_name)
+            # Check if the module defines a COMMANDS dictionary
+            if hasattr(module, "COMMANDS"):
+                COMMAND_REGISTRY.update(module.COMMANDS)
+                logging.info(f"Loaded commands from {module_name}")
+            else:
+                logging.warning(f"No COMMANDS dictionary in {module_name}")
+        except ImportError as e:
+            logging.error(f"Failed to import {module_name}: {e}")
+            
+def load_utilities(module_name="utils"):
+    """Dynamically loads all functions from the specified utility module."""
+    try:
+        module = importlib.import_module(module_name)
+        for name, obj in inspect.getmembers(module, inspect.isfunction):
+            UTILITIES[name] = obj
+            logging.info(f"Loaded utility: {name}")
+    except ImportError as e:
+        logging.error(f"Failed to load utilities from {module_name}: {e}")
+
+logging.info(f"Total commands loaded: {len(COMMAND_REGISTRY)}")
 
 # Add this utility function for cross-checking
 def get_all_commands():
     """Aggregates all commands for cross-check validation."""
-    return {
-        cmd 
-        for command_set in [general_commands, admin_commands, social_commands]#, warrior_commands, mage_commands]
-        for cmd in command_set
-    }
+    return set(COMMAND_REGISTRY.keys())
 
 # Cross-check command consistency during startup
 ALL_COMMANDS = get_all_commands()
-
-# Log all registered commands during startup for verification
 logging.debug(f"All registered commands: {sorted(ALL_COMMANDS)}")
+
 # Setup for enhanced logging
 logging.basicConfig(
     level=logging.DEBUG,
-    format='%(asctime)s - %(levelname)s - %(message)s',
+    format="%(asctime)s - %(levelname)s - %(message)s",
     handlers=[
         logging.FileHandler("mud_debug.log"),
         logging.StreamHandler()
@@ -47,16 +82,34 @@ conn = sqlite3.connect('mud_game_10_rooms.db')
 cursor = conn.cursor()
 
 def debug_log(message):
-    if DEBUG_MODE:
-        logging.debug(message)
+    """Wrapper for debug-level logging."""
+    logging.debug(message)
 
-def preload_zones():
-    zone_directory = "zones"
+def preload_zones(zone_directory):
+    """Preloads zone files from the specified directory and initializes database rooms."""
     for file_name in os.listdir(zone_directory):
         if file_name.endswith(".json"):
-            with open(os.path.join(zone_directory, file_name), "r") as file:
-                zone_data = json.load(file)
-                logging.info(f"Preloaded zone: {zone_data['name']}")
+            try:
+                with open(os.path.join(zone_directory, file_name), "r") as file:
+                    zone_data = json.load(file)
+                    logging.info(f"Preloaded zone: {zone_data['name']}")
+
+                    # Ensure rooms are loaded into the database
+                    for room_id, room_data in zone_data["rooms"].items():
+                        cursor.execute(
+                            '''INSERT OR IGNORE INTO rooms (id, name, description, exits) 
+                            VALUES (?, ?, ?, ?)''',
+                            (
+                                room_id,
+                                room_data.get("name", "Unnamed Room"),
+                                room_data.get("description", "No description."),
+                                json.dumps(room_data.get("exits", {})),
+                            )
+                        )
+                conn.commit()
+            except Exception as e:
+                logging.error(f"Error preloading zone file {file_name}: {e}", exc_info=True)
+
 
 def process_command(player, command):
     command = command.lower().strip()
@@ -66,22 +119,8 @@ def process_command(player, command):
     cmd = parts[0]  # Extract command name
     args = parts[1:] if len(parts) > 1 else []  # Extract arguments if present
 
-# Add "command_sets" here when adding new classes or necessary command items.
-    command_sets = {
-        'general': general_commands,
-        'admin': admin_commands,
-        'social': social_commands,
-#       'warrior': warrior_commands,
-#       'mage': mage_commands,
-    }
-    
-    if player.is_admin:
-        combined_commands = {cmd: handler for commands in command_sets.values() for cmd, handler in commands.items()}
-    else:
-        role_commands = command_sets.get(player.player_class.lower(), {})
-        combined_commands = {**general_commands, **role_commands}
-    
-    handler = combined_commands.get(cmd)
+    # Use COMMAND_REGISTRY for all commands
+    handler = COMMAND_REGISTRY.get(cmd)
     if handler:
         logging.info(f"Executing command '{cmd}' for player {player.username} with args {args}")
         try:
@@ -135,12 +174,8 @@ def ensure_tables_exist():
         logging.error(f"Failed to ensure database tables: {e}")
         debug_log("Failed to ensure database tables.")
 
-preload_zones()
 logging.info("Zones loaded")
 debug_log("Zones loaded after preload_zones()")
-ensure_tables_exist()
-players_in_rooms = {}
-
 
 class NinjaMUDProtocol(basic.LineReceiver):
     delimiter = b"\n"
@@ -154,8 +189,6 @@ class NinjaMUDProtocol(basic.LineReceiver):
         self.is_admin = True
         self.player_class = 'newbie' # Default to a basic Class
 
-
-#TODO: add in MOTD readme file, with welcome message
     def connectionMade(self):
         logging.info("New connection established from %s.", self.transport.getPeer())
         debug_log("New connection established from [self.transport.getPeer()}.")
@@ -348,7 +381,109 @@ class NinjaMUDFactory(protocol.Factory):
     def buildProtocol(self, addr):
         return NinjaMUDProtocol(cursor)  # Pass the cursor here
 
+import json
 
-# Start the reactor
-reactor.listenTCP(4000, NinjaMUDFactory())
-reactor.run()
+def load_config(config_file="config.json"):
+    """Loads server configuration from a JSON file."""
+    try:
+        with open(config_file, "r") as file:
+            return json.load(file)
+    except FileNotFoundError:
+        logging.error(f"Config file {config_file} not found. Using defaults.")
+        return {}
+    except json.JSONDecodeError as e:
+        logging.error(f"Error parsing config file: {e}. Using defaults.")
+        return {}
+
+
+def initialize_server():
+    """Initializes all systems required for the MUD server."""
+    logging.info("Initializing Ninja MUD Server...")
+
+    # 1. Load Configuration
+    config = load_config()
+
+    # 2. Setup Logging
+    logging.basicConfig(
+        level=logging.DEBUG if DEBUG_MODE else logging.INFO,
+        format="%(asctime)s - %(levelname)s - %(message)s",
+        handlers=[
+            logging.FileHandler(config.get("log_file", "mud_debug.log")),
+            logging.StreamHandler()
+        ]
+    )
+    logging.info("Logging initialized.")
+
+    # 3. Initialize Database
+    global conn, cursor
+    db_file = config.get("db_file", "mud_game_10_rooms.db")
+    conn = sqlite3.connect(db_file)
+    cursor = conn.cursor()
+    ensure_tables_exist()
+    logging.info(f"Database connection established using {db_file}.")
+
+    # 4. Preload Zones
+    zone_directory = config.get("zone_directory", "zones")
+    preload_zones(zone_directory)
+    logging.info(f"Zone data preloaded from {zone_directory}.")
+
+    # 5. Load Commands
+    load_commands()
+    logging.info(f"Commands loaded: {len(COMMAND_REGISTRY)}")
+
+    # 6. Load Utilities
+    load_utilities()
+    logging.info(f"Utilities loaded: {len(UTILITIES)}")
+
+    # 7. Load MOTD (Message of the Day)
+    try:
+        motd_file = config.get("motd_file", "motd.txt")
+        with open(motd_file, "r") as file:
+            global MOTD
+            MOTD = file.read().strip()
+            logging.info(f"MOTD loaded from {motd_file}.")
+    except FileNotFoundError:
+        MOTD = "Welcome to Ninja MUD!"
+        logging.warning("MOTD file not found. Using default message.")
+
+    # Final Validation
+    validate_server_state()
+
+    logging.info("Ninja MUD Server initialized successfully.")
+
+def validate_server_state():
+    """Performs validation checks to ensure server state is operational."""
+    if not COMMAND_REGISTRY:
+        logging.error("No commands loaded. Check command modules.")
+    else:
+        for cmd, handler in COMMAND_REGISTRY.items():
+            if not callable(handler):
+                logging.error(f"Command '{cmd}' is not callable. Check its handler.")
+    
+    if not UTILITIES:
+        logging.error("No utilities loaded. Check utils module.")
+    else:
+        for name, func in UTILITIES.items():
+            if not callable(func):
+                logging.error(f"Utility '{name}' is not callable. Check its definition.")
+
+    if not os.listdir("zones"):
+        logging.error("No zone files found in the 'zones' directory.")
+    else:
+        for zone_file in os.listdir("zones"):
+            if zone_file.endswith(".json"):
+                with open(os.path.join("zones", zone_file), "r") as file:
+                    try:
+                        zone_data = json.load(file)
+                        if not {"name", "range", "rooms"}.issubset(zone_data):
+                            logging.error(f"Zone file {zone_file} is missing required keys.")
+                    except json.JSONDecodeError as e:
+                        logging.error(f"Zone file {zone_file} is invalid JSON: {e}")
+
+if __name__ == "__main__":
+    initialize_server()
+
+    # Start the reactor
+    reactor.listenTCP(4000, NinjaMUDFactory())
+    logging.info("Ninja MUD Server running on port 4000.")
+    reactor.run()
