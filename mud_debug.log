@@ -2629,3 +2629,259 @@ AttributeError: 'str' object has no attribute 'sendLine'
 2024-11-21 16:32:53,522 - INFO - Executing command 'say' for player Manorbis with raw args 'hello' and split args ['hello']
 2024-11-21 16:33:00,232 - INFO - Received command: say how are you? in state: COMMAND
 2024-11-21 16:33:00,232 - INFO - Executing command 'say' for player Manorbis with raw args 'how are you?' and split args ['how', 'are', 'you?']
+2024-11-21 16:37:49,725 - INFO - utils imported
+2024-11-21 16:37:49,726 - INFO - Loaded utility: ensure_room_exists
+2024-11-21 16:37:49,726 - INFO - Loaded utility: find_zone_by_vnum
+2024-11-21 16:37:49,726 - INFO - Loaded utility: next_free_vnum
+2024-11-21 16:37:49,726 - INFO - Loaded utility: reverse_dir
+2024-11-21 16:37:49,727 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'next_free_vnum', 'reverse_dir']
+2024-11-21 16:37:49,727 - INFO - Total commands loaded: 0
+2024-11-21 16:37:49,727 - DEBUG - All registered commands: []
+2024-11-21 16:37:49,727 - INFO - Zones loaded
+2024-11-21 16:37:49,727 - DEBUG - Zones loaded after preload_zones()
+2024-11-21 16:37:49,727 - INFO - Initializing Ninja MUD Server...
+2024-11-21 16:37:49,728 - INFO - Logging initialized.
+2024-11-21 16:37:49,728 - DEBUG - Creating player due to lack of existence.
+2024-11-21 16:37:49,729 - INFO - Database tables ensured and default rooms initialized.
+2024-11-21 16:37:49,729 - DEBUG - Database tables ensured and default rooms initialized.
+2024-11-21 16:37:49,729 - INFO - Database connection established using mud_game_10_rooms.db.
+2024-11-21 16:37:49,729 - INFO - Preloaded zone: Eve's Haven
+2024-11-21 16:37:49,730 - INFO - Preloaded zone: Expanse
+2024-11-21 16:37:49,730 - INFO - Preloaded zone: limbo
+2024-11-21 16:37:49,730 - INFO - Zone data preloaded from zones.
+2024-11-21 16:37:49,734 - INFO - Loaded utility: ensure_room_exists
+2024-11-21 16:37:49,736 - INFO - Loaded utility: find_zone_by_vnum
+2024-11-21 16:37:49,736 - INFO - Loaded utility: next_free_vnum
+2024-11-21 16:37:49,736 - INFO - Loaded utility: reverse_dir
+2024-11-21 16:37:49,736 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'next_free_vnum', 'reverse_dir']
+2024-11-21 16:37:49,736 - INFO - Total commands loaded: 0
+2024-11-21 16:37:49,736 - DEBUG - All registered commands: []
+2024-11-21 16:37:49,736 - INFO - Zones loaded
+2024-11-21 16:37:49,737 - DEBUG - Zones loaded after preload_zones()
+2024-11-21 16:37:49,739 - INFO - general_commands imported
+2024-11-21 16:37:49,739 - INFO - Loaded commands from general_commands
+2024-11-21 16:37:49,740 - INFO - admin_commands imported
+2024-11-21 16:37:49,740 - INFO - Loaded commands from admin_commands
+2024-11-21 16:37:49,741 - INFO - social_commands imported
+2024-11-21 16:37:49,742 - INFO - Loaded commands from social_commands
+2024-11-21 16:37:49,742 - INFO - Commands loaded: 17
+2024-11-21 16:37:49,742 - WARNING - MOTD file not found. Using default message.
+2024-11-21 16:37:49,743 - INFO - Ninja MUD Server initialized successfully.
+2024-11-21 16:37:49,744 - INFO - Ninja MUD Server running on port 4000.
+2024-11-21 16:37:55,221 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=54961).
+2024-11-21 16:37:55,222 - DEBUG - New connection established from [self.transport.getPeer()}.
+2024-11-21 16:37:57,479 - INFO - Received command: Array in state: GET_USERNAME
+2024-11-21 16:37:59,903 - INFO - Received command: 1salvice in state: GET_PASSWORD
+2024-11-21 16:37:59,903 - INFO - Player Array is now in room 3000.
+2024-11-21 16:38:01,832 - INFO - Received command: say hi in state: COMMAND
+2024-11-21 16:38:01,833 - DEBUG - Command: say, Raw Args: 'hi', Split Args: ['hi']
+2024-11-21 16:38:01,833 - INFO - Executing command 'say' for player Array with raw args 'hi' and split args ['hi']
+2024-11-21 16:38:01,833 - DEBUG - Player Array in room 3000 says: hi
+2024-11-21 16:38:01,833 - ERROR - Error executing command 'say' for Array: 'str' object has no attribute 'sendLine'
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 138, in process_command
+    handler(player, players_in_rooms, raw_args, split_args)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\social_commands.py", line 46, in <lambda>
+    "say": lambda player, players_in_rooms, raw_args, split_args: handle_say(player, raw_args, split_args, players_in_rooms),
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\social_commands.py", line 13, in handle_say
+    recipient.sendLine(f'{player.username} says, "{raw_args.strip()}"'.encode('utf-8'))
+AttributeError: 'str' object has no attribute 'sendLine'
+2024-11-21 16:38:06,957 - INFO - Received command: ooc hi in state: COMMAND
+2024-11-21 16:38:06,957 - DEBUG - Command: ooc, Raw Args: 'hi', Split Args: ['hi']
+2024-11-21 16:38:06,957 - INFO - Executing command 'ooc' for player Array with raw args 'hi' and split args ['hi']
+2024-11-21 16:38:06,958 - ERROR - Error executing command 'ooc' for Array: name 'room_key' is not defined
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 138, in process_command
+    handler(player, players_in_rooms, raw_args, split_args)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\social_commands.py", line 47, in <lambda>
+    "ooc": lambda player, players_in_rooms, raw_args, split_args: handle_ooc(player, raw_args, split_args, players_in_rooms),
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\social_commands.py", line 22, in handle_ooc
+    logging.debug(f"Player {player.username} in room {room_key} says: {raw_args.strip()}")
+NameError: name 'room_key' is not defined
+2024-11-21 16:38:11,796 - INFO - Received command: north in state: COMMAND
+2024-11-21 16:38:11,796 - DEBUG - Command: north, Raw Args: '', Split Args: []
+2024-11-21 16:38:11,797 - INFO - Executing command 'north' for player Array with raw args '' and split args []
+2024-11-21 16:38:11,798 - INFO - Player Array is now in room 3001.
+2024-11-21 16:38:14,636 - INFO - Received command: south in state: COMMAND
+2024-11-21 16:38:14,636 - DEBUG - Command: south, Raw Args: '', Split Args: []
+2024-11-21 16:38:14,636 - INFO - Executing command 'south' for player Array with raw args '' and split args []
+2024-11-21 16:38:14,638 - INFO - Player Array is now in room 3000.
+2024-11-21 16:38:17,043 - INFO - Received command: goto 3001 in state: COMMAND
+2024-11-21 16:38:17,043 - DEBUG - Command: goto, Raw Args: '3001', Split Args: ['3001']
+2024-11-21 16:38:17,044 - INFO - Executing command 'goto' for player Array with raw args '3001' and split args ['3001']
+2024-11-21 16:41:36,257 - INFO - utils imported
+2024-11-21 16:41:36,257 - INFO - Loaded utility: ensure_room_exists
+2024-11-21 16:41:36,258 - INFO - Loaded utility: find_zone_by_vnum
+2024-11-21 16:41:36,258 - INFO - Loaded utility: next_free_vnum
+2024-11-21 16:41:36,258 - INFO - Loaded utility: reverse_dir
+2024-11-21 16:41:36,258 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'next_free_vnum', 'reverse_dir']
+2024-11-21 16:41:36,258 - INFO - Total commands loaded: 0
+2024-11-21 16:41:36,258 - DEBUG - All registered commands: []
+2024-11-21 16:41:36,259 - INFO - Zones loaded
+2024-11-21 16:41:36,259 - DEBUG - Zones loaded after preload_zones()
+2024-11-21 16:41:36,259 - INFO - Initializing Ninja MUD Server...
+2024-11-21 16:41:36,260 - INFO - Logging initialized.
+2024-11-21 16:41:36,260 - DEBUG - Creating player due to lack of existence.
+2024-11-21 16:41:36,261 - INFO - Database tables ensured and default rooms initialized.
+2024-11-21 16:41:36,261 - DEBUG - Database tables ensured and default rooms initialized.
+2024-11-21 16:41:36,261 - INFO - Database connection established using mud_game_10_rooms.db.
+2024-11-21 16:41:36,261 - INFO - Preloaded zone: Eve's Haven
+2024-11-21 16:41:36,261 - INFO - Preloaded zone: Expanse
+2024-11-21 16:41:36,262 - INFO - Preloaded zone: limbo
+2024-11-21 16:41:36,262 - INFO - Zone data preloaded from zones.
+2024-11-21 16:41:36,266 - INFO - Loaded utility: ensure_room_exists
+2024-11-21 16:41:36,267 - INFO - Loaded utility: find_zone_by_vnum
+2024-11-21 16:41:36,267 - INFO - Loaded utility: next_free_vnum
+2024-11-21 16:41:36,267 - INFO - Loaded utility: reverse_dir
+2024-11-21 16:41:36,267 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'next_free_vnum', 'reverse_dir']
+2024-11-21 16:41:36,267 - INFO - Total commands loaded: 0
+2024-11-21 16:41:36,268 - DEBUG - All registered commands: []
+2024-11-21 16:41:36,268 - INFO - Zones loaded
+2024-11-21 16:41:36,268 - DEBUG - Zones loaded after preload_zones()
+2024-11-21 16:41:36,269 - INFO - general_commands imported
+2024-11-21 16:41:36,269 - INFO - Loaded commands from general_commands
+2024-11-21 16:41:36,272 - INFO - admin_commands imported
+2024-11-21 16:41:36,272 - INFO - Loaded commands from admin_commands
+2024-11-21 16:41:36,273 - INFO - social_commands imported
+2024-11-21 16:41:36,273 - INFO - Loaded commands from social_commands
+2024-11-21 16:41:36,273 - INFO - Commands loaded: 17
+2024-11-21 16:41:36,274 - WARNING - MOTD file not found. Using default message.
+2024-11-21 16:41:36,275 - INFO - Ninja MUD Server initialized successfully.
+2024-11-21 16:41:36,275 - INFO - Ninja MUD Server running on port 4000.
+2024-11-21 16:41:40,956 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=55237).
+2024-11-21 16:41:40,956 - DEBUG - New connection established from [self.transport.getPeer()}.
+2024-11-21 16:41:42,984 - INFO - Received command: Array in state: GET_USERNAME
+2024-11-21 16:41:44,299 - INFO - Received command: 1salvice in state: GET_PASSWORD
+2024-11-21 16:41:44,299 - INFO - Player Array is now in room 3000.
+2024-11-21 16:41:45,775 - INFO - Received command: ooc hi in state: COMMAND
+2024-11-21 16:41:45,775 - DEBUG - Command: ooc, Raw Args: 'hi', Split Args: ['hi']
+2024-11-21 16:41:45,776 - INFO - Executing command 'ooc' for player Array with raw args 'hi' and split args ['hi']
+2024-11-21 16:41:45,776 - ERROR - Error executing command 'ooc' for Array: name 'room_key' is not defined
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 138, in process_command
+    handler(player, players_in_rooms, raw_args, split_args)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\social_commands.py", line 47, in <lambda>
+    "ooc": lambda player, players_in_rooms, raw_args, split_args: handle_ooc(player, raw_args, split_args, players_in_rooms),
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\social_commands.py", line 22, in handle_ooc
+    logging.debug(f"Player {player.username} in room {room_key} says: {raw_args.strip()}")
+NameError: name 'room_key' is not defined
+2024-11-21 16:41:50,024 - INFO - Received command: say hi in state: COMMAND
+2024-11-21 16:41:50,024 - DEBUG - Command: say, Raw Args: 'hi', Split Args: ['hi']
+2024-11-21 16:41:50,024 - INFO - Executing command 'say' for player Array with raw args 'hi' and split args ['hi']
+2024-11-21 16:41:50,025 - DEBUG - Player Array in room 3000 says: hi
+2024-11-21 16:41:54,830 - INFO - Received command: say how are you? in state: COMMAND
+2024-11-21 16:41:54,830 - DEBUG - Command: say, Raw Args: 'how are you?', Split Args: ['how', 'are', 'you?']
+2024-11-21 16:41:54,830 - INFO - Executing command 'say' for player Array with raw args 'how are you?' and split args ['how', 'are', 'you?']
+2024-11-21 16:41:54,831 - DEBUG - Player Array in room 3000 says: how are you?
+2024-11-21 16:42:05,238 - INFO - Received command: look in state: COMMAND
+2024-11-21 16:42:05,238 - DEBUG - Command: look, Raw Args: '', Split Args: []
+2024-11-21 16:42:05,239 - INFO - Executing command 'look' for player Array with raw args '' and split args []
+2024-11-21 16:42:05,239 - DEBUG - UTILITIES in general_commands: dict_keys(['ensure_room_exists', 'find_zone_by_vnum', 'next_free_vnum', 'reverse_dir'])
+2024-11-21 16:42:11,844 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=55261).
+2024-11-21 16:42:11,844 - DEBUG - New connection established from [self.transport.getPeer()}.
+2024-11-21 16:42:16,054 - INFO - Received command: Manorbis in state: GET_USERNAME
+2024-11-21 16:42:19,024 - INFO - Received command: 1salvice in state: GET_PASSWORD
+2024-11-21 16:42:19,024 - INFO - Player Manorbis is now in room 3005.
+2024-11-21 16:42:29,120 - INFO - Received command: goto 3001 in state: COMMAND
+2024-11-21 16:42:29,121 - DEBUG - Command: goto, Raw Args: '3001', Split Args: ['3001']
+2024-11-21 16:42:29,121 - INFO - Executing command 'goto' for player Manorbis with raw args '3001' and split args ['3001']
+2024-11-21 16:42:30,667 - INFO - Received command: look in state: COMMAND
+2024-11-21 16:42:30,667 - DEBUG - Command: look, Raw Args: '', Split Args: []
+2024-11-21 16:42:30,668 - INFO - Executing command 'look' for player Manorbis with raw args '' and split args []
+2024-11-21 16:42:30,668 - DEBUG - UTILITIES in general_commands: dict_keys(['ensure_room_exists', 'find_zone_by_vnum', 'next_free_vnum', 'reverse_dir'])
+2024-11-21 16:42:32,597 - INFO - Received command: south in state: COMMAND
+2024-11-21 16:42:32,597 - DEBUG - Command: south, Raw Args: '', Split Args: []
+2024-11-21 16:42:32,597 - INFO - Executing command 'south' for player Manorbis with raw args '' and split args []
+2024-11-21 16:42:32,599 - INFO - Player Manorbis is now in room 3000.
+2024-11-21 16:42:33,875 - INFO - Received command: north in state: COMMAND
+2024-11-21 16:42:33,876 - DEBUG - Command: north, Raw Args: '', Split Args: []
+2024-11-21 16:42:33,877 - INFO - Executing command 'north' for player Manorbis with raw args '' and split args []
+2024-11-21 16:42:33,877 - INFO - Player Manorbis is now in room 3001.
+2024-11-21 16:42:39,313 - INFO - Received command: north in state: COMMAND
+2024-11-21 16:42:39,313 - DEBUG - Command: north, Raw Args: '', Split Args: []
+2024-11-21 16:42:39,313 - INFO - Executing command 'north' for player Array with raw args '' and split args []
+2024-11-21 16:42:39,315 - INFO - Player Array is now in room 3001.
+2024-11-21 16:42:41,194 - INFO - Received command: look in state: COMMAND
+2024-11-21 16:42:41,194 - DEBUG - Command: look, Raw Args: '', Split Args: []
+2024-11-21 16:42:41,195 - INFO - Executing command 'look' for player Array with raw args '' and split args []
+2024-11-21 16:42:41,195 - DEBUG - UTILITIES in general_commands: dict_keys(['ensure_room_exists', 'find_zone_by_vnum', 'next_free_vnum', 'reverse_dir'])
+2024-11-21 16:42:50,115 - INFO - Received command: say hi in state: COMMAND
+2024-11-21 16:42:50,115 - DEBUG - Command: say, Raw Args: 'hi', Split Args: ['hi']
+2024-11-21 16:42:50,116 - INFO - Executing command 'say' for player Array with raw args 'hi' and split args ['hi']
+2024-11-21 16:42:50,116 - DEBUG - Player Array in room 3001 says: hi
+2024-11-21 16:42:57,592 - INFO - Received command: ooc hi in state: COMMAND
+2024-11-21 16:42:57,592 - DEBUG - Command: ooc, Raw Args: 'hi', Split Args: ['hi']
+2024-11-21 16:42:57,593 - INFO - Executing command 'ooc' for player Array with raw args 'hi' and split args ['hi']
+2024-11-21 16:42:57,593 - ERROR - Error executing command 'ooc' for Array: name 'room_key' is not defined
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 138, in process_command
+    handler(player, players_in_rooms, raw_args, split_args)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\social_commands.py", line 47, in <lambda>
+    "ooc": lambda player, players_in_rooms, raw_args, split_args: handle_ooc(player, raw_args, split_args, players_in_rooms),
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\social_commands.py", line 22, in handle_ooc
+    logging.debug(f"Player {player.username} in room {room_key} says: {raw_args.strip()}")
+NameError: name 'room_key' is not defined
+2024-11-21 16:46:44,674 - INFO - utils imported
+2024-11-21 16:46:44,674 - INFO - Loaded utility: ensure_room_exists
+2024-11-21 16:46:44,674 - INFO - Loaded utility: find_zone_by_vnum
+2024-11-21 16:46:44,675 - INFO - Loaded utility: next_free_vnum
+2024-11-21 16:46:44,675 - INFO - Loaded utility: reverse_dir
+2024-11-21 16:46:44,675 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'next_free_vnum', 'reverse_dir']
+2024-11-21 16:46:44,675 - INFO - Total commands loaded: 0
+2024-11-21 16:46:44,675 - DEBUG - All registered commands: []
+2024-11-21 16:46:44,675 - INFO - Zones loaded
+2024-11-21 16:46:44,675 - DEBUG - Zones loaded after preload_zones()
+2024-11-21 16:46:44,675 - INFO - Initializing Ninja MUD Server...
+2024-11-21 16:46:44,676 - INFO - Logging initialized.
+2024-11-21 16:46:44,677 - DEBUG - Creating player due to lack of existence.
+2024-11-21 16:46:44,677 - INFO - Database tables ensured and default rooms initialized.
+2024-11-21 16:46:44,677 - DEBUG - Database tables ensured and default rooms initialized.
+2024-11-21 16:46:44,677 - INFO - Database connection established using mud_game_10_rooms.db.
+2024-11-21 16:46:44,677 - INFO - Preloaded zone: Eve's Haven
+2024-11-21 16:46:44,678 - INFO - Preloaded zone: Expanse
+2024-11-21 16:46:44,678 - INFO - Preloaded zone: limbo
+2024-11-21 16:46:44,679 - INFO - Zone data preloaded from zones.
+2024-11-21 16:46:44,680 - INFO - Loaded utility: ensure_room_exists
+2024-11-21 16:46:44,680 - INFO - Loaded utility: find_zone_by_vnum
+2024-11-21 16:46:44,680 - INFO - Loaded utility: next_free_vnum
+2024-11-21 16:46:44,680 - INFO - Loaded utility: reverse_dir
+2024-11-21 16:46:44,681 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'next_free_vnum', 'reverse_dir']
+2024-11-21 16:46:44,681 - INFO - Total commands loaded: 0
+2024-11-21 16:46:44,681 - DEBUG - All registered commands: []
+2024-11-21 16:46:44,681 - INFO - Zones loaded
+2024-11-21 16:46:44,681 - DEBUG - Zones loaded after preload_zones()
+2024-11-21 16:46:44,682 - INFO - general_commands imported
+2024-11-21 16:46:44,682 - INFO - Loaded commands from general_commands
+2024-11-21 16:46:44,682 - INFO - admin_commands imported
+2024-11-21 16:46:44,682 - INFO - Loaded commands from admin_commands
+2024-11-21 16:46:44,689 - INFO - social_commands imported
+2024-11-21 16:46:44,690 - INFO - Loaded commands from social_commands
+2024-11-21 16:46:44,690 - INFO - Commands loaded: 17
+2024-11-21 16:46:44,691 - WARNING - MOTD file not found. Using default message.
+2024-11-21 16:46:44,692 - INFO - Ninja MUD Server initialized successfully.
+2024-11-21 16:46:44,692 - INFO - Ninja MUD Server running on port 4000.
+2024-11-21 16:46:54,716 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=55608).
+2024-11-21 16:46:54,716 - DEBUG - New connection established from [self.transport.getPeer()}.
+2024-11-21 16:47:10,581 - INFO - Received command: Array in state: GET_USERNAME
+2024-11-21 16:47:10,582 - INFO - Received command: 1salvice in state: GET_PASSWORD
+2024-11-21 16:47:10,583 - INFO - Player Array is now in room 3000.
+2024-11-21 16:47:16,957 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=55633).
+2024-11-21 16:47:16,957 - DEBUG - New connection established from [self.transport.getPeer()}.
+2024-11-21 16:47:18,434 - INFO - Received command: Manorbis in state: GET_USERNAME
+2024-11-21 16:47:18,435 - INFO - Received command: 1salvice in state: GET_PASSWORD
+2024-11-21 16:47:18,436 - INFO - Player Manorbis is now in room 3005.
+2024-11-21 16:47:24,935 - INFO - Received command: goto 3000 in state: COMMAND
+2024-11-21 16:47:24,935 - DEBUG - Command: goto, Raw Args: '3000', Split Args: ['3000']
+2024-11-21 16:47:24,936 - INFO - Executing command 'goto' for player Manorbis with raw args '3000' and split args ['3000']
+2024-11-21 16:47:26,844 - INFO - Received command: look in state: COMMAND
+2024-11-21 16:47:26,844 - DEBUG - Command: look, Raw Args: '', Split Args: []
+2024-11-21 16:47:26,844 - INFO - Executing command 'look' for player Manorbis with raw args '' and split args []
+2024-11-21 16:47:26,845 - DEBUG - UTILITIES in general_commands: dict_keys(['ensure_room_exists', 'find_zone_by_vnum', 'next_free_vnum', 'reverse_dir'])
+2024-11-21 16:47:29,067 - INFO - Received command: say hi in state: COMMAND
+2024-11-21 16:47:29,067 - DEBUG - Command: say, Raw Args: 'hi', Split Args: ['hi']
+2024-11-21 16:47:29,068 - INFO - Executing command 'say' for player Manorbis with raw args 'hi' and split args ['hi']
+2024-11-21 16:47:29,068 - DEBUG - Player Manorbis in room 3000 says: hi
+2024-11-21 16:47:33,791 - INFO - Received command: ooc hi in state: COMMAND
+2024-11-21 16:47:33,791 - DEBUG - Command: ooc, Raw Args: 'hi', Split Args: ['hi']
+2024-11-21 16:47:33,792 - INFO - Executing command 'ooc' for player Manorbis with raw args 'hi' and split args ['hi']
+2024-11-21 16:47:33,792 - DEBUG - Player Manorbis says: hi

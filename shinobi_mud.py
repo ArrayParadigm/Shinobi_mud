@@ -125,6 +125,9 @@ def process_command(player, command):
     cmd = parts[0].lower()  # Extract and normalize command name
     raw_args = parts[1] if len(parts) > 1 else ""  # Extract raw argument string
     split_args = raw_args.split()  # Split arguments into a list
+    
+    # Debug raw_args and split_args
+    logging.debug(f"Command: {cmd}, Raw Args: '{raw_args}', Split Args: {split_args}")
 
     # Use COMMAND_REGISTRY for all commands
     handler = COMMAND_REGISTRY.get(cmd)
@@ -316,18 +319,18 @@ class NinjaMUDProtocol(basic.LineReceiver):
                 self.sendLine(b"Room data not found in the zone.")
         
     def track_player(self):
-        room_key = self.current_room  # Keep as integer
+        room_key = self.current_room
         if room_key not in players_in_rooms:
-            players_in_rooms[room_key] = []  # Initialize room with an empty list of players
-        if self.username not in players_in_rooms[room_key]:  # Use player name (string) as the value
-            players_in_rooms[room_key].append(self.username)
+            players_in_rooms[room_key] = []  # Initialize the room with an empty list
+        if self not in players_in_rooms[room_key]:  # Add the player object
+            players_in_rooms[room_key].append(self)
         logging.info(f"Player {self.username} is now in room {self.current_room}.")
     
-    def untrack_player(self, room=None):
-        room_key = room if room else self.current_room  # Keep as integer
-        if room_key in players_in_rooms and self.username in players_in_rooms[room_key]:
-            players_in_rooms[room_key].remove(self.username)  # Remove the player's name
-            if not players_in_rooms[room_key]:  # If no players are left in the room, delete the key
+    def untrack_player(self):
+        room_key = self.current_room
+        if room_key in players_in_rooms and self in players_in_rooms[room_key]:
+            players_in_rooms[room_key].remove(self)  # Remove the player object
+            if not players_in_rooms[room_key]:  # If the room is empty, clean up
                 del players_in_rooms[room_key]
         logging.info(f"Player {self.username} left room {room_key}.")
 
