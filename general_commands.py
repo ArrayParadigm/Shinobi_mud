@@ -1,11 +1,13 @@
-from shinobi_mud import UTILITIES
-
-
 import json
+import logging
+from shinobi_mud import UTILITIES
+logging.info("general_commands imported")
+
 
 def handle_look(protocol, players_in_rooms=None):
     vnum = protocol.current_room
-    zone_file = find_zone_by_vnum(vnum)
+    logging.debug(f"UTILITIES in general_commands: {UTILITIES.keys()}")
+    zone_file = UTILITIES["find_zone_by_vnum"](vnum)  # Use UTILITIES reference
     if not zone_file:
         protocol.sendLine(b"Current room is not in a valid zone.")
         return
@@ -20,13 +22,12 @@ def handle_look(protocol, players_in_rooms=None):
 
     description = room["description"]
     exits = ", ".join(room["exits"].keys()) or "None"
-    protocol.sendLine(f"Room {vnum}: {description}".encode('utf-8'))
-    protocol.sendLine(f"Exits: {exits}".encode('utf-8'))
+    protocol.sendLine(f"Room {vnum}: {description}".encode("utf-8"))
+    protocol.sendLine(f"Exits: {exits}".encode("utf-8"))
 
 def handle_movement(protocol, direction):
     vnum = protocol.current_room
-    zone_file = find_zone_by_vnum(vnum)
-    
+    zone_file = UTILITIES["find_zone_by_vnum"](vnum)  # Use UTILITIES reference
     if not zone_file:
         protocol.sendLine(b"Current room is not in a valid zone.")
         return
@@ -44,38 +45,13 @@ def handle_movement(protocol, direction):
         protocol.sendLine(b"No exit in that direction.")
         return
 
-    # Ensure target room exists before moving
-    if ensure_room_exists(next_vnum, protocol):
-        # Update the player's current room
-        previous_room = protocol.current_room
+    if UTILITIES["ensure_room_exists"](next_vnum, protocol):  # Use UTILITIES reference
         protocol.current_room = int(next_vnum)
-        protocol.untrack_player(previous_room)
         protocol.track_player()
-        protocol.cursor.execute(
-            "UPDATE players SET current_room=? WHERE username=?", 
-            (protocol.current_room, protocol.username)
-        )
-        protocol.cursor.connection.commit()
-        protocol.sendLine(f"Moved to room {next_vnum}.".encode('utf-8'))
+        protocol.sendLine(f"Moved to room {next_vnum}.".encode("utf-8"))
         protocol.display_room()
 
-#    protocol.current_room = next_vnum
-#    protocol.track_player()
-#    protocol.cursor.execute(
-#        "UPDATE players SET current_room=? WHERE username=?", 
-#        (protocol.current_room, protocol.username)
-#    )
-#    protocol.cursor.connection.commit()
-#    protocol.sendLine(f"Moved to room {next_vnum}.".encode('utf-8'))
-#    protocol.display_room()
 
-COMMANDS = {
-    "look": handle_look,
-    "north": lambda protocol, players_in_rooms=None: handle_movement(protocol, "north"),
-    "south": lambda protocol, players_in_rooms=None: handle_movement(protocol, "south"),
-    "east": lambda protocol, players_in_rooms=None: handle_movement(protocol, "east"),
-    "west": lambda protocol, players_in_rooms=None: handle_movement(protocol, "west"),
-}
 
 def handle_status(protocol, players_in_rooms=None):
     try:
@@ -94,7 +70,12 @@ def handle_status(protocol, players_in_rooms=None):
     except Exception as e:
         protocol.sendLine(f"Error retrieving stats: {e}".encode('utf-8'))
 
-
-COMMANDS.update({
+COMMANDS = {
+    "look": handle_look,
+    "north": lambda protocol, players_in_rooms=None: handle_movement(protocol, "north"),
+    "south": lambda protocol, players_in_rooms=None: handle_movement(protocol, "south"),
+    "east": lambda protocol, players_in_rooms=None: handle_movement(protocol, "east"),
+    "west": lambda protocol, players_in_rooms=None: handle_movement(protocol, "west"),
     "status": lambda protocol, players_in_rooms=None: handle_status(protocol, players_in_rooms)
-})
+}
+

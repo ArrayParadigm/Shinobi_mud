@@ -1,5 +1,8 @@
 import os
 import json
+import logging
+logging.info("utils imported")
+
 
 def find_zone_by_vnum(vnum):
     """Finds the zone file containing a specific room VNUM."""

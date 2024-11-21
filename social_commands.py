@@ -1,4 +1,6 @@
-from shinobi_mud import UTILITIES
+import logging
+logging.info("social_commands imported")
+
 
 def handle_say(protocol, message, players_in_rooms):
     if not message or not message.strip():

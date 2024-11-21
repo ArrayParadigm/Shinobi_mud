@@ -30,6 +30,22 @@ COMMAND_MODULES = [
     "social_commands",
     # Add new command modules here
 ]
+           
+def load_utilities(module_name="utils"):
+    """Dynamically loads all functions from the specified utility module."""
+    try:
+        module = importlib.import_module(module_name)
+        for name, obj in inspect.getmembers(module, inspect.isfunction):
+            UTILITIES[name] = obj
+            logging.info(f"Loaded utility: {name}")
+    except ImportError as e:
+        logging.error(f"Failed to load utilities from {module_name}: {e}")
+    # At the end of load_utilities
+    logging.debug(f"UTILITIES after loading in shinobi_mud: {list(UTILITIES.keys())}")
+
+#load_utilities call moved here due to timing issues from initialization. It's the intent to fix this later on when I'm further along.
+load_utilities()
+
 
 def load_commands():
     """Dynamically loads COMMANDS from explicitly listed modules."""
@@ -45,17 +61,7 @@ def load_commands():
                 logging.warning(f"No COMMANDS dictionary in {module_name}")
         except ImportError as e:
             logging.error(f"Failed to import {module_name}: {e}")
-            
-def load_utilities(module_name="utils"):
-    """Dynamically loads all functions from the specified utility module."""
-    try:
-        module = importlib.import_module(module_name)
-        for name, obj in inspect.getmembers(module, inspect.isfunction):
-            UTILITIES[name] = obj
-            logging.info(f"Loaded utility: {name}")
-    except ImportError as e:
-        logging.error(f"Failed to load utilities from {module_name}: {e}")
-
+ 
 logging.info(f"Total commands loaded: {len(COMMAND_REGISTRY)}")
 
 # Add this utility function for cross-checking
@@ -277,8 +283,9 @@ class NinjaMUDProtocol(basic.LineReceiver):
             self.sendLine(b"An error occurred while processing your command.")
 
     def display_room(self):
-        """Displays current room details from zone files only."""
-        zone_file = find_zone_by_vnum(self.current_room)
+        """Displays the current room details."""
+        # Use UTILITIES to access `find_zone_by_vnum`
+        zone_file = UTILITIES["find_zone_by_vnum"](self.current_room)
         if not zone_file:
             self.sendLine(b"Room not found in any zone.")
             return
@@ -289,12 +296,10 @@ class NinjaMUDProtocol(basic.LineReceiver):
     
             if room_data:
                 self.sendLine(f"Room {self.current_room}: {room_data['description']}".encode('utf-8'))
-                exits_list = ", ".join(room_data["exits"].keys()) or "None"
-                self.sendLine(f"Exits: {exits_list}".encode('utf-8'))
-                self.list_players_in_room()
+                exits = ", ".join(room_data["exits"].keys()) or "None"
+                self.sendLine(f"Exits: {exits}".encode('utf-8'))
             else:
-                logging.error(f"Room with ID {self.current_room} not found for user {self.username}.")
-                self.sendLine(b"Room not found.")
+                self.sendLine(b"Room data not found in the zone.")
         
     def track_player(self):
         if self.current_room not in players_in_rooms:
@@ -427,13 +432,14 @@ def initialize_server():
     preload_zones(zone_directory)
     logging.info(f"Zone data preloaded from {zone_directory}.")
 
-    # 5. Load Commands
+# Load utilities moved to first spot after defining due to timing issues. Lazy import wasn't working and I didn't want to get stopped by this problem with so much work to be done. Hopefully I'll come back and clean it up when I get further along.
+    #5. Load Utilities
+    #load_utilities()
+    #logging.info(f"Utilities loaded: {len(UTILITIES)}")
+
+    # 6. Load Commands
     load_commands()
     logging.info(f"Commands loaded: {len(COMMAND_REGISTRY)}")
-
-    # 6. Load Utilities
-    load_utilities()
-    logging.info(f"Utilities loaded: {len(UTILITIES)}")
 
     # 7. Load MOTD (Message of the Day)
     try:

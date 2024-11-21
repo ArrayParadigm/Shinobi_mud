@@ -1,11 +1,11 @@
-
 import json
 import os
 import logging
 import sys
 from twisted.internet import reactor
+import logging
 from shinobi_mud import UTILITIES
-
+logging.info("admin_commands imported")
 
 
 def create_zone(protocol, zone_name, start_vnum, end_vnum):
@@ -38,9 +38,8 @@ def create_zone(protocol, zone_name, start_vnum, end_vnum):
 def goto(protocol, vnum):
     try:
         vnum = int(vnum)
-        zone_file = find_zone_by_vnum(vnum)
-        if not zone_file:
-            protocol.sendLine(b"VNUM not found in any zone.")
+        zone_file = UTILITIES["find_zone_by_vnum"](vnum)
+        if not UTILITIES["ensure_room_exists"](vnum, protocol):
             return
 
         with open(zone_file, "r") as file:
@@ -85,35 +84,6 @@ def dig(protocol, direction, room_name):
         json.dump(zone_data, file, indent=4)
 
     protocol.sendLine(f"Room '{room_name}' created at {new_vnum} to the {direction}".encode('utf-8'))
-
-def find_zone_by_vnum(vnum):
-    zone_directory = os.path.join("zones")
-    for file_name in os.listdir(zone_directory):
-        if file_name.endswith('.json'):
-            with open(os.path.join(zone_directory, file_name), "r") as file:
-                zone_data = json.load(file)
-                if zone_data["range"]["start"] <= vnum <= zone_data["range"]["end"]:
-                    return os.path.join(zone_directory, file_name)
-    return None
-
-def ensure_room_exists(vnum, protocol):
-    zone_file = find_zone_by_vnum(vnum)
-    
-    if not zone_file:
-        protocol.sendLine(b"Room not found in zone file.")
-        return False
-
-    with open(zone_file, "r") as file:
-        zone_data = json.load(file)
-
-    if str(vnum) not in zone_data["rooms"]:
-        # If the room doesn't exist in JSON, auto-generate it.
-        zone_data["rooms"][str(vnum)] = {"description": "Void room", "exits": {}}
-        with open(zone_file, "w") as file:
-            json.dump(zone_data, file, indent=4)
-        protocol.sendLine(b"Room initialized in zone file.")
-
-    return True
 
 def next_free_vnum(zone_data):
     start, end = zone_data["range"]["start"], zone_data["range"]["end"]
@@ -167,14 +137,6 @@ def recover_state():
                 # Handle automatic login/rebinding here
         os.remove("copyover_state.json")
 
-COMMANDS = {
-    "createzone": lambda protocol, players_in_rooms, *args: create_zone(protocol, *args[0].split()),
-    "goto": lambda protocol, players_in_rooms, *args: goto(protocol, args[0]) if args and args[0].isdigit() else protocol.sendLine(b"Usage: goto <room_id>"),
-    "dig": lambda protocol, players_in_rooms, *args: dig(protocol, *args[0].split(maxsplit=1)),
-    "shutdown": shutdown,
-    "copyover": copyover, 
-}
-
 def setrole(protocol, username, role_type):
     try:
         cursor.execute("UPDATE players SET role_type=? WHERE username=?", (int(role_type), username))
@@ -202,10 +164,13 @@ def setdojo(protocol, username, dojo):
     except Exception as e:
         protocol.sendLine(f"Failed to set dojo: {e}".encode('utf-8'))
 
-# Adding commands to registry
-COMMANDS.update({
+COMMANDS = {
+    "createzone": lambda protocol, players_in_rooms, *args: create_zone(protocol, *args[0].split()),
+    "goto": lambda protocol, players_in_rooms, *args: goto(protocol, args[0]) if args and args[0].isdigit() else protocol.sendLine(b"Usage: goto <room_id>"),
+    "dig": lambda protocol, players_in_rooms, *args: dig(protocol, *args[0].split(maxsplit=1)),
+    "shutdown": shutdown,
+    "copyover": copyover, 
     "setrole": lambda protocol, players_in_rooms, *args: setrole(protocol, *args),
     "setstat": lambda protocol, players_in_rooms, *args: setstat(protocol, *args),
     "setdojo": lambda protocol, players_in_rooms, *args: setdojo(protocol, *args),
-
-})
+}
