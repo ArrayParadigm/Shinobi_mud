@@ -43,7 +43,7 @@ def load_utilities(module_name="utils"):
     # At the end of load_utilities
     logging.debug(f"UTILITIES after loading in shinobi_mud: {list(UTILITIES.keys())}")
 
-#load_utilities call moved here due to timing issues from initialization. It's the intent to fix this later on when I'm further along.
+#TODO: load_utilities call moved here due to timing issues from initialization. It's the intent to fix this later on when I'm further along.
 load_utilities()
 
 
@@ -118,25 +118,28 @@ def preload_zones(zone_directory):
 
 
 def process_command(player, command):
-    command = command.lower().strip()
+    command = command.strip()  # Strip any leading/trailing whitespace
     
     # Split command into command and arguments
-    parts = command.split(' ', 1)
-    cmd = parts[0]  # Extract command name
-    args = parts[1:] if len(parts) > 1 else []  # Extract arguments if present
+    parts = command.split(' ', 1)  # Split at the first space
+    cmd = parts[0].lower()  # Extract and normalize command name
+    raw_args = parts[1] if len(parts) > 1 else ""  # Extract raw argument string
+    split_args = raw_args.split()  # Split arguments into a list
 
     # Use COMMAND_REGISTRY for all commands
     handler = COMMAND_REGISTRY.get(cmd)
     if handler:
-        logging.info(f"Executing command '{cmd}' for player {player.username} with args {args}")
+        logging.info(f"Executing command '{cmd}' for player {player.username} with raw args '{raw_args}' and split args {split_args}")
         try:
-            handler(player, *args)  # Pass player and arguments to the command handler
+            # Pass player, players_in_rooms, raw argument string, and split arguments
+            handler(player, players_in_rooms, raw_args, split_args)
         except Exception as e:
             logging.error(f"Error executing command '{cmd}' for {player.username}: {e}", exc_info=True)
             player.sendLine(b"An error occurred while executing your command.")
     else:
         player.sendLine(f"Unknown command: {cmd}".encode('utf-8'))
         logging.warning(f"Unknown command '{cmd}' issued by player {player.username}")
+
 
 def ensure_tables_exist():
     try:
@@ -183,6 +186,17 @@ def ensure_tables_exist():
 logging.info("Zones loaded")
 debug_log("Zones loaded after preload_zones()")
 
+def get_state_handlers():
+    return {
+        "GET_USERNAME": "handle_username",
+        "GET_PASSWORD": "handle_password",
+        "REGISTER_PASSWORD": "register_password",
+        "CONFIRM_PASSWORD": "confirm_password",
+        "CHOOSE_SPECIALTY": "choose_specialty",
+        "ALLOCATE_STATS": "allocate_stats",
+        "COMMAND": "handle_command",
+    }
+
 class NinjaMUDProtocol(basic.LineReceiver):
     delimiter = b"\n"
 
@@ -194,6 +208,7 @@ class NinjaMUDProtocol(basic.LineReceiver):
         self.current_room = 3001
         self.is_admin = True
         self.player_class = 'newbie' # Default to a basic Class
+        self.STATE_HANDLERS = get_state_handlers()
 
     def connectionMade(self):
         logging.info("New connection established from %s.", self.transport.getPeer())
@@ -204,29 +219,28 @@ class NinjaMUDProtocol(basic.LineReceiver):
     def connectionLost(self, reason):
         logging.info(f"Connection lost for user {self.username}. Reason: {reason}")
         self.untrack_player()
-
+    
     def lineReceived(self, line):
-        command = line.decode('utf-8').strip()
         try:
-            if self.state == "GET_USERNAME":
-                self.handle_username(command)
-            elif self.state == "GET_PASSWORD":
-                self.handle_password(command)
-            elif self.state == "REGISTER_PASSWORD":
-                self.register_password(command)
-            elif self.state == "CONFIRM_PASSWORD":
-                self.confirm_password(command)
-            elif self.state == "CHOOSE_SPECIALTY":
-                self.choose_specialty(command)
-            elif self.state == "ALLOCATE_STATS":
-                self.allocate_stats(command)
-            elif self.state == "COMMAND":
-                self.handle_command(command)
-            else:
-                self.sendLine(b"Unknown state.")
-        except Exception as e:
-            logging.error(f"Error in state {self.state}: {e}", exc_info=True)
-            self.sendLine(b"An error occurred. Please try again.")
+            command = line.decode('utf-8').strip()  # Decode input and remove leading/trailing whitespace
+            logging.info(f"Received command: {command} in state: {self.state}")
+        except UnicodeDecodeError:
+            self.sendLine(b"Error: Invalid input encoding. Please use UTF-8.")
+            logging.error("Received non-UTF-8 encoded input.", exc_info=True)
+            return
+
+        # Access STATE_HANDLERS using self or the class name
+        handler_name = self.STATE_HANDLERS.get(self.state)
+        if handler_name and hasattr(self, handler_name):
+            try:
+                handler = getattr(self, handler_name)  # Get the appropriate handler
+                handler(command)  # Call the handler with the command
+            except Exception as e:
+                logging.error(f"Error in state {self.state}: {e}", exc_info=True)
+                self.sendLine(b"An error occurred. Please try again.")
+        else:
+            self.sendLine(b"Unknown state.")
+            logging.warning(f"Unknown state: {self.state}")
 
     def handle_username(self, username):
         self.username = username
@@ -302,20 +316,21 @@ class NinjaMUDProtocol(basic.LineReceiver):
                 self.sendLine(b"Room data not found in the zone.")
         
     def track_player(self):
-        if self.current_room not in players_in_rooms:
-            players_in_rooms[self.current_room] = []
-        if self not in players_in_rooms[self.current_room]:
-            players_in_rooms[self.current_room].append(self)
+        room_key = self.current_room  # Keep as integer
+        if room_key not in players_in_rooms:
+            players_in_rooms[room_key] = []  # Initialize room with an empty list of players
+        if self.username not in players_in_rooms[room_key]:  # Use player name (string) as the value
+            players_in_rooms[room_key].append(self.username)
         logging.info(f"Player {self.username} is now in room {self.current_room}.")
-
+    
     def untrack_player(self, room=None):
-        if room is None:
-            room = self.current_room
-        if room in players_in_rooms and self in players_in_rooms[room]:
-            players_in_rooms[room].remove(self)
-            if not players_in_rooms[room]:
-                del players_in_rooms[room]
-        logging.info(f"Player {self.username} left room {room}.")
+        room_key = room if room else self.current_room  # Keep as integer
+        if room_key in players_in_rooms and self.username in players_in_rooms[room_key]:
+            players_in_rooms[room_key].remove(self.username)  # Remove the player's name
+            if not players_in_rooms[room_key]:  # If no players are left in the room, delete the key
+                del players_in_rooms[room_key]
+        logging.info(f"Player {self.username} left room {room_key}.")
+
 
 
     def confirm_password(self, password):

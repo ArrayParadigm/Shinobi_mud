@@ -1,0 +1,8 @@
+{
+    "name": "limbo",
+    "range": {
+        "start": 4000,
+        "end": 4099
+    },
+    "rooms": {}
+}

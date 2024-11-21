@@ -1959,3 +1959,673 @@ KeyError: 'find_zone_by_vnum'
 2024-11-21 13:12:40,972 - INFO - Player Manorbis is now in room 3000.
 2024-11-21 13:12:46,115 - INFO - Executing command 'look' for player Array with args []
 2024-11-21 13:12:46,115 - DEBUG - UTILITIES in general_commands: dict_keys(['ensure_room_exists', 'find_zone_by_vnum', 'next_free_vnum', 'reverse_dir'])
+2024-11-21 13:22:50,357 - INFO - Executing command 'say' for player Array with args ['hi']
+2024-11-21 13:23:08,929 - INFO - utils imported
+2024-11-21 13:23:08,929 - INFO - Loaded utility: ensure_room_exists
+2024-11-21 13:23:08,929 - INFO - Loaded utility: find_zone_by_vnum
+2024-11-21 13:23:08,929 - INFO - Loaded utility: next_free_vnum
+2024-11-21 13:23:08,930 - INFO - Loaded utility: reverse_dir
+2024-11-21 13:23:08,930 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'next_free_vnum', 'reverse_dir']
+2024-11-21 13:23:08,930 - INFO - Total commands loaded: 0
+2024-11-21 13:23:08,930 - DEBUG - All registered commands: []
+2024-11-21 13:23:08,931 - INFO - Zones loaded
+2024-11-21 13:23:08,931 - DEBUG - Zones loaded after preload_zones()
+2024-11-21 13:23:08,931 - INFO - Initializing Ninja MUD Server...
+2024-11-21 13:23:08,931 - INFO - Logging initialized.
+2024-11-21 13:23:08,932 - DEBUG - Creating player due to lack of existence.
+2024-11-21 13:23:08,933 - INFO - Database tables ensured and default rooms initialized.
+2024-11-21 13:23:08,933 - DEBUG - Database tables ensured and default rooms initialized.
+2024-11-21 13:23:08,933 - INFO - Database connection established using mud_game_10_rooms.db.
+2024-11-21 13:23:08,933 - INFO - Preloaded zone: Eve's Haven
+2024-11-21 13:23:08,933 - INFO - Preloaded zone: Expanse
+2024-11-21 13:23:08,933 - INFO - Zone data preloaded from zones.
+2024-11-21 13:23:08,935 - INFO - Loaded utility: ensure_room_exists
+2024-11-21 13:23:08,935 - INFO - Loaded utility: find_zone_by_vnum
+2024-11-21 13:23:08,935 - INFO - Loaded utility: next_free_vnum
+2024-11-21 13:23:08,935 - INFO - Loaded utility: reverse_dir
+2024-11-21 13:23:08,936 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'next_free_vnum', 'reverse_dir']
+2024-11-21 13:23:08,936 - INFO - Total commands loaded: 0
+2024-11-21 13:23:08,936 - DEBUG - All registered commands: []
+2024-11-21 13:23:08,936 - INFO - Zones loaded
+2024-11-21 13:23:08,936 - DEBUG - Zones loaded after preload_zones()
+2024-11-21 13:23:08,936 - INFO - general_commands imported
+2024-11-21 13:23:08,937 - INFO - Loaded commands from general_commands
+2024-11-21 13:23:08,938 - INFO - admin_commands imported
+2024-11-21 13:23:08,938 - INFO - Loaded commands from admin_commands
+2024-11-21 13:23:08,939 - INFO - social_commands imported
+2024-11-21 13:23:08,939 - INFO - Loaded commands from social_commands
+2024-11-21 13:23:08,939 - INFO - Commands loaded: 17
+2024-11-21 13:23:08,939 - WARNING - MOTD file not found. Using default message.
+2024-11-21 13:23:08,940 - INFO - Ninja MUD Server initialized successfully.
+2024-11-21 13:23:08,943 - INFO - Ninja MUD Server running on port 4000.
+2024-11-21 13:23:11,953 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=56066).
+2024-11-21 13:23:11,954 - DEBUG - New connection established from [self.transport.getPeer()}.
+2024-11-21 13:23:14,702 - INFO - Player Array is now in room 3000.
+2024-11-21 13:23:16,105 - INFO - Executing command 'say' for player Array with args ['hi']
+2024-11-21 13:36:10,717 - INFO - utils imported
+2024-11-21 13:36:10,717 - INFO - Loaded utility: ensure_room_exists
+2024-11-21 13:36:10,717 - INFO - Loaded utility: find_zone_by_vnum
+2024-11-21 13:36:10,717 - INFO - Loaded utility: next_free_vnum
+2024-11-21 13:36:10,717 - INFO - Loaded utility: reverse_dir
+2024-11-21 13:36:10,717 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'next_free_vnum', 'reverse_dir']
+2024-11-21 13:36:10,717 - INFO - Total commands loaded: 0
+2024-11-21 13:36:10,718 - DEBUG - All registered commands: []
+2024-11-21 13:36:10,718 - INFO - Zones loaded
+2024-11-21 13:36:10,719 - DEBUG - Zones loaded after preload_zones()
+2024-11-21 13:36:10,719 - INFO - Initializing Ninja MUD Server...
+2024-11-21 13:36:10,719 - INFO - Logging initialized.
+2024-11-21 13:36:10,720 - DEBUG - Creating player due to lack of existence.
+2024-11-21 13:36:10,720 - INFO - Database tables ensured and default rooms initialized.
+2024-11-21 13:36:10,721 - DEBUG - Database tables ensured and default rooms initialized.
+2024-11-21 13:36:10,721 - INFO - Database connection established using mud_game_10_rooms.db.
+2024-11-21 13:36:10,721 - INFO - Preloaded zone: Eve's Haven
+2024-11-21 13:36:10,721 - INFO - Preloaded zone: Expanse
+2024-11-21 13:36:10,722 - INFO - Zone data preloaded from zones.
+2024-11-21 13:36:10,726 - INFO - Loaded utility: ensure_room_exists
+2024-11-21 13:36:10,727 - INFO - Loaded utility: find_zone_by_vnum
+2024-11-21 13:36:10,727 - INFO - Loaded utility: next_free_vnum
+2024-11-21 13:36:10,727 - INFO - Loaded utility: reverse_dir
+2024-11-21 13:36:10,727 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'next_free_vnum', 'reverse_dir']
+2024-11-21 13:36:10,727 - INFO - Total commands loaded: 0
+2024-11-21 13:36:10,728 - DEBUG - All registered commands: []
+2024-11-21 13:36:10,728 - INFO - Zones loaded
+2024-11-21 13:36:10,728 - DEBUG - Zones loaded after preload_zones()
+2024-11-21 13:36:10,729 - INFO - general_commands imported
+2024-11-21 13:36:10,729 - INFO - Loaded commands from general_commands
+2024-11-21 13:36:10,729 - INFO - admin_commands imported
+2024-11-21 13:36:10,729 - INFO - Loaded commands from admin_commands
+2024-11-21 13:36:10,730 - INFO - social_commands imported
+2024-11-21 13:36:10,730 - INFO - Loaded commands from social_commands
+2024-11-21 13:36:10,730 - INFO - Commands loaded: 17
+2024-11-21 13:36:10,731 - WARNING - MOTD file not found. Using default message.
+2024-11-21 13:36:10,731 - INFO - Ninja MUD Server initialized successfully.
+2024-11-21 13:36:10,732 - INFO - Ninja MUD Server running on port 4000.
+2024-11-21 13:36:15,648 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=57230).
+2024-11-21 13:36:15,648 - DEBUG - New connection established from [self.transport.getPeer()}.
+2024-11-21 13:36:17,987 - INFO - Player Array is now in room 3000.
+2024-11-21 13:36:19,175 - INFO - Executing command 'say' for player Array with args ['hi']
+2024-11-21 13:37:19,669 - INFO - Executing command 'say' for player Array with args ['hi,', 'how', 'are', 'you?']
+2024-11-21 13:37:19,670 - ERROR - Error executing command 'say' for Array: 'in <string>' requires string as left operand, not int
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 134, in process_command
+    handler(player, *args)  # Pass player and arguments to the command handler
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\social_commands.py", line 34, in <lambda>
+    "say": lambda protocol, players_in_rooms, *args: handle_say(protocol, " ".join(args), players_in_rooms),
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\social_commands.py", line 11, in handle_say
+    if current_room in players_in_rooms:
+TypeError: 'in <string>' requires string as left operand, not int
+2024-11-21 13:39:44,721 - INFO - Executing command 'ooc' for player Array with args ['hi?']
+2024-11-21 13:56:36,234 - INFO - utils imported
+2024-11-21 13:56:36,234 - INFO - Loaded utility: ensure_room_exists
+2024-11-21 13:56:36,234 - INFO - Loaded utility: find_zone_by_vnum
+2024-11-21 13:56:36,235 - INFO - Loaded utility: next_free_vnum
+2024-11-21 13:56:36,235 - INFO - Loaded utility: reverse_dir
+2024-11-21 13:56:36,235 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'next_free_vnum', 'reverse_dir']
+2024-11-21 13:56:36,235 - INFO - Total commands loaded: 0
+2024-11-21 13:56:36,235 - DEBUG - All registered commands: []
+2024-11-21 13:56:36,235 - INFO - Zones loaded
+2024-11-21 13:56:36,236 - DEBUG - Zones loaded after preload_zones()
+2024-11-21 13:56:36,236 - INFO - Initializing Ninja MUD Server...
+2024-11-21 13:56:36,236 - INFO - Logging initialized.
+2024-11-21 13:56:36,237 - DEBUG - Creating player due to lack of existence.
+2024-11-21 13:56:36,237 - INFO - Database tables ensured and default rooms initialized.
+2024-11-21 13:56:36,237 - DEBUG - Database tables ensured and default rooms initialized.
+2024-11-21 13:56:36,237 - INFO - Database connection established using mud_game_10_rooms.db.
+2024-11-21 13:56:36,238 - INFO - Preloaded zone: Eve's Haven
+2024-11-21 13:56:36,238 - INFO - Preloaded zone: Expanse
+2024-11-21 13:56:36,239 - INFO - Zone data preloaded from zones.
+2024-11-21 13:56:36,243 - INFO - Loaded utility: ensure_room_exists
+2024-11-21 13:56:36,243 - INFO - Loaded utility: find_zone_by_vnum
+2024-11-21 13:56:36,243 - INFO - Loaded utility: next_free_vnum
+2024-11-21 13:56:36,244 - INFO - Loaded utility: reverse_dir
+2024-11-21 13:56:36,244 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'next_free_vnum', 'reverse_dir']
+2024-11-21 13:56:36,244 - INFO - Total commands loaded: 0
+2024-11-21 13:56:36,244 - DEBUG - All registered commands: []
+2024-11-21 13:56:36,245 - INFO - Zones loaded
+2024-11-21 13:56:36,245 - DEBUG - Zones loaded after preload_zones()
+2024-11-21 13:56:36,245 - INFO - general_commands imported
+2024-11-21 13:56:36,246 - INFO - Loaded commands from general_commands
+2024-11-21 13:56:36,246 - INFO - admin_commands imported
+2024-11-21 13:56:36,246 - INFO - Loaded commands from admin_commands
+2024-11-21 13:56:36,248 - INFO - social_commands imported
+2024-11-21 13:56:36,249 - INFO - Loaded commands from social_commands
+2024-11-21 13:56:36,249 - INFO - Commands loaded: 17
+2024-11-21 13:56:36,250 - WARNING - MOTD file not found. Using default message.
+2024-11-21 13:56:36,250 - INFO - Ninja MUD Server initialized successfully.
+2024-11-21 13:56:36,251 - INFO - Ninja MUD Server running on port 4000.
+2024-11-21 13:56:40,819 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=58731).
+2024-11-21 13:56:40,819 - DEBUG - New connection established from [self.transport.getPeer()}.
+2024-11-21 13:56:43,666 - ERROR - Error in state COMMAND: 'NinjaMUDProtocol' object has no attribute 'track_player'
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 215, in lineReceived
+    self.handle_password(command)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 258, in handle_password
+    self.track_player()
+AttributeError: 'NinjaMUDProtocol' object has no attribute 'track_player'
+2024-11-21 13:56:48,497 - INFO - Executing command 'say' for player Array with args ['hello,', 'how', 'are', 'you?']
+2024-11-21 13:57:24,838 - INFO - Executing command 'ooc' for player Array with args ['hello']
+2024-11-21 13:57:33,456 - INFO - Executing command 'ooc' for player Array with args ['hello,', 'how', 'are', 'you?']
+2024-11-21 13:57:33,457 - ERROR - Error executing command 'ooc' for Array: 'str' object has no attribute 'values'
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 134, in process_command
+    handler(player, *args)  # Pass player and arguments to the command handler
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\social_commands.py", line 35, in <lambda>
+    "ooc": lambda protocol, players_in_rooms, *args: handle_ooc(protocol, " ".join(args), players_in_rooms),
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\social_commands.py", line 21, in handle_ooc
+    for player_list in players_in_rooms.values():
+AttributeError: 'str' object has no attribute 'values'
+2024-11-21 13:58:30,533 - INFO - utils imported
+2024-11-21 13:58:30,533 - INFO - Loaded utility: ensure_room_exists
+2024-11-21 13:58:30,534 - INFO - Loaded utility: find_zone_by_vnum
+2024-11-21 13:58:30,534 - INFO - Loaded utility: next_free_vnum
+2024-11-21 13:58:30,534 - INFO - Loaded utility: reverse_dir
+2024-11-21 13:58:30,534 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'next_free_vnum', 'reverse_dir']
+2024-11-21 13:58:30,534 - INFO - Total commands loaded: 0
+2024-11-21 13:58:30,534 - DEBUG - All registered commands: []
+2024-11-21 13:58:30,535 - INFO - Zones loaded
+2024-11-21 13:58:30,535 - DEBUG - Zones loaded after preload_zones()
+2024-11-21 13:58:30,535 - INFO - Initializing Ninja MUD Server...
+2024-11-21 13:58:30,535 - INFO - Logging initialized.
+2024-11-21 13:58:30,536 - DEBUG - Creating player due to lack of existence.
+2024-11-21 13:58:30,536 - INFO - Database tables ensured and default rooms initialized.
+2024-11-21 13:58:30,536 - DEBUG - Database tables ensured and default rooms initialized.
+2024-11-21 13:58:30,537 - INFO - Database connection established using mud_game_10_rooms.db.
+2024-11-21 13:58:30,537 - INFO - Preloaded zone: Eve's Haven
+2024-11-21 13:58:30,537 - INFO - Preloaded zone: Expanse
+2024-11-21 13:58:30,537 - INFO - Zone data preloaded from zones.
+2024-11-21 13:58:30,542 - INFO - Loaded utility: ensure_room_exists
+2024-11-21 13:58:30,543 - INFO - Loaded utility: find_zone_by_vnum
+2024-11-21 13:58:30,543 - INFO - Loaded utility: next_free_vnum
+2024-11-21 13:58:30,543 - INFO - Loaded utility: reverse_dir
+2024-11-21 13:58:30,543 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'next_free_vnum', 'reverse_dir']
+2024-11-21 13:58:30,543 - INFO - Total commands loaded: 0
+2024-11-21 13:58:30,543 - DEBUG - All registered commands: []
+2024-11-21 13:58:30,544 - INFO - Zones loaded
+2024-11-21 13:58:30,544 - DEBUG - Zones loaded after preload_zones()
+2024-11-21 13:58:30,544 - INFO - general_commands imported
+2024-11-21 13:58:30,546 - INFO - Loaded commands from general_commands
+2024-11-21 13:58:30,546 - INFO - admin_commands imported
+2024-11-21 13:58:30,547 - INFO - Loaded commands from admin_commands
+2024-11-21 13:58:30,548 - INFO - social_commands imported
+2024-11-21 13:58:30,548 - INFO - Loaded commands from social_commands
+2024-11-21 13:58:30,548 - INFO - Commands loaded: 17
+2024-11-21 13:58:30,548 - WARNING - MOTD file not found. Using default message.
+2024-11-21 13:58:30,549 - INFO - Ninja MUD Server initialized successfully.
+2024-11-21 13:58:30,549 - INFO - Ninja MUD Server running on port 4000.
+2024-11-21 13:58:35,073 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=58875).
+2024-11-21 13:58:35,073 - DEBUG - New connection established from [self.transport.getPeer()}.
+2024-11-21 13:58:38,168 - INFO - Player Array is now in room 3000.
+2024-11-21 13:58:40,146 - INFO - Executing command 'say' for player Array with args ['hi']
+2024-11-21 13:58:46,411 - INFO - Executing command 'say' for player Array with args ['hi,', 'how', 'are', 'you?']
+2024-11-21 13:58:59,913 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=58922).
+2024-11-21 13:58:59,914 - DEBUG - New connection established from [self.transport.getPeer()}.
+2024-11-21 13:59:05,668 - INFO - Player Manorbis is now in room 3005.
+2024-11-21 13:59:13,112 - INFO - Executing command 'say' for player Manorbis with args ['hello,', 'how', 'are', 'you?']
+2024-11-21 13:59:23,425 - INFO - Executing command 'look' for player Array with args []
+2024-11-21 13:59:23,425 - DEBUG - UTILITIES in general_commands: dict_keys(['ensure_room_exists', 'find_zone_by_vnum', 'next_free_vnum', 'reverse_dir'])
+2024-11-21 13:59:24,724 - INFO - Executing command 'north' for player Array with args []
+2024-11-21 13:59:24,725 - INFO - Player Array is now in room 3001.
+2024-11-21 13:59:26,130 - INFO - Executing command 'south' for player Array with args []
+2024-11-21 13:59:26,131 - INFO - Player Array is now in room 3000.
+2024-11-21 13:59:26,792 - INFO - Executing command 'east' for player Array with args []
+2024-11-21 13:59:26,793 - INFO - Player Array is now in room 3002.
+2024-11-21 13:59:28,288 - INFO - Executing command 'east' for player Array with args []
+2024-11-21 13:59:28,289 - INFO - Player Array is now in room 3004.
+2024-11-21 13:59:30,831 - INFO - Executing command 'north' for player Array with args []
+2024-11-21 13:59:30,832 - INFO - Player Array is now in room 3006.
+2024-11-21 13:59:33,755 - INFO - Executing command 'south' for player Array with args []
+2024-11-21 13:59:33,756 - INFO - Player Array is now in room 3004.
+2024-11-21 13:59:34,739 - INFO - Executing command 'west' for player Array with args []
+2024-11-21 13:59:34,740 - INFO - Player Array is now in room 3002.
+2024-11-21 13:59:35,509 - INFO - Executing command 'west' for player Array with args []
+2024-11-21 13:59:35,510 - INFO - Player Array is now in room 3000.
+2024-11-21 13:59:36,591 - INFO - Executing command 'north' for player Array with args []
+2024-11-21 13:59:36,592 - INFO - Player Array is now in room 3001.
+2024-11-21 13:59:37,713 - INFO - Executing command 'north' for player Array with args []
+2024-11-21 13:59:37,714 - INFO - Player Array is now in room 3003.
+2024-11-21 13:59:39,631 - INFO - Executing command 'north' for player Array with args []
+2024-11-21 13:59:39,632 - INFO - Player Array is now in room 3005.
+2024-11-21 13:59:43,891 - INFO - Executing command 'say' for player Array with args ['hello,', 'how', 'are', 'you?']
+2024-11-21 14:00:00,637 - INFO - Executing command 'ooc' for player Manorbis with args ['hello']
+2024-11-21 14:00:06,719 - INFO - Executing command 'ooc' for player Manorbis with args ['hello,', 'how', 'are', 'you?']
+2024-11-21 14:00:06,719 - ERROR - Error executing command 'ooc' for Manorbis: 'str' object has no attribute 'values'
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 134, in process_command
+    handler(player, *args)  # Pass player and arguments to the command handler
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\social_commands.py", line 35, in <lambda>
+    "ooc": lambda protocol, players_in_rooms, *args: handle_ooc(protocol, " ".join(args), players_in_rooms),
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\social_commands.py", line 21, in handle_ooc
+    for player_list in players_in_rooms.values():
+AttributeError: 'str' object has no attribute 'values'
+2024-11-21 15:19:11,937 - INFO - utils imported
+2024-11-21 15:19:11,938 - INFO - Loaded utility: ensure_room_exists
+2024-11-21 15:19:11,938 - INFO - Loaded utility: find_zone_by_vnum
+2024-11-21 15:19:11,939 - INFO - Loaded utility: next_free_vnum
+2024-11-21 15:19:11,939 - INFO - Loaded utility: reverse_dir
+2024-11-21 15:19:11,939 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'next_free_vnum', 'reverse_dir']
+2024-11-21 15:19:11,940 - INFO - Total commands loaded: 0
+2024-11-21 15:19:11,940 - DEBUG - All registered commands: []
+2024-11-21 15:19:11,941 - INFO - Zones loaded
+2024-11-21 15:19:11,941 - DEBUG - Zones loaded after preload_zones()
+2024-11-21 15:19:11,941 - INFO - Initializing Ninja MUD Server...
+2024-11-21 15:19:11,945 - INFO - Logging initialized.
+2024-11-21 15:19:11,947 - DEBUG - Creating player due to lack of existence.
+2024-11-21 15:19:11,947 - INFO - Database tables ensured and default rooms initialized.
+2024-11-21 15:19:11,947 - DEBUG - Database tables ensured and default rooms initialized.
+2024-11-21 15:19:11,948 - INFO - Database connection established using mud_game_10_rooms.db.
+2024-11-21 15:19:11,953 - INFO - Preloaded zone: Eve's Haven
+2024-11-21 15:19:11,957 - INFO - Preloaded zone: Expanse
+2024-11-21 15:19:11,958 - INFO - Zone data preloaded from zones.
+2024-11-21 15:22:24,896 - INFO - utils imported
+2024-11-21 15:22:24,896 - INFO - Loaded utility: ensure_room_exists
+2024-11-21 15:22:24,896 - INFO - Loaded utility: find_zone_by_vnum
+2024-11-21 15:22:24,897 - INFO - Loaded utility: next_free_vnum
+2024-11-21 15:22:24,897 - INFO - Loaded utility: reverse_dir
+2024-11-21 15:22:24,897 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'next_free_vnum', 'reverse_dir']
+2024-11-21 15:22:24,897 - INFO - Total commands loaded: 0
+2024-11-21 15:22:24,897 - DEBUG - All registered commands: []
+2024-11-21 15:22:24,897 - INFO - Zones loaded
+2024-11-21 15:22:24,897 - DEBUG - Zones loaded after preload_zones()
+2024-11-21 15:22:24,898 - INFO - Initializing Ninja MUD Server...
+2024-11-21 15:22:24,898 - INFO - Logging initialized.
+2024-11-21 15:22:24,899 - DEBUG - Creating player due to lack of existence.
+2024-11-21 15:22:24,899 - INFO - Database tables ensured and default rooms initialized.
+2024-11-21 15:22:24,899 - DEBUG - Database tables ensured and default rooms initialized.
+2024-11-21 15:22:24,899 - INFO - Database connection established using mud_game_10_rooms.db.
+2024-11-21 15:22:24,899 - INFO - Preloaded zone: Eve's Haven
+2024-11-21 15:22:24,900 - INFO - Preloaded zone: Expanse
+2024-11-21 15:22:24,900 - INFO - Zone data preloaded from zones.
+2024-11-21 15:22:24,906 - INFO - Loaded utility: ensure_room_exists
+2024-11-21 15:22:24,906 - INFO - Loaded utility: find_zone_by_vnum
+2024-11-21 15:22:24,906 - INFO - Loaded utility: next_free_vnum
+2024-11-21 15:22:24,907 - INFO - Loaded utility: reverse_dir
+2024-11-21 15:22:24,907 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'next_free_vnum', 'reverse_dir']
+2024-11-21 15:22:24,907 - INFO - Total commands loaded: 0
+2024-11-21 15:22:24,907 - DEBUG - All registered commands: []
+2024-11-21 15:22:24,908 - INFO - Zones loaded
+2024-11-21 15:22:24,908 - DEBUG - Zones loaded after preload_zones()
+2024-11-21 15:22:24,908 - INFO - general_commands imported
+2024-11-21 15:22:24,908 - INFO - Loaded commands from general_commands
+2024-11-21 15:22:24,911 - INFO - admin_commands imported
+2024-11-21 15:22:24,911 - INFO - Loaded commands from admin_commands
+2024-11-21 15:22:24,913 - INFO - social_commands imported
+2024-11-21 15:22:24,913 - INFO - Loaded commands from social_commands
+2024-11-21 15:22:24,914 - INFO - Commands loaded: 17
+2024-11-21 15:22:24,917 - WARNING - MOTD file not found. Using default message.
+2024-11-21 15:22:24,917 - INFO - Ninja MUD Server initialized successfully.
+2024-11-21 15:22:24,918 - INFO - Ninja MUD Server running on port 4000.
+2024-11-21 15:22:30,080 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=49205).
+2024-11-21 15:22:30,080 - DEBUG - New connection established from [self.transport.getPeer()}.
+2024-11-21 15:22:32,054 - INFO - Received command: Array in state: GET_USERNAME
+2024-11-21 15:22:32,082 - INFO - Connection lost for user None. Reason: [Failure instance: Traceback: <class 'NameError'>: name 'STATE_HANDLERS' is not defined
+C:\Users\Array\AppData\Local\Programs\Python\Python310\lib\site-packages\twisted\internet\selectreactor.py:165:_doReadOrWrite
+C:\Users\Array\AppData\Local\Programs\Python\Python310\lib\site-packages\twisted\internet\tcp.py:250:doRead
+C:\Users\Array\AppData\Local\Programs\Python\Python310\lib\site-packages\twisted\internet\tcp.py:255:_dataReceived
+C:\Users\Array\AppData\Local\Programs\Python\Python310\lib\site-packages\twisted\protocols\basic.py:549:dataReceived
+C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py:229:lineReceived
+]
+2024-11-21 15:22:32,083 - INFO - Player None left room 3001.
+2024-11-21 15:33:13,037 - INFO - Initializing Ninja MUD Server...
+2024-11-21 15:33:13,038 - INFO - utils imported
+2024-11-21 15:33:13,038 - INFO - Loaded utility: ensure_room_exists
+2024-11-21 15:33:13,039 - INFO - Loaded utility: find_zone_by_vnum
+2024-11-21 15:33:13,043 - INFO - Loaded utility: next_free_vnum
+2024-11-21 15:33:13,044 - INFO - Loaded utility: reverse_dir
+2024-11-21 15:33:13,044 - INFO - Utilities loaded: 4
+2024-11-21 15:33:13,045 - INFO - Preloaded zone: Eve's Haven
+2024-11-21 15:33:13,045 - INFO - Preloaded zone: Expanse
+2024-11-21 15:33:13,050 - ERROR - Failed to import general_commands: cannot import name 'UTILITIES' from 'shinobi_mud' (C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py)
+2024-11-21 15:33:13,051 - ERROR - Failed to import admin_commands: cannot import name 'UTILITIES' from 'shinobi_mud' (C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py)
+2024-11-21 15:33:13,051 - INFO - social_commands imported
+2024-11-21 15:33:13,051 - INFO - Loaded commands from social_commands
+2024-11-21 15:33:13,051 - INFO - Commands loaded: 3
+2024-11-21 15:33:13,051 - WARNING - MOTD file not found. Using default message.
+2024-11-21 15:33:13,052 - INFO - Ninja MUD Server initialized successfully.
+2024-11-21 15:33:13,052 - INFO - Ninja MUD Server running on port 4000.
+2024-11-21 15:33:19,782 - INFO - New connection established.
+2024-11-21 15:33:27,651 - ERROR - Error in state COMMAND: name 'process_command' is not defined
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 190, in lineReceived
+    handler(command)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 207, in handle_command
+    process_command(self, command)
+NameError: name 'process_command' is not defined
+2024-11-21 15:33:34,632 - ERROR - Error in state COMMAND: name 'process_command' is not defined
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 190, in lineReceived
+    handler(command)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 207, in handle_command
+    process_command(self, command)
+NameError: name 'process_command' is not defined
+2024-11-21 15:36:48,396 - INFO - Initializing Ninja MUD Server...
+2024-11-21 15:36:48,397 - INFO - Preloaded zone: Eve's Haven
+2024-11-21 15:36:48,398 - INFO - Preloaded zone: Expanse
+2024-11-21 15:36:48,401 - ERROR - Failed to import general_commands: cannot import name 'UTILITIES' from 'shinobi_mud' (C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py)
+2024-11-21 15:36:48,402 - ERROR - Failed to import admin_commands: cannot import name 'UTILITIES' from 'shinobi_mud' (C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py)
+2024-11-21 15:36:48,403 - INFO - social_commands imported
+2024-11-21 15:36:48,403 - INFO - Loaded commands from social_commands
+2024-11-21 15:36:48,403 - INFO - Commands loaded: 3
+2024-11-21 15:36:48,404 - WARNING - MOTD file not found. Using default message.
+2024-11-21 15:36:48,404 - INFO - Ninja MUD Server initialized successfully.
+2024-11-21 15:36:48,404 - INFO - Ninja MUD Server running on port 4000.
+2024-11-21 15:37:54,442 - INFO - utils imported
+2024-11-21 15:37:54,443 - INFO - Loaded utility: ensure_room_exists
+2024-11-21 15:37:54,443 - INFO - Loaded utility: find_zone_by_vnum
+2024-11-21 15:37:54,443 - INFO - Loaded utility: next_free_vnum
+2024-11-21 15:37:54,443 - INFO - Loaded utility: reverse_dir
+2024-11-21 15:37:54,443 - INFO - Utilities loaded: 4
+2024-11-21 15:37:54,444 - INFO - Initializing Ninja MUD Server...
+2024-11-21 15:37:54,445 - INFO - Preloaded zone: Eve's Haven
+2024-11-21 15:37:54,445 - INFO - Preloaded zone: Expanse
+2024-11-21 15:37:54,449 - INFO - Loaded utility: ensure_room_exists
+2024-11-21 15:37:54,449 - INFO - Loaded utility: find_zone_by_vnum
+2024-11-21 15:37:54,449 - INFO - Loaded utility: next_free_vnum
+2024-11-21 15:37:54,449 - INFO - Loaded utility: reverse_dir
+2024-11-21 15:37:54,449 - INFO - Utilities loaded: 4
+2024-11-21 15:37:54,449 - ERROR - Failed to import general_commands: cannot import name 'UTILITIES' from 'shinobi_mud' (C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py)
+2024-11-21 15:37:54,450 - ERROR - Failed to import admin_commands: cannot import name 'UTILITIES' from 'shinobi_mud' (C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py)
+2024-11-21 15:37:54,451 - INFO - social_commands imported
+2024-11-21 15:37:54,451 - INFO - Loaded commands from social_commands
+2024-11-21 15:37:54,451 - INFO - Commands loaded: 3
+2024-11-21 15:37:54,451 - WARNING - MOTD file not found. Using default message.
+2024-11-21 15:37:54,451 - INFO - Ninja MUD Server initialized successfully.
+2024-11-21 15:37:54,452 - INFO - Ninja MUD Server running on port 4000.
+2024-11-21 15:56:25,683 - INFO - utils imported
+2024-11-21 15:56:25,683 - INFO - Loaded utility: ensure_room_exists
+2024-11-21 15:56:25,683 - INFO - Loaded utility: find_zone_by_vnum
+2024-11-21 15:56:25,683 - INFO - Loaded utility: next_free_vnum
+2024-11-21 15:56:25,684 - INFO - Loaded utility: reverse_dir
+2024-11-21 15:56:25,684 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'next_free_vnum', 'reverse_dir']
+2024-11-21 15:56:25,684 - INFO - Total commands loaded: 0
+2024-11-21 15:56:25,684 - DEBUG - All registered commands: []
+2024-11-21 15:56:25,685 - INFO - Zones loaded
+2024-11-21 15:56:25,685 - DEBUG - Zones loaded after preload_zones()
+2024-11-21 15:56:25,686 - INFO - Initializing Ninja MUD Server...
+2024-11-21 15:56:25,686 - INFO - Logging initialized.
+2024-11-21 15:56:25,687 - DEBUG - Creating player due to lack of existence.
+2024-11-21 15:56:25,687 - INFO - Database tables ensured and default rooms initialized.
+2024-11-21 15:56:25,687 - DEBUG - Database tables ensured and default rooms initialized.
+2024-11-21 15:56:25,687 - INFO - Database connection established using mud_game_10_rooms.db.
+2024-11-21 15:56:25,687 - INFO - Preloaded zone: Eve's Haven
+2024-11-21 15:56:25,688 - INFO - Preloaded zone: Expanse
+2024-11-21 15:56:25,688 - INFO - Zone data preloaded from zones.
+2024-11-21 15:56:25,692 - INFO - Loaded utility: ensure_room_exists
+2024-11-21 15:56:25,692 - INFO - Loaded utility: find_zone_by_vnum
+2024-11-21 15:56:25,692 - INFO - Loaded utility: next_free_vnum
+2024-11-21 15:56:25,692 - INFO - Loaded utility: reverse_dir
+2024-11-21 15:56:25,692 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'next_free_vnum', 'reverse_dir']
+2024-11-21 15:56:25,692 - INFO - Total commands loaded: 0
+2024-11-21 15:56:25,693 - DEBUG - All registered commands: []
+2024-11-21 15:56:25,693 - INFO - Zones loaded
+2024-11-21 15:56:25,693 - DEBUG - Zones loaded after preload_zones()
+2024-11-21 15:56:25,693 - INFO - general_commands imported
+2024-11-21 15:56:25,694 - INFO - Loaded commands from general_commands
+2024-11-21 15:56:25,694 - INFO - admin_commands imported
+2024-11-21 15:56:25,695 - INFO - Loaded commands from admin_commands
+2024-11-21 15:56:25,697 - INFO - social_commands imported
+2024-11-21 15:56:25,697 - INFO - Loaded commands from social_commands
+2024-11-21 15:56:25,697 - INFO - Commands loaded: 17
+2024-11-21 15:56:25,698 - WARNING - MOTD file not found. Using default message.
+2024-11-21 15:56:25,698 - INFO - Ninja MUD Server initialized successfully.
+2024-11-21 15:56:25,699 - INFO - Ninja MUD Server running on port 4000.
+2024-11-21 15:56:36,492 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=51773).
+2024-11-21 15:56:36,493 - DEBUG - New connection established from [self.transport.getPeer()}.
+2024-11-21 15:56:40,854 - INFO - Received command: Array in state: GET_USERNAME
+2024-11-21 15:56:42,470 - INFO - Received command: 1salvice in state: GET_PASSWORD
+2024-11-21 15:56:42,470 - INFO - Player Array is now in room 3000.
+2024-11-21 15:56:44,293 - INFO - Received command: look in state: COMMAND
+2024-11-21 15:56:44,293 - INFO - Executing command 'look' for player Array with raw args '' and split args []
+2024-11-21 15:56:44,293 - ERROR - Error executing command 'look' for Array: handle_look() takes from 1 to 2 positional arguments but 3 were given
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 135, in process_command
+    handler(player, raw_args, split_args)
+TypeError: handle_look() takes from 1 to 2 positional arguments but 3 were given
+2024-11-21 15:56:48,378 - INFO - Received command: north in state: COMMAND
+2024-11-21 15:56:48,378 - INFO - Executing command 'north' for player Array with raw args '' and split args []
+2024-11-21 15:56:48,379 - ERROR - Error executing command 'north' for Array: <lambda>() takes from 1 to 2 positional arguments but 3 were given
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 135, in process_command
+    handler(player, raw_args, split_args)
+TypeError: <lambda>() takes from 1 to 2 positional arguments but 3 were given
+2024-11-21 15:59:36,467 - INFO - utils imported
+2024-11-21 15:59:36,467 - INFO - Loaded utility: ensure_room_exists
+2024-11-21 15:59:36,467 - INFO - Loaded utility: find_zone_by_vnum
+2024-11-21 15:59:36,467 - INFO - Loaded utility: next_free_vnum
+2024-11-21 15:59:36,467 - INFO - Loaded utility: reverse_dir
+2024-11-21 15:59:36,468 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'next_free_vnum', 'reverse_dir']
+2024-11-21 15:59:36,468 - INFO - Total commands loaded: 0
+2024-11-21 15:59:36,468 - DEBUG - All registered commands: []
+2024-11-21 15:59:36,468 - INFO - Zones loaded
+2024-11-21 15:59:36,468 - DEBUG - Zones loaded after preload_zones()
+2024-11-21 15:59:36,469 - INFO - Initializing Ninja MUD Server...
+2024-11-21 15:59:36,469 - INFO - Logging initialized.
+2024-11-21 15:59:36,470 - DEBUG - Creating player due to lack of existence.
+2024-11-21 15:59:36,470 - INFO - Database tables ensured and default rooms initialized.
+2024-11-21 15:59:36,470 - DEBUG - Database tables ensured and default rooms initialized.
+2024-11-21 15:59:36,470 - INFO - Database connection established using mud_game_10_rooms.db.
+2024-11-21 15:59:36,471 - INFO - Preloaded zone: Eve's Haven
+2024-11-21 15:59:36,472 - INFO - Preloaded zone: Expanse
+2024-11-21 15:59:36,472 - INFO - Zone data preloaded from zones.
+2024-11-21 15:59:36,476 - INFO - Loaded utility: ensure_room_exists
+2024-11-21 15:59:36,477 - INFO - Loaded utility: find_zone_by_vnum
+2024-11-21 15:59:36,477 - INFO - Loaded utility: next_free_vnum
+2024-11-21 15:59:36,477 - INFO - Loaded utility: reverse_dir
+2024-11-21 15:59:36,477 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'next_free_vnum', 'reverse_dir']
+2024-11-21 15:59:36,477 - INFO - Total commands loaded: 0
+2024-11-21 15:59:36,477 - DEBUG - All registered commands: []
+2024-11-21 15:59:36,477 - INFO - Zones loaded
+2024-11-21 15:59:36,478 - DEBUG - Zones loaded after preload_zones()
+2024-11-21 15:59:36,478 - INFO - general_commands imported
+2024-11-21 15:59:36,478 - INFO - Loaded commands from general_commands
+2024-11-21 15:59:36,479 - INFO - admin_commands imported
+2024-11-21 15:59:36,480 - INFO - Loaded commands from admin_commands
+2024-11-21 15:59:36,480 - INFO - social_commands imported
+2024-11-21 15:59:36,480 - INFO - Loaded commands from social_commands
+2024-11-21 15:59:36,481 - INFO - Commands loaded: 17
+2024-11-21 15:59:36,481 - WARNING - MOTD file not found. Using default message.
+2024-11-21 15:59:36,481 - INFO - Ninja MUD Server initialized successfully.
+2024-11-21 15:59:36,481 - INFO - Ninja MUD Server running on port 4000.
+2024-11-21 15:59:42,824 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=52022).
+2024-11-21 15:59:42,825 - DEBUG - New connection established from [self.transport.getPeer()}.
+2024-11-21 15:59:44,712 - INFO - Received command: Array in state: GET_USERNAME
+2024-11-21 15:59:45,982 - INFO - Received command: 1salvice in state: GET_PASSWORD
+2024-11-21 15:59:45,982 - INFO - Player Array is now in room 3000.
+2024-11-21 15:59:47,498 - INFO - Received command: look in state: COMMAND
+2024-11-21 15:59:47,498 - INFO - Executing command 'look' for player Array with args ''
+2024-11-21 15:59:47,499 - DEBUG - UTILITIES in general_commands: dict_keys(['ensure_room_exists', 'find_zone_by_vnum', 'next_free_vnum', 'reverse_dir'])
+2024-11-21 15:59:54,161 - INFO - Received command: north in state: COMMAND
+2024-11-21 15:59:54,162 - INFO - Executing command 'north' for player Array with args ''
+2024-11-21 15:59:54,164 - INFO - Player Array is now in room 3001.
+2024-11-21 15:59:56,332 - INFO - Received command: south in state: COMMAND
+2024-11-21 15:59:56,332 - INFO - Executing command 'south' for player Array with args ''
+2024-11-21 15:59:56,334 - INFO - Player Array is now in room 3000.
+2024-11-21 15:59:58,934 - INFO - Received command: goto 3001 in state: COMMAND
+2024-11-21 15:59:58,935 - INFO - Executing command 'goto' for player Array with args '3001'
+2024-11-21 16:18:05,120 - INFO - utils imported
+2024-11-21 16:18:05,121 - INFO - Loaded utility: ensure_room_exists
+2024-11-21 16:18:05,121 - INFO - Loaded utility: find_zone_by_vnum
+2024-11-21 16:18:05,121 - INFO - Loaded utility: next_free_vnum
+2024-11-21 16:18:05,121 - INFO - Loaded utility: reverse_dir
+2024-11-21 16:18:05,121 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'next_free_vnum', 'reverse_dir']
+2024-11-21 16:18:05,121 - INFO - Total commands loaded: 0
+2024-11-21 16:18:05,121 - DEBUG - All registered commands: []
+2024-11-21 16:18:05,122 - INFO - Zones loaded
+2024-11-21 16:18:05,122 - DEBUG - Zones loaded after preload_zones()
+2024-11-21 16:18:05,122 - INFO - Initializing Ninja MUD Server...
+2024-11-21 16:18:05,123 - INFO - Logging initialized.
+2024-11-21 16:18:05,123 - DEBUG - Creating player due to lack of existence.
+2024-11-21 16:18:05,124 - INFO - Database tables ensured and default rooms initialized.
+2024-11-21 16:18:05,124 - DEBUG - Database tables ensured and default rooms initialized.
+2024-11-21 16:18:05,124 - INFO - Database connection established using mud_game_10_rooms.db.
+2024-11-21 16:18:05,124 - INFO - Preloaded zone: Eve's Haven
+2024-11-21 16:18:05,125 - INFO - Preloaded zone: Expanse
+2024-11-21 16:18:05,125 - INFO - Zone data preloaded from zones.
+2024-11-21 16:18:05,126 - INFO - Loaded utility: ensure_room_exists
+2024-11-21 16:18:05,126 - INFO - Loaded utility: find_zone_by_vnum
+2024-11-21 16:18:05,126 - INFO - Loaded utility: next_free_vnum
+2024-11-21 16:18:05,126 - INFO - Loaded utility: reverse_dir
+2024-11-21 16:18:05,127 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'next_free_vnum', 'reverse_dir']
+2024-11-21 16:18:05,127 - INFO - Total commands loaded: 0
+2024-11-21 16:18:05,127 - DEBUG - All registered commands: []
+2024-11-21 16:18:05,127 - INFO - Zones loaded
+2024-11-21 16:18:05,127 - DEBUG - Zones loaded after preload_zones()
+2024-11-21 16:18:05,128 - INFO - general_commands imported
+2024-11-21 16:18:05,128 - INFO - Loaded commands from general_commands
+2024-11-21 16:18:05,131 - INFO - admin_commands imported
+2024-11-21 16:18:05,132 - INFO - Loaded commands from admin_commands
+2024-11-21 16:18:05,132 - INFO - social_commands imported
+2024-11-21 16:18:05,132 - INFO - Loaded commands from social_commands
+2024-11-21 16:18:05,132 - INFO - Commands loaded: 17
+2024-11-21 16:18:05,133 - WARNING - MOTD file not found. Using default message.
+2024-11-21 16:18:05,133 - INFO - Ninja MUD Server initialized successfully.
+2024-11-21 16:18:05,134 - INFO - Ninja MUD Server running on port 4000.
+2024-11-21 16:18:11,337 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=53433).
+2024-11-21 16:18:11,338 - DEBUG - New connection established from [self.transport.getPeer()}.
+2024-11-21 16:18:12,780 - INFO - Received command: Array in state: GET_USERNAME
+2024-11-21 16:18:13,861 - INFO - Received command: 1salvice in state: GET_PASSWORD
+2024-11-21 16:18:13,861 - INFO - Player Array is now in room 3000.
+2024-11-21 16:18:15,446 - INFO - Received command: north in state: COMMAND
+2024-11-21 16:18:15,446 - INFO - Executing command 'north' for player Array with args ''
+2024-11-21 16:18:15,447 - INFO - Player Array is now in room 3001.
+2024-11-21 16:18:16,835 - INFO - Received command: south in state: COMMAND
+2024-11-21 16:18:16,835 - INFO - Executing command 'south' for player Array with args ''
+2024-11-21 16:18:16,837 - INFO - Player Array is now in room 3000.
+2024-11-21 16:18:18,560 - INFO - Received command: goto 3001 in state: COMMAND
+2024-11-21 16:18:18,560 - INFO - Executing command 'goto' for player Array with args '3001'
+2024-11-21 16:18:35,195 - INFO - Received command: createzone in state: COMMAND
+2024-11-21 16:18:35,195 - INFO - Executing command 'createzone' for player Array with args ''
+2024-11-21 16:18:47,130 - INFO - Received command: createzone Limbo 4000 4099 in state: COMMAND
+2024-11-21 16:18:47,131 - INFO - Executing command 'createzone' for player Array with args 'Limbo 4000 4099'
+2024-11-21 16:21:55,432 - INFO - utils imported
+2024-11-21 16:21:55,432 - INFO - Loaded utility: ensure_room_exists
+2024-11-21 16:21:55,432 - INFO - Loaded utility: find_zone_by_vnum
+2024-11-21 16:21:55,433 - INFO - Loaded utility: next_free_vnum
+2024-11-21 16:21:55,433 - INFO - Loaded utility: reverse_dir
+2024-11-21 16:21:55,433 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'next_free_vnum', 'reverse_dir']
+2024-11-21 16:21:55,433 - INFO - Total commands loaded: 0
+2024-11-21 16:21:55,433 - DEBUG - All registered commands: []
+2024-11-21 16:21:55,434 - INFO - Zones loaded
+2024-11-21 16:21:55,434 - DEBUG - Zones loaded after preload_zones()
+2024-11-21 16:21:55,434 - INFO - Initializing Ninja MUD Server...
+2024-11-21 16:21:55,434 - INFO - Logging initialized.
+2024-11-21 16:21:55,435 - DEBUG - Creating player due to lack of existence.
+2024-11-21 16:21:55,435 - INFO - Database tables ensured and default rooms initialized.
+2024-11-21 16:21:55,436 - DEBUG - Database tables ensured and default rooms initialized.
+2024-11-21 16:21:55,436 - INFO - Database connection established using mud_game_10_rooms.db.
+2024-11-21 16:21:55,437 - INFO - Preloaded zone: Eve's Haven
+2024-11-21 16:21:55,437 - INFO - Preloaded zone: Expanse
+2024-11-21 16:21:55,437 - INFO - Zone data preloaded from zones.
+2024-11-21 16:21:55,439 - INFO - Loaded utility: ensure_room_exists
+2024-11-21 16:21:55,439 - INFO - Loaded utility: find_zone_by_vnum
+2024-11-21 16:21:55,439 - INFO - Loaded utility: next_free_vnum
+2024-11-21 16:21:55,439 - INFO - Loaded utility: reverse_dir
+2024-11-21 16:21:55,439 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'next_free_vnum', 'reverse_dir']
+2024-11-21 16:21:55,439 - INFO - Total commands loaded: 0
+2024-11-21 16:21:55,439 - DEBUG - All registered commands: []
+2024-11-21 16:21:55,440 - INFO - Zones loaded
+2024-11-21 16:21:55,440 - DEBUG - Zones loaded after preload_zones()
+2024-11-21 16:21:55,440 - INFO - general_commands imported
+2024-11-21 16:21:55,440 - INFO - Loaded commands from general_commands
+2024-11-21 16:21:55,444 - INFO - admin_commands imported
+2024-11-21 16:21:55,445 - INFO - Loaded commands from admin_commands
+2024-11-21 16:21:55,445 - INFO - social_commands imported
+2024-11-21 16:21:55,446 - INFO - Loaded commands from social_commands
+2024-11-21 16:21:55,446 - INFO - Commands loaded: 17
+2024-11-21 16:21:55,447 - WARNING - MOTD file not found. Using default message.
+2024-11-21 16:21:55,447 - INFO - Ninja MUD Server initialized successfully.
+2024-11-21 16:21:55,448 - INFO - Ninja MUD Server running on port 4000.
+2024-11-21 16:22:00,715 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=53717).
+2024-11-21 16:22:00,716 - DEBUG - New connection established from [self.transport.getPeer()}.
+2024-11-21 16:22:03,665 - INFO - Received command: Array in state: GET_USERNAME
+2024-11-21 16:22:05,282 - INFO - Received command: 1salvice in state: GET_PASSWORD
+2024-11-21 16:22:05,282 - INFO - Player Array is now in room 3000.
+2024-11-21 16:22:07,651 - INFO - Received command: say Hello in state: COMMAND
+2024-11-21 16:22:07,652 - INFO - Executing command 'say' for player Array with args 'Hello'
+2024-11-21 16:22:07,652 - ERROR - Error executing command 'say' for Array: <lambda>() missing 2 required positional arguments: 'raw_args' and 'split_args'
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 130, in process_command
+    handler(player, args)  # Pass only the player and raw args
+TypeError: <lambda>() missing 2 required positional arguments: 'raw_args' and 'split_args'
+2024-11-21 16:22:11,836 - INFO - Received command: goto 3001 in state: COMMAND
+2024-11-21 16:22:11,836 - INFO - Executing command 'goto' for player Array with args '3001'
+2024-11-21 16:22:11,837 - ERROR - Error executing command 'goto' for Array: <lambda>() missing 2 required positional arguments: 'raw_args' and 'split_args'
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 130, in process_command
+    handler(player, args)  # Pass only the player and raw args
+TypeError: <lambda>() missing 2 required positional arguments: 'raw_args' and 'split_args'
+2024-11-21 16:31:46,568 - INFO - utils imported
+2024-11-21 16:31:46,568 - INFO - Loaded utility: ensure_room_exists
+2024-11-21 16:31:46,568 - INFO - Loaded utility: find_zone_by_vnum
+2024-11-21 16:31:46,568 - INFO - Loaded utility: next_free_vnum
+2024-11-21 16:31:46,569 - INFO - Loaded utility: reverse_dir
+2024-11-21 16:31:46,569 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'next_free_vnum', 'reverse_dir']
+2024-11-21 16:31:46,569 - INFO - Total commands loaded: 0
+2024-11-21 16:31:46,569 - DEBUG - All registered commands: []
+2024-11-21 16:31:46,569 - INFO - Zones loaded
+2024-11-21 16:31:46,570 - DEBUG - Zones loaded after preload_zones()
+2024-11-21 16:31:46,570 - INFO - Initializing Ninja MUD Server...
+2024-11-21 16:31:46,570 - INFO - Logging initialized.
+2024-11-21 16:31:46,571 - DEBUG - Creating player due to lack of existence.
+2024-11-21 16:31:46,571 - INFO - Database tables ensured and default rooms initialized.
+2024-11-21 16:31:46,572 - DEBUG - Database tables ensured and default rooms initialized.
+2024-11-21 16:31:46,572 - INFO - Database connection established using mud_game_10_rooms.db.
+2024-11-21 16:31:46,572 - INFO - Preloaded zone: Eve's Haven
+2024-11-21 16:31:46,572 - INFO - Preloaded zone: Expanse
+2024-11-21 16:31:46,573 - INFO - Zone data preloaded from zones.
+2024-11-21 16:31:46,579 - INFO - Loaded utility: ensure_room_exists
+2024-11-21 16:31:46,579 - INFO - Loaded utility: find_zone_by_vnum
+2024-11-21 16:31:46,579 - INFO - Loaded utility: next_free_vnum
+2024-11-21 16:31:46,579 - INFO - Loaded utility: reverse_dir
+2024-11-21 16:31:46,579 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'next_free_vnum', 'reverse_dir']
+2024-11-21 16:31:46,579 - INFO - Total commands loaded: 0
+2024-11-21 16:31:46,579 - DEBUG - All registered commands: []
+2024-11-21 16:31:46,580 - INFO - Zones loaded
+2024-11-21 16:31:46,580 - DEBUG - Zones loaded after preload_zones()
+2024-11-21 16:31:46,580 - INFO - general_commands imported
+2024-11-21 16:31:46,581 - INFO - Loaded commands from general_commands
+2024-11-21 16:31:46,584 - INFO - admin_commands imported
+2024-11-21 16:31:46,584 - INFO - Loaded commands from admin_commands
+2024-11-21 16:31:46,585 - INFO - social_commands imported
+2024-11-21 16:31:46,585 - INFO - Loaded commands from social_commands
+2024-11-21 16:31:46,585 - INFO - Commands loaded: 17
+2024-11-21 16:31:46,586 - WARNING - MOTD file not found. Using default message.
+2024-11-21 16:31:46,587 - INFO - Ninja MUD Server initialized successfully.
+2024-11-21 16:31:46,588 - INFO - Ninja MUD Server running on port 4000.
+2024-11-21 16:31:53,011 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=54452).
+2024-11-21 16:31:53,011 - DEBUG - New connection established from [self.transport.getPeer()}.
+2024-11-21 16:31:54,589 - INFO - Received command: Array in state: GET_USERNAME
+2024-11-21 16:31:55,915 - INFO - Received command: 1salvice in state: GET_PASSWORD
+2024-11-21 16:31:55,916 - INFO - Player Array is now in room 3000.
+2024-11-21 16:31:58,800 - INFO - Received command: goto 3001 in state: COMMAND
+2024-11-21 16:31:58,801 - INFO - Executing command 'goto' for player Array with raw args '3001' and split args ['3001']
+2024-11-21 16:32:01,660 - INFO - Received command: look in state: COMMAND
+2024-11-21 16:32:01,660 - INFO - Executing command 'look' for player Array with raw args '' and split args []
+2024-11-21 16:32:01,661 - DEBUG - UTILITIES in general_commands: dict_keys(['ensure_room_exists', 'find_zone_by_vnum', 'next_free_vnum', 'reverse_dir'])
+2024-11-21 16:32:16,146 - INFO - Received command: createzone limbo 4000 4099 in state: COMMAND
+2024-11-21 16:32:16,147 - INFO - Executing command 'createzone' for player Array with raw args 'limbo 4000 4099' and split args ['limbo', '4000', '4099']
+2024-11-21 16:32:16,148 - INFO - Creating zone file at: zones\limbo.json
+2024-11-21 16:32:16,148 - INFO - Zone limbo created with range 4000-4099.
+2024-11-21 16:32:32,589 - INFO - Received command: ooc hello in state: COMMAND
+2024-11-21 16:32:32,589 - INFO - Executing command 'ooc' for player Array with raw args 'hello' and split args ['hello']
+2024-11-21 16:32:32,590 - ERROR - Error executing command 'ooc' for Array: 'str' object has no attribute 'sendLine'
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 135, in process_command
+    handler(player, players_in_rooms, raw_args, split_args)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\social_commands.py", line 45, in <lambda>
+    "ooc": lambda player, players_in_rooms, raw_args, split_args: handle_ooc(player, raw_args, split_args, players_in_rooms),
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\social_commands.py", line 29, in handle_ooc
+    recipient.sendLine(f'({player.username}) {raw_args.strip()}'.encode('utf-8'))
+AttributeError: 'str' object has no attribute 'sendLine'
+2024-11-21 16:32:40,090 - INFO - Received command: say hello in state: COMMAND
+2024-11-21 16:32:40,091 - INFO - Executing command 'say' for player Array with raw args 'hello' and split args ['hello']
+2024-11-21 16:32:44,882 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=54511).
+2024-11-21 16:32:44,882 - DEBUG - New connection established from [self.transport.getPeer()}.
+2024-11-21 16:32:47,809 - INFO - Received command: Manorbis in state: GET_USERNAME
+2024-11-21 16:32:49,825 - INFO - Received command: 1salvice in state: GET_PASSWORD
+2024-11-21 16:32:49,826 - INFO - Player Manorbis is now in room 3005.
+2024-11-21 16:32:51,668 - INFO - Received command: goto 3001 in state: COMMAND
+2024-11-21 16:32:51,668 - INFO - Executing command 'goto' for player Manorbis with raw args '3001' and split args ['3001']
+2024-11-21 16:32:53,521 - INFO - Received command: say hello in state: COMMAND
+2024-11-21 16:32:53,522 - INFO - Executing command 'say' for player Manorbis with raw args 'hello' and split args ['hello']
+2024-11-21 16:33:00,232 - INFO - Received command: say how are you? in state: COMMAND
+2024-11-21 16:33:00,232 - INFO - Executing command 'say' for player Manorbis with raw args 'how are you?' and split args ['how', 'are', 'you?']
