@@ -29,6 +29,13 @@ def handle_ooc(player, raw_args, split_args, players_in_rooms):
     for player_list in players_in_rooms.values():
         for recipient in player_list:
             recipient.sendLine(f'({player.username}) {raw_args.strip()}'.encode('utf-8'))
+            
+def handle_think(player, raw_args, split_args, players_in_rooms):
+    logging.info(f'{player.username} uses emote: think')
+    room_key = player.current_room
+    if room_key in players_in_rooms:
+        for recipient in players_in_rooms[room_key]:
+            recipient.sendLine(f'{player.username} thinks deeply.'.encode('utf-8'))
 
 def handle_emote(player, raw_args, split_args, players_in_rooms):
     if not raw_args.strip():  # Check for empty action
@@ -46,5 +53,6 @@ COMMANDS = {
     "say": lambda player, players_in_rooms, raw_args, split_args: handle_say(player, raw_args, split_args, players_in_rooms),
     "ooc": lambda player, players_in_rooms, raw_args, split_args: handle_ooc(player, raw_args, split_args, players_in_rooms),
     "emote": lambda player, players_in_rooms, raw_args, split_args: handle_emote(player, raw_args, split_args, players_in_rooms),
+    "think": lambda player, players_in_rooms, raw_args, split_args: handle_think(player, raw_args, split_args, players_in_rooms),
 }
 
