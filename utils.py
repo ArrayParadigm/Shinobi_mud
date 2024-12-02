@@ -62,7 +62,20 @@ def ensure_room_exists(vnum, protocol):
         logging.error(f"Error ensuring room exists for VNUM {vnum}: {e}")
         protocol.sendLine(b"Error processing room data.")
         return False
-
+        
+def overlay_zone(zone_data, anchor_x, anchor_y):
+    """
+    Overlays a zone on the world map using an anchor point.
+    """
+    for vnum, room_data in zone_data["rooms"].items():
+        # Get offsets for the room within the zone
+        x_offset = room_data.get("x_offset", 0)
+        y_offset = room_data.get("y_offset", 0)
+        # Calculate global coordinates
+        x, y = anchor_x + x_offset, anchor_y + y_offset
+        # Overlay the VNUM on the world map
+        if 0 <= y < len(WORLD_MAP) and 0 <= x < len(WORLD_MAP[0]):
+            WORLD_MAP[y][x] = str(vnum)
 
 def next_free_vnum(zone_data):
     """
@@ -85,6 +98,24 @@ def next_free_vnum(zone_data):
         logging.error(f"Error finding next free VNUM: {e}")
     return None
 
+def load_world_map(filename="world.map"):
+    with open(filename, "r") as file:
+        return [list(line.strip()) for line in file.readlines()]
+
+def preload_zones_with_anchors():
+    """Load zones and overlay them onto the world map."""
+    zones_directory = "zones"
+    anchor_points = {
+        "Eve's Haven": (500, 500),  # Anchor at 500, 500
+    }
+    
+    for zone_file in os.listdir(zones_directory):
+        if zone_file.endswith(".json"):
+            with open(os.path.join(zones_directory, zone_file), "r") as file:
+                zone_data = json.load(file)
+                zone_name = zone_data["name"]
+                anchor_x, anchor_y = anchor_points.get(zone_name, (0, 0))
+                overlay_zone(zone_data, anchor_x, anchor_y)
 
 def reverse_dir(direction):
     """
@@ -97,3 +128,23 @@ def reverse_dir(direction):
         str: The opposite direction (e.g., "south"), or an empty string if invalid.
     """
     return {"north": "south", "south": "north", "east": "west", "west": "east"}.get(direction, "")
+
+def render_open_land(x, y, radius=3):
+    WORLD_MAP = UTILITIES["WORLD_MAP"]  # Access WORLD_MAP
+    visible_map = []
+    for j in range(y - radius, y + radius + 1):
+        row = ""
+        for i in range(x - radius, x + radius + 1):
+            if 0 <= j < len(WORLD_MAP) and 0 <= i < len(WORLD_MAP[0]):
+                row += WORLD_MAP[j][i]
+            else:
+                row += "?"
+        visible_map.append(row)
+    return "\n".join(visible_map)
+
+def render_room(player):
+    zone_file = UTILITIES["find_zone_by_vnum"](player.current_room)
+    with open(zone_file, "r") as file:
+        zone_data = json.load(file)
+        room = zone_data["rooms"].get(str(player.current_room))
+        player.sendLine(f"{room['description']}\nExits: {', '.join(room['exits'].keys())}".encode("utf-8"))

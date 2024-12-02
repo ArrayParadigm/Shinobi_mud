@@ -46,6 +46,9 @@ def load_utilities(module_name="utils"):
 #TODO: load_utilities call moved here due to timing issues from initialization. It's the intent to fix this later on when I'm further along.
 load_utilities()
 
+global WORLD_MAP
+WORLD_MAP = UTILITIES['load_world_map']()  # Load the world map
+UTILITIES['WORLD_MAP'] = WORLD_MAP  # Add WORLD_MAP to UTILITIES for global access
 
 def load_commands():
     """Dynamically loads COMMANDS from explicitly listed modules."""
@@ -212,11 +215,19 @@ class NinjaMUDProtocol(basic.LineReceiver):
         self.is_admin = True
         self.player_class = 'newbie' # Default to a basic Class
         self.STATE_HANDLERS = get_state_handlers()
+        
+        self.in_zone = False
+        self.x = 500
+        self.y = 500
 
     def connectionMade(self):
         logging.info("New connection established from %s.", self.transport.getPeer())
         debug_log("New connection established from [self.transport.getPeer()}.")
-        self.sendLine(b"Welcome to Ninja MUD!")
+        # Send the MOTD when the player connects
+        if MOTD:
+            self.sendLine(MOTD.encode('utf-8'))  # Send MOTD to the player
+        else:
+            self.sendLine(b"Welcome to Ninja MUD!")  # Fallback if no MOTD is set
         self.sendLine(b"Please enter your username:")
         
     def connectionLost(self, reason):
@@ -286,9 +297,11 @@ class NinjaMUDProtocol(basic.LineReceiver):
         else:
             self.sendLine(b"You are alone in this room.")
 
-
     def register_password(self, password):
         self.character_creation_data['password'] = password
+        self.x = 500 #Default starting x coordinate
+        self.y = 500 #Default starting y coordinate
+        self.in_zone = False #default to not in zone.
         self.sendLine(b"Confirm your password:")
         self.state = "CONFIRM_PASSWORD"
         
@@ -333,8 +346,6 @@ class NinjaMUDProtocol(basic.LineReceiver):
             if not players_in_rooms[room_key]:  # If the room is empty, clean up
                 del players_in_rooms[room_key]
         logging.info(f"Player {self.username} left room {room_key}.")
-
-
 
     def confirm_password(self, password):
         if self.character_creation_data['password'] == password:
@@ -444,22 +455,27 @@ def initialize_server():
     cursor = conn.cursor()
     ensure_tables_exist()
     logging.info(f"Database connection established using {db_file}.")
+    
+    # 4. Preload Map
+    
+#    WORLD_MAP = load_world_map()
+#    logging.info(f"Map file loaded")
 
-    # 4. Preload Zones
+    # 5. Preload Zones
     zone_directory = config.get("zone_directory", "zones")
     preload_zones(zone_directory)
     logging.info(f"Zone data preloaded from {zone_directory}.")
 
 # Load utilities moved to first spot after defining due to timing issues. Lazy import wasn't working and I didn't want to get stopped by this problem with so much work to be done. Hopefully I'll come back and clean it up when I get further along.
-    #5. Load Utilities
+    #6. Load Utilities
     #load_utilities()
     #logging.info(f"Utilities loaded: {len(UTILITIES)}")
 
-    # 6. Load Commands
+    # 7. Load Commands
     load_commands()
     logging.info(f"Commands loaded: {len(COMMAND_REGISTRY)}")
 
-    # 7. Load MOTD (Message of the Day)
+    # 8. Load MOTD (Message of the Day)
     try:
         motd_file = config.get("motd_file", "motd.txt")
         with open(motd_file, "r") as file:
@@ -468,7 +484,7 @@ def initialize_server():
             logging.info(f"MOTD loaded from {motd_file}.")
     except FileNotFoundError:
         MOTD = "Welcome to Ninja MUD!"
-        logging.warning("MOTD file not found. Using default message.")
+        logging.warning("MOTD file not found. Using default message.")    
 
     # Final Validation
     validate_server_state()
