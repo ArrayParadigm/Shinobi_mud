@@ -69,3 +69,590 @@ user global configuration and to define the default location to store repositori
 not correct please set the HOME environment variable and restart Eclipse. Otherwise Git for Windows and
 EGit might behave differently since they see different configuration options.
 This warning can be switched off on the Team > Git > Confirmations and Warnings preference page.
+
+!ENTRY org.python.pydev.shared_core 4 4 2024-12-02 17:07:19.488
+!MESSAGE Unable to make private static native int java.util.prefs.WindowsPreferences.WindowsRegCloseKey(long) accessible: module java.prefs does not "opens java.util.prefs" to unnamed module @4cddc036
+!STACK 0
+java.lang.reflect.InaccessibleObjectException: Unable to make private static native int java.util.prefs.WindowsPreferences.WindowsRegCloseKey(long) accessible: module java.prefs does not "opens java.util.prefs" to unnamed module @4cddc036
+	at java.base/java.lang.reflect.AccessibleObject.throwInaccessibleObjectException(Unknown Source)
+	at java.base/java.lang.reflect.AccessibleObject.checkCanSetAccessible(Unknown Source)
+	at java.base/java.lang.reflect.AccessibleObject.checkCanSetAccessible(Unknown Source)
+	at java.base/java.lang.reflect.Method.checkCanSetAccessible(Unknown Source)
+	at java.base/java.lang.reflect.Method.setAccessible(Unknown Source)
+	at at.jta.Regor.initMethods(Regor.java:1553)
+	at at.jta.Regor.<init>(Regor.java:264)
+	at org.python.pydev.ui.pythonpathconf.PythonInterpreterProviderFactory.getInterpreterProviders(PythonInterpreterProviderFactory.java:54)
+	at org.python.pydev.ui.pythonpathconf.AutoConfigMaker$3.run(AutoConfigMaker.java:482)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:47)
+	at org.python.pydev.ui.pythonpathconf.AutoConfigMaker.getAllProviders(AutoConfigMaker.java:479)
+	at org.python.pydev.ui.pythonpathconf.AutoConfigMaker.getPossibleInterpreters(AutoConfigMaker.java:464)
+	at org.python.pydev.ui.pythonpathconf.AutoConfigMaker.autoConfigSearch(AutoConfigMaker.java:204)
+	at org.python.pydev.ui.pythonpathconf.AutoConfigMaker.autoConfigSingleApply(AutoConfigMaker.java:123)
+	at org.python.pydev.ui.PyProjectPythonDetails$ProjectInterpreterAndGrammarConfig$2.widgetSelected(PyProjectPythonDetails.java:326)
+	at org.eclipse.swt.widgets.TypedListener.handleEvent(TypedListener.java:252)
+	at org.eclipse.swt.widgets.EventTable.sendEvent(EventTable.java:89)
+	at org.eclipse.swt.widgets.Display.sendEvent(Display.java:4274)
+	at org.eclipse.swt.widgets.Widget.sendEvent(Widget.java:1066)
+	at org.eclipse.swt.widgets.Widget.sendEvent(Widget.java:1090)
+	at org.eclipse.swt.widgets.Widget.sendSelectionEvent(Widget.java:1107)
+	at org.eclipse.swt.widgets.Link.wmNotifyChild(Link.java:725)
+	at org.eclipse.swt.widgets.Control.wmNotify(Control.java:5798)
+	at org.eclipse.swt.widgets.Composite.wmNotify(Composite.java:1961)
+	at org.eclipse.swt.widgets.Control.WM_NOTIFY(Control.java:5366)
+	at org.eclipse.swt.widgets.Control.windowProc(Control.java:4800)
+	at org.eclipse.swt.widgets.Display.windowProc(Display.java:5039)
+	at org.eclipse.swt.internal.win32.OS.CallWindowProc(Native Method)
+	at org.eclipse.swt.widgets.Link.callWindowProc(Link.java:162)
+	at org.eclipse.swt.widgets.Widget.wmLButtonUp(Widget.java:2025)
+	at org.eclipse.swt.widgets.Control.WM_LBUTTONUP(Control.java:5179)
+	at org.eclipse.swt.widgets.Control.windowProc(Control.java:4781)
+	at org.eclipse.swt.widgets.Display.windowProc(Display.java:5039)
+	at org.eclipse.swt.internal.win32.OS.DispatchMessage(Native Method)
+	at org.eclipse.swt.widgets.Display.readAndDispatch(Display.java:3658)
+	at org.eclipse.jface.window.Window.runEventLoop(Window.java:823)
+	at org.eclipse.jface.window.Window.open(Window.java:799)
+	at org.eclipse.ui.actions.NewProjectAction.run(NewProjectAction.java:119)
+	at org.eclipse.egit.ui.internal.clone.GitImportWizard$7.run(GitImportWizard.java:274)
+	at org.eclipse.swt.widgets.RunnableLock.run(RunnableLock.java:40)
+	at org.eclipse.swt.widgets.Synchronizer.runAsyncMessages(Synchronizer.java:132)
+	at org.eclipse.swt.widgets.Display.runAsyncMessages(Display.java:4047)
+	at org.eclipse.swt.widgets.Display.readAndDispatch(Display.java:3663)
+	at org.eclipse.jface.operation.ModalContext$ModalContextThread.block(ModalContext.java:168)
+	at org.eclipse.jface.operation.ModalContext.run(ModalContext.java:370)
+	at org.eclipse.jface.wizard.WizardDialog.run(WizardDialog.java:1036)
+	at org.eclipse.egit.ui.internal.clone.GitImportWizard.performFinish(GitImportWizard.java:202)
+	at org.eclipse.jface.wizard.WizardDialog.finishPressed(WizardDialog.java:837)
+	at org.eclipse.jface.wizard.WizardDialog.buttonPressed(WizardDialog.java:474)
+	at org.eclipse.jface.dialogs.Dialog.lambda$0(Dialog.java:619)
+	at org.eclipse.swt.events.SelectionListener$1.widgetSelected(SelectionListener.java:84)
+	at org.eclipse.swt.widgets.TypedListener.handleEvent(TypedListener.java:252)
+	at org.eclipse.swt.widgets.EventTable.sendEvent(EventTable.java:89)
+	at org.eclipse.swt.widgets.Display.sendEvent(Display.java:4274)
+	at org.eclipse.swt.widgets.Widget.sendEvent(Widget.java:1066)
+	at org.eclipse.swt.widgets.Display.runDeferredEvents(Display.java:4072)
+	at org.eclipse.swt.widgets.Display.readAndDispatch(Display.java:3660)
+	at org.eclipse.jface.window.Window.runEventLoop(Window.java:823)
+	at org.eclipse.jface.window.Window.open(Window.java:799)
+	at org.eclipse.ui.internal.handlers.WizardHandler$Import.executeHandler(WizardHandler.java:153)
+	at org.eclipse.ui.internal.handlers.WizardHandler.execute(WizardHandler.java:279)
+	at org.eclipse.ui.internal.handlers.HandlerProxy.execute(HandlerProxy.java:277)
+	at org.eclipse.ui.internal.handlers.E4HandlerProxy.execute(E4HandlerProxy.java:98)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(Unknown Source)
+	at java.base/java.lang.reflect.Method.invoke(Unknown Source)
+	at org.eclipse.e4.core.internal.di.MethodRequestor.execute(MethodRequestor.java:58)
+	at org.eclipse.e4.core.internal.di.InjectorImpl.invokeUsingClass(InjectorImpl.java:298)
+	at org.eclipse.e4.core.internal.di.InjectorImpl.invoke(InjectorImpl.java:232)
+	at org.eclipse.e4.core.contexts.ContextInjectionFactory.invoke(ContextInjectionFactory.java:174)
+	at org.eclipse.e4.core.commands.internal.HandlerServiceHandler.execute(HandlerServiceHandler.java:165)
+	at org.eclipse.core.commands.Command.executeWithChecks(Command.java:488)
+	at org.eclipse.core.commands.ParameterizedCommand.executeWithChecks(ParameterizedCommand.java:485)
+	at org.eclipse.e4.core.commands.internal.HandlerServiceImpl.executeHandler(HandlerServiceImpl.java:204)
+	at org.eclipse.ui.internal.handlers.LegacyHandlerService.executeCommand(LegacyHandlerService.java:385)
+	at org.eclipse.ui.internal.actions.CommandAction.runWithEvent(CommandAction.java:141)
+	at org.eclipse.ui.internal.actions.CommandAction.run(CommandAction.java:151)
+	at org.eclipse.ui.actions.ImportResourcesAction.run(ImportResourcesAction.java:100)
+	at org.eclipse.ui.actions.BaseSelectionListenerAction.runWithEvent(BaseSelectionListenerAction.java:171)
+	at org.eclipse.jface.action.ActionContributionItem.handleWidgetSelection(ActionContributionItem.java:581)
+	at org.eclipse.jface.action.ActionContributionItem.lambda$4(ActionContributionItem.java:415)
+	at org.eclipse.swt.widgets.EventTable.sendEvent(EventTable.java:89)
+	at org.eclipse.swt.widgets.Display.sendEvent(Display.java:4274)
+	at org.eclipse.swt.widgets.Widget.sendEvent(Widget.java:1066)
+	at org.eclipse.swt.widgets.Display.runDeferredEvents(Display.java:4072)
+	at org.eclipse.swt.widgets.Display.readAndDispatch(Display.java:3660)
+	at org.eclipse.e4.ui.internal.workbench.swt.PartRenderingEngine$5.run(PartRenderingEngine.java:1151)
+	at org.eclipse.core.databinding.observable.Realm.runWithDefault(Realm.java:339)
+	at org.eclipse.e4.ui.internal.workbench.swt.PartRenderingEngine.run(PartRenderingEngine.java:1042)
+	at org.eclipse.e4.ui.internal.workbench.E4Workbench.createAndRunUI(E4Workbench.java:152)
+	at org.eclipse.ui.internal.Workbench.lambda$3(Workbench.java:639)
+	at org.eclipse.core.databinding.observable.Realm.runWithDefault(Realm.java:339)
+	at org.eclipse.ui.internal.Workbench.createAndRunWorkbench(Workbench.java:546)
+	at org.eclipse.ui.PlatformUI.createAndRunWorkbench(PlatformUI.java:173)
+	at com.brainwy.liclipse.rcp.IDEApplication.start(IDEApplication.java:236)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:208)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:143)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:109)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:439)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:271)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(Unknown Source)
+	at java.base/java.lang.reflect.Method.invoke(Unknown Source)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:651)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:588)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1459)
+
+!ENTRY org.python.pydev.shared_core 1 1 2024-12-02 17:07:19.770
+!MESSAGE - Ok, file is non-null. Getting info on:C:\Users\Array\AppData\Local\Programs\Python\Python310\python.exe
+- Beggining task:Getting libs totalWork:100
+- Setting task name:Mounting executable string...
+- Setting task name:Executing: C:\Users\Array\AppData\Local\Programs\Python\Python310\python.exe -u "C:\Program Files\Brainwy\LiClipse 11.1.0\plugins\org.python.pydev.core_12.1.0.202405280850\pysrc\interpreterInfo.py"
+- Setting task name:Making pythonpath environment...C:\Users\Array\AppData\Local\Programs\Python\Python310\python.exe -u "C:\Program Files\Brainwy\LiClipse 11.1.0\plugins\org.python.pydev.core_12.1.0.202405280850\pysrc\interpreterInfo.py"
+- Setting task name:Making exec...C:\Users\Array\AppData\Local\Programs\Python\Python310\python.exe -u "C:\Program Files\Brainwy\LiClipse 11.1.0\plugins\org.python.pydev.core_12.1.0.202405280850\pysrc\interpreterInfo.py"
+- Setting task name:Reading output...
+- Setting task name:Waiting for process to finish.
+- Setting task name:Process finished.
+- Success getting the info. Result:<xml>
+<name>python</name>
+<version>3.10</version>
+<executable>C:\Users\Array\AppData\Local\Programs\Python\Python310\python.exe</executable>
+<vmArgs></vmArgs>
+<lib>C:\Users\Array\AppData\Local\Programs\Python\Python310\DLLs</lib>
+<lib>C:\Users\Array\AppData\Local\Programs\Python\Python310\lib</lib>
+<lib>C:\Users\Array\AppData\Local\Programs\Python\Python310</lib>
+<lib>C:\Users\Array\AppData\Roaming\Python\Python310\site-packages</lib>
+<lib>C:\Users\Array\AppData\Local\Programs\Python\Python310\lib\site-packages</lib>
+<forced_lib>Image</forced_lib>
+<forced_lib>OpenGL</forced_lib>
+<forced_lib>_abc</forced_lib>
+<forced_lib>_ast</forced_lib>
+<forced_lib>_bisect</forced_lib>
+<forced_lib>_blake2</forced_lib>
+<forced_lib>_bytesio</forced_lib>
+<forced_lib>_codecs</forced_lib>
+<forced_lib>_codecs_cn</forced_lib>
+<forced_lib>_codecs_hk</forced_lib>
+<forced_lib>_codecs_iso2022</forced_lib>
+<forced_lib>_codecs_jp</forced_lib>
+<forced_lib>_codecs_kr</forced_lib>
+<forced_lib>_codecs_tw</forced_lib>
+<forced_lib>_collections</forced_lib>
+<forced_lib>_contextvars</forced_lib>
+<forced_lib>_csv</forced_lib>
+<forced_lib>_datetime</forced_lib>
+<forced_lib>_fileio</forced_lib>
+<forced_lib>_functools</forced_lib>
+<forced_lib>_heapq</forced_lib>
+<forced_lib>_hotshot</forced_lib>
+<forced_lib>_imp</forced_lib>
+<forced_lib>_io</forced_lib>
+<forced_lib>_json</forced_lib>
+<forced_lib>_locale</forced_lib>
+<forced_lib>_lsprof</forced_lib>
+<forced_lib>_md5</forced_lib>
+<forced_lib>_multibytecodec</forced_lib>
+<forced_lib>_opcode</forced_lib>
+<forced_lib>_operator</forced_lib>
+<forced_lib>_pickle</forced_lib>
+<forced_lib>_random</forced_lib>
+<forced_lib>_sha</forced_lib>
+<forced_lib>_sha1</forced_lib>
+<forced_lib>_sha256</forced_lib>
+<forced_lib>_sha3</forced_lib>
+<forced_lib>_sha512</forced_lib>
+<forced_lib>_signal</forced_lib>
+<forced_lib>_sre</forced_lib>
+<forced_lib>_stat</forced_lib>
+<forced_lib>_statistics</forced_lib>
+<forced_lib>_string</forced_lib>
+<forced_lib>_struct</forced_lib>
+<forced_lib>_subprocess</forced_lib>
+<forced_lib>_symtable</forced_lib>
+<forced_lib>_thread</forced_lib>
+<forced_lib>_tracemalloc</forced_lib>
+<forced_lib>_warnings</forced_lib>
+<forced_lib>_weakref</forced_lib>
+<forced_lib>_winapi</forced_lib>
+<forced_lib>_winreg</forced_lib>
+<forced_lib>_xxsubinterpreters</forced_lib>
+<forced_lib>array</forced_lib>
+<forced_lib>atexit</forced_lib>
+<forced_lib>audioop</forced_lib>
+<forced_lib>binascii</forced_lib>
+<forced_lib>builtins</forced_lib>
+<forced_lib>cPickle</forced_lib>
+<forced_lib>cStringIO</forced_lib>
+<forced_lib>cmath</forced_lib>
+<forced_lib>cv2</forced_lib>
+<forced_lib>datetime</forced_lib>
+<forced_lib>email</forced_lib>
+<forced_lib>errno</forced_lib>
+<forced_lib>exceptions</forced_lib>
+<forced_lib>faulthandler</forced_lib>
+<forced_lib>future_builtins</forced_lib>
+<forced_lib>gc</forced_lib>
+<forced_lib>gi</forced_lib>
+<forced_lib>hashlib</forced_lib>
+<forced_lib>imageop</forced_lib>
+<forced_lib>imp</forced_lib>
+<forced_lib>itertools</forced_lib>
+<forced_lib>marshal</forced_lib>
+<forced_lib>math</forced_lib>
+<forced_lib>mmap</forced_lib>
+<forced_lib>mock</forced_lib>
+<forced_lib>msvcrt</forced_lib>
+<forced_lib>multiprocessing</forced_lib>
+<forced_lib>mutagen</forced_lib>
+<forced_lib>nt</forced_lib>
+<forced_lib>numpy</forced_lib>
+<forced_lib>operator</forced_lib>
+<forced_lib>os</forced_lib>
+<forced_lib>os.path</forced_lib>
+<forced_lib>parser</forced_lib>
+<forced_lib>py</forced_lib>
+<forced_lib>pytest</forced_lib>
+<forced_lib>random</forced_lib>
+<forced_lib>re</forced_lib>
+<forced_lib>scipy</forced_lib>
+<forced_lib>signal</forced_lib>
+<forced_lib>six</forced_lib>
+<forced_lib>socket</forced_lib>
+<forced_lib>ssl</forced_lib>
+<forced_lib>strop</forced_lib>
+<forced_lib>sys</forced_lib>
+<forced_lib>thread</forced_lib>
+<forced_lib>time</forced_lib>
+<forced_lib>winreg</forced_lib>
+<forced_lib>wx</forced_lib>
+<forced_lib>wxPython</forced_lib>
+<forced_lib>xxsubtype</forced_lib>
+<forced_lib>zipimport</forced_lib>
+<forced_lib>zlib</forced_lib>
+<string_substitution_var><key>PY</key><value>310</value></string_substitution_var>
+</xml>
+
+!STACK 0
+java.lang.RuntimeException: - Ok, file is non-null. Getting info on:C:\Users\Array\AppData\Local\Programs\Python\Python310\python.exe
+- Beggining task:Getting libs totalWork:100
+- Setting task name:Mounting executable string...
+- Setting task name:Executing: C:\Users\Array\AppData\Local\Programs\Python\Python310\python.exe -u "C:\Program Files\Brainwy\LiClipse 11.1.0\plugins\org.python.pydev.core_12.1.0.202405280850\pysrc\interpreterInfo.py"
+- Setting task name:Making pythonpath environment...C:\Users\Array\AppData\Local\Programs\Python\Python310\python.exe -u "C:\Program Files\Brainwy\LiClipse 11.1.0\plugins\org.python.pydev.core_12.1.0.202405280850\pysrc\interpreterInfo.py"
+- Setting task name:Making exec...C:\Users\Array\AppData\Local\Programs\Python\Python310\python.exe -u "C:\Program Files\Brainwy\LiClipse 11.1.0\plugins\org.python.pydev.core_12.1.0.202405280850\pysrc\interpreterInfo.py"
+- Setting task name:Reading output...
+- Setting task name:Waiting for process to finish.
+- Setting task name:Process finished.
+- Success getting the info. Result:<xml>
+<name>python</name>
+<version>3.10</version>
+<executable>C:\Users\Array\AppData\Local\Programs\Python\Python310\python.exe</executable>
+<vmArgs></vmArgs>
+<lib>C:\Users\Array\AppData\Local\Programs\Python\Python310\DLLs</lib>
+<lib>C:\Users\Array\AppData\Local\Programs\Python\Python310\lib</lib>
+<lib>C:\Users\Array\AppData\Local\Programs\Python\Python310</lib>
+<lib>C:\Users\Array\AppData\Roaming\Python\Python310\site-packages</lib>
+<lib>C:\Users\Array\AppData\Local\Programs\Python\Python310\lib\site-packages</lib>
+<forced_lib>Image</forced_lib>
+<forced_lib>OpenGL</forced_lib>
+<forced_lib>_abc</forced_lib>
+<forced_lib>_ast</forced_lib>
+<forced_lib>_bisect</forced_lib>
+<forced_lib>_blake2</forced_lib>
+<forced_lib>_bytesio</forced_lib>
+<forced_lib>_codecs</forced_lib>
+<forced_lib>_codecs_cn</forced_lib>
+<forced_lib>_codecs_hk</forced_lib>
+<forced_lib>_codecs_iso2022</forced_lib>
+<forced_lib>_codecs_jp</forced_lib>
+<forced_lib>_codecs_kr</forced_lib>
+<forced_lib>_codecs_tw</forced_lib>
+<forced_lib>_collections</forced_lib>
+<forced_lib>_contextvars</forced_lib>
+<forced_lib>_csv</forced_lib>
+<forced_lib>_datetime</forced_lib>
+<forced_lib>_fileio</forced_lib>
+<forced_lib>_functools</forced_lib>
+<forced_lib>_heapq</forced_lib>
+<forced_lib>_hotshot</forced_lib>
+<forced_lib>_imp</forced_lib>
+<forced_lib>_io</forced_lib>
+<forced_lib>_json</forced_lib>
+<forced_lib>_locale</forced_lib>
+<forced_lib>_lsprof</forced_lib>
+<forced_lib>_md5</forced_lib>
+<forced_lib>_multibytecodec</forced_lib>
+<forced_lib>_opcode</forced_lib>
+<forced_lib>_operator</forced_lib>
+<forced_lib>_pickle</forced_lib>
+<forced_lib>_random</forced_lib>
+<forced_lib>_sha</forced_lib>
+<forced_lib>_sha1</forced_lib>
+<forced_lib>_sha256</forced_lib>
+<forced_lib>_sha3</forced_lib>
+<forced_lib>_sha512</forced_lib>
+<forced_lib>_signal</forced_lib>
+<forced_lib>_sre</forced_lib>
+<forced_lib>_stat</forced_lib>
+<forced_lib>_statistics</forced_lib>
+<forced_lib>_string</forced_lib>
+<forced_lib>_struct</forced_lib>
+<forced_lib>_subprocess</forced_lib>
+<forced_lib>_symtable</forced_lib>
+<forced_lib>_thread</forced_lib>
+<forced_lib>_tracemalloc</forced_lib>
+<forced_lib>_warnings</forced_lib>
+<forced_lib>_weakref</forced_lib>
+<forced_lib>_winapi</forced_lib>
+<forced_lib>_winreg</forced_lib>
+<forced_lib>_xxsubinterpreters</forced_lib>
+<forced_lib>array</forced_lib>
+<forced_lib>atexit</forced_lib>
+<forced_lib>audioop</forced_lib>
+<forced_lib>binascii</forced_lib>
+<forced_lib>builtins</forced_lib>
+<forced_lib>cPickle</forced_lib>
+<forced_lib>cStringIO</forced_lib>
+<forced_lib>cmath</forced_lib>
+<forced_lib>cv2</forced_lib>
+<forced_lib>datetime</forced_lib>
+<forced_lib>email</forced_lib>
+<forced_lib>errno</forced_lib>
+<forced_lib>exceptions</forced_lib>
+<forced_lib>faulthandler</forced_lib>
+<forced_lib>future_builtins</forced_lib>
+<forced_lib>gc</forced_lib>
+<forced_lib>gi</forced_lib>
+<forced_lib>hashlib</forced_lib>
+<forced_lib>imageop</forced_lib>
+<forced_lib>imp</forced_lib>
+<forced_lib>itertools</forced_lib>
+<forced_lib>marshal</forced_lib>
+<forced_lib>math</forced_lib>
+<forced_lib>mmap</forced_lib>
+<forced_lib>mock</forced_lib>
+<forced_lib>msvcrt</forced_lib>
+<forced_lib>multiprocessing</forced_lib>
+<forced_lib>mutagen</forced_lib>
+<forced_lib>nt</forced_lib>
+<forced_lib>numpy</forced_lib>
+<forced_lib>operator</forced_lib>
+<forced_lib>os</forced_lib>
+<forced_lib>os.path</forced_lib>
+<forced_lib>parser</forced_lib>
+<forced_lib>py</forced_lib>
+<forced_lib>pytest</forced_lib>
+<forced_lib>random</forced_lib>
+<forced_lib>re</forced_lib>
+<forced_lib>scipy</forced_lib>
+<forced_lib>signal</forced_lib>
+<forced_lib>six</forced_lib>
+<forced_lib>socket</forced_lib>
+<forced_lib>ssl</forced_lib>
+<forced_lib>strop</forced_lib>
+<forced_lib>sys</forced_lib>
+<forced_lib>thread</forced_lib>
+<forced_lib>time</forced_lib>
+<forced_lib>winreg</forced_lib>
+<forced_lib>wx</forced_lib>
+<forced_lib>wxPython</forced_lib>
+<forced_lib>xxsubtype</forced_lib>
+<forced_lib>zipimport</forced_lib>
+<forced_lib>zlib</forced_lib>
+<string_substitution_var><key>PY</key><value>310</value></string_substitution_var>
+</xml>
+
+	at org.python.pydev.core.log.Log.logInfo(Log.java:45)
+	at org.python.pydev.ui.pythonpathconf.AutoConfigMaker.applyOperation(AutoConfigMaker.java:191)
+	at org.python.pydev.ui.pythonpathconf.AutoConfigMaker.autoConfigSingleApply(AutoConfigMaker.java:128)
+	at org.python.pydev.ui.PyProjectPythonDetails$ProjectInterpreterAndGrammarConfig$2.widgetSelected(PyProjectPythonDetails.java:326)
+	at org.eclipse.swt.widgets.TypedListener.handleEvent(TypedListener.java:252)
+	at org.eclipse.swt.widgets.EventTable.sendEvent(EventTable.java:89)
+	at org.eclipse.swt.widgets.Display.sendEvent(Display.java:4274)
+	at org.eclipse.swt.widgets.Widget.sendEvent(Widget.java:1066)
+	at org.eclipse.swt.widgets.Widget.sendEvent(Widget.java:1090)
+	at org.eclipse.swt.widgets.Widget.sendSelectionEvent(Widget.java:1107)
+	at org.eclipse.swt.widgets.Link.wmNotifyChild(Link.java:725)
+	at org.eclipse.swt.widgets.Control.wmNotify(Control.java:5798)
+	at org.eclipse.swt.widgets.Composite.wmNotify(Composite.java:1961)
+	at org.eclipse.swt.widgets.Control.WM_NOTIFY(Control.java:5366)
+	at org.eclipse.swt.widgets.Control.windowProc(Control.java:4800)
+	at org.eclipse.swt.widgets.Display.windowProc(Display.java:5039)
+	at org.eclipse.swt.internal.win32.OS.CallWindowProc(Native Method)
+	at org.eclipse.swt.widgets.Link.callWindowProc(Link.java:162)
+	at org.eclipse.swt.widgets.Widget.wmLButtonUp(Widget.java:2025)
+	at org.eclipse.swt.widgets.Control.WM_LBUTTONUP(Control.java:5179)
+	at org.eclipse.swt.widgets.Control.windowProc(Control.java:4781)
+	at org.eclipse.swt.widgets.Display.windowProc(Display.java:5039)
+	at org.eclipse.swt.internal.win32.OS.DispatchMessage(Native Method)
+	at org.eclipse.swt.widgets.Display.readAndDispatch(Display.java:3658)
+	at org.eclipse.jface.window.Window.runEventLoop(Window.java:823)
+	at org.eclipse.jface.window.Window.open(Window.java:799)
+	at org.eclipse.ui.actions.NewProjectAction.run(NewProjectAction.java:119)
+	at org.eclipse.egit.ui.internal.clone.GitImportWizard$7.run(GitImportWizard.java:274)
+	at org.eclipse.swt.widgets.RunnableLock.run(RunnableLock.java:40)
+	at org.eclipse.swt.widgets.Synchronizer.runAsyncMessages(Synchronizer.java:132)
+	at org.eclipse.swt.widgets.Display.runAsyncMessages(Display.java:4047)
+	at org.eclipse.swt.widgets.Display.readAndDispatch(Display.java:3663)
+	at org.eclipse.jface.operation.ModalContext$ModalContextThread.block(ModalContext.java:168)
+	at org.eclipse.jface.operation.ModalContext.run(ModalContext.java:370)
+	at org.eclipse.jface.wizard.WizardDialog.run(WizardDialog.java:1036)
+	at org.eclipse.egit.ui.internal.clone.GitImportWizard.performFinish(GitImportWizard.java:202)
+	at org.eclipse.jface.wizard.WizardDialog.finishPressed(WizardDialog.java:837)
+	at org.eclipse.jface.wizard.WizardDialog.buttonPressed(WizardDialog.java:474)
+	at org.eclipse.jface.dialogs.Dialog.lambda$0(Dialog.java:619)
+	at org.eclipse.swt.events.SelectionListener$1.widgetSelected(SelectionListener.java:84)
+	at org.eclipse.swt.widgets.TypedListener.handleEvent(TypedListener.java:252)
+	at org.eclipse.swt.widgets.EventTable.sendEvent(EventTable.java:89)
+	at org.eclipse.swt.widgets.Display.sendEvent(Display.java:4274)
+	at org.eclipse.swt.widgets.Widget.sendEvent(Widget.java:1066)
+	at org.eclipse.swt.widgets.Display.runDeferredEvents(Display.java:4072)
+	at org.eclipse.swt.widgets.Display.readAndDispatch(Display.java:3660)
+	at org.eclipse.jface.window.Window.runEventLoop(Window.java:823)
+	at org.eclipse.jface.window.Window.open(Window.java:799)
+	at org.eclipse.ui.internal.handlers.WizardHandler$Import.executeHandler(WizardHandler.java:153)
+	at org.eclipse.ui.internal.handlers.WizardHandler.execute(WizardHandler.java:279)
+	at org.eclipse.ui.internal.handlers.HandlerProxy.execute(HandlerProxy.java:277)
+	at org.eclipse.ui.internal.handlers.E4HandlerProxy.execute(E4HandlerProxy.java:98)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(Unknown Source)
+	at java.base/java.lang.reflect.Method.invoke(Unknown Source)
+	at org.eclipse.e4.core.internal.di.MethodRequestor.execute(MethodRequestor.java:58)
+	at org.eclipse.e4.core.internal.di.InjectorImpl.invokeUsingClass(InjectorImpl.java:298)
+	at org.eclipse.e4.core.internal.di.InjectorImpl.invoke(InjectorImpl.java:232)
+	at org.eclipse.e4.core.contexts.ContextInjectionFactory.invoke(ContextInjectionFactory.java:174)
+	at org.eclipse.e4.core.commands.internal.HandlerServiceHandler.execute(HandlerServiceHandler.java:165)
+	at org.eclipse.core.commands.Command.executeWithChecks(Command.java:488)
+	at org.eclipse.core.commands.ParameterizedCommand.executeWithChecks(ParameterizedCommand.java:485)
+	at org.eclipse.e4.core.commands.internal.HandlerServiceImpl.executeHandler(HandlerServiceImpl.java:204)
+	at org.eclipse.ui.internal.handlers.LegacyHandlerService.executeCommand(LegacyHandlerService.java:385)
+	at org.eclipse.ui.internal.actions.CommandAction.runWithEvent(CommandAction.java:141)
+	at org.eclipse.ui.internal.actions.CommandAction.run(CommandAction.java:151)
+	at org.eclipse.ui.actions.ImportResourcesAction.run(ImportResourcesAction.java:100)
+	at org.eclipse.ui.actions.BaseSelectionListenerAction.runWithEvent(BaseSelectionListenerAction.java:171)
+	at org.eclipse.jface.action.ActionContributionItem.handleWidgetSelection(ActionContributionItem.java:581)
+	at org.eclipse.jface.action.ActionContributionItem.lambda$4(ActionContributionItem.java:415)
+	at org.eclipse.swt.widgets.EventTable.sendEvent(EventTable.java:89)
+	at org.eclipse.swt.widgets.Display.sendEvent(Display.java:4274)
+	at org.eclipse.swt.widgets.Widget.sendEvent(Widget.java:1066)
+	at org.eclipse.swt.widgets.Display.runDeferredEvents(Display.java:4072)
+	at org.eclipse.swt.widgets.Display.readAndDispatch(Display.java:3660)
+	at org.eclipse.e4.ui.internal.workbench.swt.PartRenderingEngine$5.run(PartRenderingEngine.java:1151)
+	at org.eclipse.core.databinding.observable.Realm.runWithDefault(Realm.java:339)
+	at org.eclipse.e4.ui.internal.workbench.swt.PartRenderingEngine.run(PartRenderingEngine.java:1042)
+	at org.eclipse.e4.ui.internal.workbench.E4Workbench.createAndRunUI(E4Workbench.java:152)
+	at org.eclipse.ui.internal.Workbench.lambda$3(Workbench.java:639)
+	at org.eclipse.core.databinding.observable.Realm.runWithDefault(Realm.java:339)
+	at org.eclipse.ui.internal.Workbench.createAndRunWorkbench(Workbench.java:546)
+	at org.eclipse.ui.PlatformUI.createAndRunWorkbench(PlatformUI.java:173)
+	at com.brainwy.liclipse.rcp.IDEApplication.start(IDEApplication.java:236)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:208)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:143)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:109)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:439)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:271)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(Unknown Source)
+	at java.base/java.lang.reflect.Method.invoke(Unknown Source)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:651)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:588)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1459)
+
+!ENTRY org.python.pydev.shared_core 1 1 2024-12-02 17:07:19.776
+!MESSAGE Restoring info for: C:\Users\Array\AppData\Local\Programs\Python\Python310\python.exe
+!STACK 0
+java.lang.RuntimeException: Restoring info for: C:\Users\Array\AppData\Local\Programs\Python\Python310\python.exe
+	at org.python.pydev.ast.interpreter_managers.AbstractInterpreterManager.getInterpretersFromPersistedString(AbstractInterpreterManager.java:458)
+	at org.python.pydev.ast.interpreter_managers.AbstractInterpreterManager.internalRecreateCacheGetInterpreterInfos(AbstractInterpreterManager.java:284)
+	at org.python.pydev.ast.interpreter_managers.AbstractInterpreterManager.setInfos(AbstractInterpreterManager.java:581)
+	at org.python.pydev.ui.pythonpathconf.AutoConfigMaker$1.run(AutoConfigMaker.java:152)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:63)
+Caused by: java.io.IOException: Expecting: C:\EVE\MUDs\Ninja\Shinobi_mud\.metadata\.plugins\org.python.pydev\v1_fc068z23bs56t5l81f9snhli\modulesKeys to exist (and be a file).
+	at org.python.pydev.ast.codecompletion.revisited.ModulesManager.loadFromFile(ModulesManager.java:342)
+	at org.python.pydev.ast.codecompletion.revisited.SystemModulesManager.load(SystemModulesManager.java:422)
+	at org.python.pydev.ast.interpreter_managers.AbstractInterpreterManager.getInterpretersFromPersistedString(AbstractInterpreterManager.java:456)
+	... 4 more
+
+!ENTRY org.python.pydev.shared_core 1 1 2024-12-02 17:07:28.557
+!MESSAGE Finished restoring information for: C:\Users\Array\AppData\Local\Programs\Python\Python310\python.exe at: C:\EVE\MUDs\Ninja\Shinobi_mud\.metadata\.plugins\org.python.pydev\v1_fc068z23bs56t5l81f9snhli
+!STACK 0
+java.lang.RuntimeException: Finished restoring information for: C:\Users\Array\AppData\Local\Programs\Python\Python310\python.exe at: C:\EVE\MUDs\Ninja\Shinobi_mud\.metadata\.plugins\org.python.pydev\v1_fc068z23bs56t5l81f9snhli
+	at org.python.pydev.core.log.Log.logInfo(Log.java:45)
+	at org.python.pydev.ast.interpreter_managers.AbstractInterpreterManager.getInterpretersFromPersistedString(AbstractInterpreterManager.java:503)
+	at org.python.pydev.ast.interpreter_managers.AbstractInterpreterManager.internalRecreateCacheGetInterpreterInfos(AbstractInterpreterManager.java:284)
+	at org.python.pydev.ast.interpreter_managers.AbstractInterpreterManager.setInfos(AbstractInterpreterManager.java:581)
+	at org.python.pydev.ui.pythonpathconf.AutoConfigMaker$1.run(AutoConfigMaker.java:152)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:63)
+
+!ENTRY org.python.pydev.shared_core 4 4 2024-12-02 17:07:34.439
+!MESSAGE Info: Rebuilding internal caches: C:\EVE\MUDs\Ninja\Shinobi_mud\.metadata\.plugins\com.python.pydev.analysis\python_v1_fc068z23bs56t5l81f9snhli\python.pydevsysteminfo (Expected error to be provided and got no error!)
+
+!ENTRY org.python.pydev.shared_core 4 4 2024-12-02 17:08:03.519
+!MESSAGE Info: Rebuilding internal caches: C:\EVE\MUDs\Ninja\Shinobi_mud\.metadata\.plugins\org.eclipse.core.resources\.projects\Shinobi_Mud\com.python.pydev.analysis\AdditionalProjectInterpreterInfo.pydevinfo (Expected error to be provided and got no error!)
+
+!ENTRY org.python.pydev.shared_core 4 4 2024-12-02 17:12:19.318
+!MESSAGE ERROR reading shell. Message sent: @@IMPORTS:functorch._C
+END@@
+
+ProcessInfo:
+
+ - Executed: C:\Users\Array\AppData\Local\Programs\Python\Python310\python.exe -u C:\Program Files\Brainwy\LiClipse 11.1.0\plugins\org.python.pydev.core_12.1.0.202405280850\pysrc\pycompletionserver.py 58080
+
+ - Environment:
+=::=::\
+ALLUSERSPROFILE=C:\ProgramData
+APPDATA=C:\Users\Array\AppData\Roaming
+CHROME_CRASHPAD_PIPE_NAME=\\.\pipe\crashpad_13144_WICBYUZRVCSQEEAK
+CHROME_RESTART=Maxthon|Whoa! Maxthon has crashed. Relaunch now?|LEFT_TO_RIGHT
+COMMONPROGRAMFILES(X86)=C:\Program Files (x86)\Common Files
+COMMONPROGRAMFILES=C:\Program Files\Common Files
+COMMONPROGRAMW6432=C:\Program Files\Common Files
+COMPUTERNAME=AELKRYN
+COMSPEC=C:\WINDOWS\system32\cmd.exe
+DRIVERDATA=C:\Windows\System32\Drivers\DriverData
+FPS_BROWSER_APP_PROFILE_STRING=Internet Explorer
+FPS_BROWSER_USER_PROFILE_STRING=Default
+HOMEDRIVE=C:
+HOMEPATH=\Users\Array
+LOCALAPPDATA=C:\Users\Array\AppData\Local
+LOGONSERVER=\\AELKRYN
+NUMBER_OF_PROCESSORS=12
+ONEDRIVE=C:\Users\Array\OneDrive
+ONEDRIVECONSUMER=C:\Users\Array\OneDrive
+OS=Windows_NT
+PATH=C:/Program Files/Brainwy/LiClipse 11.1.0/jre/bin/server;C:/Program Files/Brainwy/LiClipse 11.1.0/jre/bin;C:\Users\Array\AppData\Local\Maxthon\Application;C:\Program Files\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Strawberry\c\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\perl\bin;C:\Program Files\dotnet\;C:\Program Files\Python310;C:\Users\Array\.ssh;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\Git\cmd;C:\Program Files\PuTTY\;C:\Program Files\Meld\;C:\Program Files\NVIDIA Corporation\NVIDIA app\NvDLISR;C:\Users\Array\AppData\Local\Programs\Python\Python310\Scripts\;C:\Users\Array\AppData\Local\Programs\Python\Python310\;C:\Users\Array\AppData\Local\Programs\Python\Python313\Scripts\;C:\Users\Array\AppData\Local\Programs\Python\Python313\;C:\Users\Array\AppData\Local\Programs\Python\Python312\Scripts\;C:\Users\Array\AppData\Local\Programs\Python\Python312\;C:\Users\Array\AppData\Local\Microsoft\WindowsApps;C:\Users\Array\AppData\Local\GitHubDesktop\bin;C:\Program Files\Brainwy\LiClipse 11.1.0;
+PATHEXT=.COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC
+PROCESSOR_ARCHITECTURE=AMD64
+PROCESSOR_IDENTIFIER=Intel64 Family 6 Model 165 Stepping 2, GenuineIntel
+PROCESSOR_LEVEL=6
+PROCESSOR_REVISION=a502
+PROGRAMDATA=C:\ProgramData
+PROGRAMFILES(X86)=C:\Program Files (x86)
+PROGRAMFILES=C:\Program Files
+PROGRAMW6432=C:\Program Files
+PSMODULEPATH=C:\Program Files\WindowsPowerShell\Modules;C:\WINDOWS\system32\WindowsPowerShell\v1.0\Modules
+PUBLIC=C:\Users\Public
+PYTHONPATH=C:\Program Files\Brainwy\LiClipse 11.1.0\plugins\org.python.pydev.core_12.1.0.202405280850\pysrc\pydev_sitecustomize;C:\Users\Array\AppData\Local\Programs\Python\Python310\DLLs;C:\Users\Array\AppData\Local\Programs\Python\Python310\lib;C:\Users\Array\AppData\Local\Programs\Python\Python310;C:\Users\Array\AppData\Roaming\Python\Python310\site-packages;C:\Users\Array\AppData\Local\Programs\Python\Python310\lib\site-packages
+SESSIONNAME=Console
+SYSTEMDRIVE=C:
+SYSTEMROOT=C:\WINDOWS
+TEMP=C:\Users\Array\AppData\Local\Temp
+TMP=C:\Users\Array\AppData\Local\Temp
+USERDOMAIN=AELKRYN
+USERDOMAIN_ROAMINGPROFILE=AELKRYN
+USERNAME=Array
+USERPROFILE=C:\Users\Array
+VBOX_MSI_INSTALL_PATH=C:\Program Files\Oracle\VirtualBox\
+WINDIR=C:\WINDOWS
+
+ - Working Dir:
+C:\Program Files\Brainwy\LiClipse 11.1.0\plugins\org.python.pydev.core_12.1.0.202405280850\pysrc
+
+ - OS:
+Windows 10
+
+ - Std output:
+
+
+ - Err output:
+
+!STACK 0
+java.net.SocketTimeoutException: Read timed out
+	at java.base/sun.nio.ch.SocketChannelImpl.timedRead(Unknown Source)
+	at java.base/sun.nio.ch.SocketChannelImpl.blockingRead(Unknown Source)
+	at java.base/sun.nio.ch.SocketInputStream.read(Unknown Source)
+	at java.base/java.io.InputStream.read(Unknown Source)
+	at org.python.pydev.ast.codecompletion.shell.AbstractShell.read(AbstractShell.java:457)
+	at org.python.pydev.ast.codecompletion.shell.AbstractShell.read(AbstractShell.java:515)
+	at org.python.pydev.ast.codecompletion.shell.AbstractShell.writeAndGetResults(AbstractShell.java:710)
+	at org.python.pydev.ast.codecompletion.shell.AbstractShell.writeAndGetResults(AbstractShell.java:702)
+	at org.python.pydev.ast.codecompletion.shell.CompletionsShell.getImportCompletions(CompletionsShell.java:63)
+	at org.python.pydev.ast.codecompletion.revisited.modules.CompiledModule.createTokensFromServer(CompiledModule.java:378)
+	at org.python.pydev.ast.codecompletion.revisited.modules.CompiledModule.<init>(CompiledModule.java:180)
+	at org.python.pydev.ast.codecompletion.revisited.modules.AbstractModule.createModule(AbstractModule.java:293)
+	at org.python.pydev.ast.codecompletion.revisited.ModulesManager.getModule(ModulesManager.java:1038)
+	at org.python.pydev.ast.codecompletion.revisited.ModulesManager.getModule(ModulesManager.java:869)
+	at org.python.pydev.ast.codecompletion.revisited.SystemModulesManager.getModule(SystemModulesManager.java:400)
+	at com.python.pydev.analysis.additionalinfo.AbstractAdditionalDependencyInfo.updateKeysIfNeededAndSave(AbstractAdditionalDependencyInfo.java:259)
+	at com.python.pydev.analysis.system_info_builder.InterpreterInfoBuilder.syncInfoToPythonPath(InterpreterInfoBuilder.java:171)
+	at com.python.pydev.analysis.system_info_builder.InterpreterInfoBuilder.syncInfoToPythonPath(InterpreterInfoBuilder.java:97)
+	at com.python.pydev.analysis.system_info_builder.InterpreterInfoBuilder.syncInfoToPythonPath(InterpreterInfoBuilder.java:83)
+	at org.python.pydev.ast.codecompletion.revisited.SyncSystemModulesManager.synchronizeManagerToNameToInfoPythonpath(SyncSystemModulesManager.java:392)
+	at org.python.pydev.ast.codecompletion.revisited.SyncSystemModulesManagerScheduler$SynchJob.run(SyncSystemModulesManagerScheduler.java:257)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:63)
+
+!ENTRY de.bastiankrol.startexplorer 2 2 2024-12-02 17:12:50.105
+!MESSAGE Current selection is empty, no action is taken.
