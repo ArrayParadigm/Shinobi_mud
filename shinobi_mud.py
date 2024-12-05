@@ -150,23 +150,27 @@ def process_command(player, command):
 def ensure_tables_exist():
     try:
         # Create players table if it doesn't exist
-        cursor.execute('''CREATE TABLE IF NOT EXISTS players (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE,
-            password TEXT NOT NULL,
-            current_room INTEGER DEFAULT 2000,
-            is_admin BOOLEAN DEFAULT 1,
-            role_type INTEGER DEFAULT 0, -- default to Newbie
-            health INTEGER DEFAULT 10,
-            stamina INTEGER DEFAULT 10,
-            chakra INTEGER DEFAULT 10,
-            strength INTEGER DEFAULT 5,
-            dexterity INTEGER DEFAULT 5,
-            agility INTEGER DEFAULT 5,
-            intelligence INTEGER DEFAULT 5,
-            wisdom INTEGER DEFAULT 5,
-            dojo_alignment TEXT DEFAULT 'None'
-        )''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS players (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE,
+                password TEXT NOT NULL,
+                x INTEGER DEFAULT 500,
+                y INTEGER DEFAULT 500,
+                is_admin BOOLEAN DEFAULT 1,
+                role_type INTEGER DEFAULT 0,
+                health INTEGER DEFAULT 10,
+                stamina INTEGER DEFAULT 10,
+                chakra INTEGER DEFAULT 10,
+                strength INTEGER DEFAULT 5,
+                dexterity INTEGER DEFAULT 5,
+                agility INTEGER DEFAULT 5,
+                intelligence INTEGER DEFAULT 5,
+                wisdom INTEGER DEFAULT 5,
+                dojo_alignment TEXT DEFAULT 'None'
+            )
+        ''')
+
         debug_log("Creating player due to lack of existence.")
 
         # Create rooms table if it doesn't exist
@@ -176,11 +180,6 @@ def ensure_tables_exist():
             description TEXT,
             exits TEXT
         )''')
-
-        # Insert default room with hardcoded exits if not already present
-        cursor.execute('''INSERT OR IGNORE INTO rooms (id, name, description, exits) VALUES
-            (1000, "Default Room", "This is the starting room.", '{"north": 2000, "south": 2000, "east": 2000, "west": 2000}')''')
-
 
         conn.commit()
         logging.info("Database tables ensured and default rooms initialized.")
@@ -211,7 +210,7 @@ class NinjaMUDProtocol(basic.LineReceiver):
         self.state = "GET_USERNAME"
         self.character_creation_data = {}
         self.username = None
-        self.current_room = 3001
+#        self.current_room = None
         self.is_admin = True
         self.player_class = 'newbie' # Default to a basic Class
         self.STATE_HANDLERS = get_state_handlers()
@@ -219,16 +218,20 @@ class NinjaMUDProtocol(basic.LineReceiver):
         self.in_zone = False
         self.x = 500
         self.y = 500
-
+                
     def connectionMade(self):
         logging.info("New connection established from %s.", self.transport.getPeer())
         debug_log("New connection established from [self.transport.getPeer()}.")
-        # Send the MOTD when the player connects
         if MOTD:
             self.sendLine(MOTD.encode('utf-8'))  # Send MOTD to the player
         else:
             self.sendLine(b"Welcome to Ninja MUD!")  # Fallback if no MOTD is set
+
+        # Send the MOTD when the player connects
         self.sendLine(b"Please enter your username:")
+        # Simplify: Initialize player to a default room if new
+        self.x, self.y = 500, 500  # Default coordinates
+#        self.current_room = 3000   # Assign a default VNUM room
         
     def connectionLost(self, reason):
         logging.info(f"Connection lost for user {self.username}. Reason: {reason}")
@@ -262,7 +265,9 @@ class NinjaMUDProtocol(basic.LineReceiver):
         player = cursor.fetchone()
 
         if player:
-            self.current_room = player[3]
+#            self.current_room = player[3]
+            self.x = player[3]  # Assuming x is the 4th column
+            self.y = player[4]  # Assuming x is the 5th column
             self.is_admin = bool(player[4])
             self.sendLine(b"Welcome back! Please enter your password:")
             self.state = "GET_PASSWORD"
@@ -277,7 +282,9 @@ class NinjaMUDProtocol(basic.LineReceiver):
         player = cursor.fetchone()
 
         if player:
-            self.current_room = player[3]  # Load the last saved room from the database
+#            self.current_room = player[3]  # Load the last saved room from the database
+            self.x = 1 
+            self.y = 1
             self.is_admin = bool(player[3])
             self.player_class = player[5]
             self.sendLine(b"Login successful!")
@@ -289,8 +296,8 @@ class NinjaMUDProtocol(basic.LineReceiver):
             
     def list_players_in_room(self):
         """Lists other players in the current room."""
-        others = [p.username for p in players_in_rooms.get(self.current_room, []) if p != self]
-        logging.info(f"User {self.username} checking room {self.current_room}. Others here: {others}")
+        others = [p.username for p in players_in_rooms.get(self.x, self.y, []) if p != self]
+        logging.info(f"User {self.username} checking room {self.x, self.y}. Others here: {others}")
         
         if others:
             self.sendLine(f"Also here: {', '.join(others)}".encode('utf-8'))
@@ -313,34 +320,26 @@ class NinjaMUDProtocol(basic.LineReceiver):
             self.sendLine(b"An error occurred while processing your command.")
 
     def display_room(self):
-        """Displays the current room details."""
-        # Use UTILITIES to access `find_zone_by_vnum`
-        zone_file = UTILITIES["find_zone_by_vnum"](self.current_room)
-        if not zone_file:
-            self.sendLine(b"Room not found in any zone.")
-            return
-    
-        with open(zone_file, "r") as file:
-            zone_data = json.load(file)
-            room_data = zone_data["rooms"].get(str(self.current_room))
-    
-            if room_data:
-                self.sendLine(f"Room {self.current_room}: {room_data['description']}".encode('utf-8'))
-                exits = ", ".join(room_data["exits"].keys()) or "None"
-                self.sendLine(f"Exits: {exits}".encode('utf-8'))
-            else:
-                self.sendLine(b"Room data not found in the zone.")
+        """Displays the grid map around the player."""
+        try:
+            map_view = UTILITIES["render_open_land"](self.x, self.y, world_map=WORLD_MAP)
+            self.sendLine(map_view.encode("utf-8"))
+        except KeyError:
+            self.sendLine(b"Error: Map rendering function is unavailable.")
+        except Exception as e:
+            logging.error(f"Error rendering map: {e}", exc_info=True)
+            self.sendLine(b"An error occurred while rendering the map.")
         
     def track_player(self):
-        room_key = self.current_room
+        room_key = self.x, self.y
         if room_key not in players_in_rooms:
             players_in_rooms[room_key] = []  # Initialize the room with an empty list
         if self not in players_in_rooms[room_key]:  # Add the player object
             players_in_rooms[room_key].append(self)
-        logging.info(f"Player {self.username} is now in room {self.current_room}.")
+        logging.info(f"Player {self.username} is now in room {self.x, self.y}.")
     
     def untrack_player(self):
-        room_key = self.current_room
+        room_key = self.x, self.y
         if room_key in players_in_rooms and self in players_in_rooms[room_key]:
             players_in_rooms[room_key].remove(self)  # Remove the player object
             if not players_in_rooms[room_key]:  # If the room is empty, clean up
@@ -351,9 +350,9 @@ class NinjaMUDProtocol(basic.LineReceiver):
         if self.character_creation_data['password'] == password:
             hashed_password = hashlib.sha256(password.encode()).hexdigest()
             cursor.execute("""
-                INSERT INTO players (username, password, current_room, is_admin) 
-                VALUES (?, ?, ?, ?)
-            """, (self.username, hashed_password, self.current_room, self.is_admin))
+                INSERT INTO players (username, password, x, y, is_admin) 
+                VALUES (?, ?, ?, ?, ?)
+            """, (self.username, hashed_password, self.x, self.y, self.is_admin))
             conn.commit()
             self.sendLine(b"Account created! Please choose your specialty:")
             self.sendLine(b"a) Ninjutsu\nb) Genjutsu\nc) Taijutsu")
@@ -463,7 +462,7 @@ def initialize_server():
 
     # 5. Preload Zones
     zone_directory = config.get("zone_directory", "zones")
-    preload_zones(zone_directory)
+#    preload_zones(zone_directory)
     logging.info(f"Zone data preloaded from {zone_directory}.")
 
 # Load utilities moved to first spot after defining due to timing issues. Lazy import wasn't working and I didn't want to get stopped by this problem with so much work to be done. Hopefully I'll come back and clean it up when I get further along.
@@ -506,19 +505,6 @@ def validate_server_state():
         for name, func in UTILITIES.items():
             if not callable(func):
                 logging.error(f"Utility '{name}' is not callable. Check its definition.")
-
-    if not os.listdir("zones"):
-        logging.error("No zone files found in the 'zones' directory.")
-    else:
-        for zone_file in os.listdir("zones"):
-            if zone_file.endswith(".json"):
-                with open(os.path.join("zones", zone_file), "r") as file:
-                    try:
-                        zone_data = json.load(file)
-                        if not {"name", "range", "rooms"}.issubset(zone_data):
-                            logging.error(f"Zone file {zone_file} is missing required keys.")
-                    except json.JSONDecodeError as e:
-                        logging.error(f"Zone file {zone_file} is invalid JSON: {e}")
 
 if __name__ == "__main__":
     initialize_server()

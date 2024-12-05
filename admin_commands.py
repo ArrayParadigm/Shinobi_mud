@@ -46,7 +46,7 @@ def create_zone(protocol, zone_name, start_vnum, end_vnum):
         logging.error(f"Error creating zone: {e}", exc_info=True)
         protocol.sendLine(f"Failed to create zone: {e}".encode('utf-8'))
 
-
+# TODO: fix "goto" to allow navigation to specific coordinations and players.
 def goto(protocol, vnum):
     """
     Moves the player to the specified VNUM, creating the room if necessary.

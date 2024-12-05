@@ -1242,3 +1242,1162 @@ NameError: name 'UTILITIES' is not defined
 2024-12-03 09:22:08,998 - ERROR - Utility 'WORLD_MAP' is not callable. Check its definition.
 2024-12-03 09:22:08,999 - INFO - Ninja MUD Server initialized successfully.
 2024-12-03 09:22:08,999 - INFO - Ninja MUD Server running on port 4000.
+2024-12-03 15:42:19,049 - INFO - utils imported
+2024-12-03 15:42:19,050 - INFO - Loaded utility: ensure_room_exists
+2024-12-03 15:42:19,050 - INFO - Loaded utility: find_zone_by_vnum
+2024-12-03 15:42:19,050 - INFO - Loaded utility: load_world_map
+2024-12-03 15:42:19,050 - INFO - Loaded utility: next_free_vnum
+2024-12-03 15:42:19,050 - INFO - Loaded utility: overlay_zone
+2024-12-03 15:42:19,050 - INFO - Loaded utility: preload_zones_with_anchors
+2024-12-03 15:42:19,050 - INFO - Loaded utility: render_open_land
+2024-12-03 15:42:19,050 - INFO - Loaded utility: render_room
+2024-12-03 15:42:19,050 - INFO - Loaded utility: reverse_dir
+2024-12-03 15:42:19,051 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'load_world_map', 'next_free_vnum', 'overlay_zone', 'preload_zones_with_anchors', 'render_open_land', 'render_room', 'reverse_dir']
+2024-12-03 15:42:19,070 - INFO - Total commands loaded: 0
+2024-12-03 15:42:19,070 - DEBUG - All registered commands: []
+2024-12-03 15:42:19,072 - INFO - Zones loaded
+2024-12-03 15:42:19,072 - DEBUG - Zones loaded after preload_zones()
+2024-12-03 15:42:19,072 - INFO - Initializing Ninja MUD Server...
+2024-12-03 15:42:19,078 - INFO - Logging initialized.
+2024-12-03 15:42:19,078 - DEBUG - Creating player due to lack of existence.
+2024-12-03 15:42:19,079 - INFO - Database tables ensured and default rooms initialized.
+2024-12-03 15:42:19,079 - DEBUG - Database tables ensured and default rooms initialized.
+2024-12-03 15:42:19,079 - INFO - Database connection established using mud_game_10_rooms.db.
+2024-12-03 15:42:19,086 - INFO - Preloaded zone: Eve's Haven
+2024-12-03 15:42:19,092 - INFO - Preloaded zone: Expanse
+2024-12-03 15:42:19,097 - INFO - Preloaded zone: limbo
+2024-12-03 15:42:19,097 - INFO - Zone data preloaded from zones.
+2024-12-03 15:42:19,105 - INFO - Loaded utility: ensure_room_exists
+2024-12-03 15:42:19,105 - INFO - Loaded utility: find_zone_by_vnum
+2024-12-03 15:42:19,106 - INFO - Loaded utility: load_world_map
+2024-12-03 15:42:19,106 - INFO - Loaded utility: next_free_vnum
+2024-12-03 15:42:19,106 - INFO - Loaded utility: overlay_zone
+2024-12-03 15:42:19,106 - INFO - Loaded utility: preload_zones_with_anchors
+2024-12-03 15:42:19,106 - INFO - Loaded utility: render_open_land
+2024-12-03 15:42:19,106 - INFO - Loaded utility: render_room
+2024-12-03 15:42:19,106 - INFO - Loaded utility: reverse_dir
+2024-12-03 15:42:19,107 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'load_world_map', 'next_free_vnum', 'overlay_zone', 'preload_zones_with_anchors', 'render_open_land', 'render_room', 'reverse_dir']
+2024-12-03 15:42:19,119 - INFO - Total commands loaded: 0
+2024-12-03 15:42:19,119 - DEBUG - All registered commands: []
+2024-12-03 15:42:19,119 - INFO - Zones loaded
+2024-12-03 15:42:19,119 - DEBUG - Zones loaded after preload_zones()
+2024-12-03 15:42:19,121 - INFO - general_commands imported
+2024-12-03 15:42:19,121 - INFO - Loaded commands from general_commands
+2024-12-03 15:42:19,122 - INFO - admin_commands imported
+2024-12-03 15:42:19,122 - INFO - Loaded commands from admin_commands
+2024-12-03 15:42:19,122 - INFO - social_commands imported
+2024-12-03 15:42:19,122 - INFO - Loaded commands from social_commands
+2024-12-03 15:42:19,123 - INFO - Commands loaded: 19
+2024-12-03 15:42:19,129 - INFO - MOTD loaded from motd.txt.
+2024-12-03 15:42:19,129 - ERROR - Utility 'WORLD_MAP' is not callable. Check its definition.
+2024-12-03 15:42:19,129 - INFO - Ninja MUD Server initialized successfully.
+2024-12-03 15:42:19,130 - INFO - Ninja MUD Server running on port 4000.
+2024-12-03 15:51:21,924 - INFO - utils imported
+2024-12-03 15:51:21,924 - INFO - Loaded utility: ensure_room_exists
+2024-12-03 15:51:21,925 - INFO - Loaded utility: find_zone_by_vnum
+2024-12-03 15:51:21,925 - INFO - Loaded utility: load_world_map
+2024-12-03 15:51:21,925 - INFO - Loaded utility: next_free_vnum
+2024-12-03 15:51:21,925 - INFO - Loaded utility: overlay_zone
+2024-12-03 15:51:21,925 - INFO - Loaded utility: preload_zones_with_anchors
+2024-12-03 15:51:21,925 - INFO - Loaded utility: render_open_land
+2024-12-03 15:51:21,925 - INFO - Loaded utility: render_room
+2024-12-03 15:51:21,925 - INFO - Loaded utility: reverse_dir
+2024-12-03 15:51:21,926 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'load_world_map', 'next_free_vnum', 'overlay_zone', 'preload_zones_with_anchors', 'render_open_land', 'render_room', 'reverse_dir']
+2024-12-03 15:51:21,937 - INFO - Total commands loaded: 0
+2024-12-03 15:51:21,937 - DEBUG - All registered commands: []
+2024-12-03 15:51:21,938 - INFO - Zones loaded
+2024-12-03 15:51:21,938 - DEBUG - Zones loaded after preload_zones()
+2024-12-03 15:51:21,938 - INFO - Initializing Ninja MUD Server...
+2024-12-03 15:51:21,939 - INFO - Logging initialized.
+2024-12-03 15:51:21,940 - DEBUG - Creating player due to lack of existence.
+2024-12-03 15:51:21,940 - INFO - Database tables ensured and default rooms initialized.
+2024-12-03 15:51:21,940 - DEBUG - Database tables ensured and default rooms initialized.
+2024-12-03 15:51:21,941 - INFO - Database connection established using mud_game_10_rooms.db.
+2024-12-03 15:51:21,943 - INFO - Preloaded zone: Eve's Haven
+2024-12-03 15:51:21,943 - INFO - Preloaded zone: Expanse
+2024-12-03 15:51:21,943 - INFO - Preloaded zone: limbo
+2024-12-03 15:51:21,944 - INFO - Zone data preloaded from zones.
+2024-12-03 15:51:21,946 - INFO - Loaded utility: ensure_room_exists
+2024-12-03 15:51:21,946 - INFO - Loaded utility: find_zone_by_vnum
+2024-12-03 15:51:21,946 - INFO - Loaded utility: load_world_map
+2024-12-03 15:51:21,946 - INFO - Loaded utility: next_free_vnum
+2024-12-03 15:51:21,946 - INFO - Loaded utility: overlay_zone
+2024-12-03 15:51:21,946 - INFO - Loaded utility: preload_zones_with_anchors
+2024-12-03 15:51:21,947 - INFO - Loaded utility: render_open_land
+2024-12-03 15:51:21,947 - INFO - Loaded utility: render_room
+2024-12-03 15:51:21,947 - INFO - Loaded utility: reverse_dir
+2024-12-03 15:51:21,947 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'load_world_map', 'next_free_vnum', 'overlay_zone', 'preload_zones_with_anchors', 'render_open_land', 'render_room', 'reverse_dir']
+2024-12-03 15:51:21,959 - INFO - Total commands loaded: 0
+2024-12-03 15:51:21,959 - DEBUG - All registered commands: []
+2024-12-03 15:51:21,960 - INFO - Zones loaded
+2024-12-03 15:51:21,960 - DEBUG - Zones loaded after preload_zones()
+2024-12-03 15:51:21,960 - INFO - general_commands imported
+2024-12-03 15:51:21,960 - INFO - Loaded commands from general_commands
+2024-12-03 15:51:21,961 - INFO - admin_commands imported
+2024-12-03 15:51:21,961 - INFO - Loaded commands from admin_commands
+2024-12-03 15:51:21,962 - INFO - social_commands imported
+2024-12-03 15:51:21,964 - INFO - Loaded commands from social_commands
+2024-12-03 15:51:21,964 - INFO - Commands loaded: 19
+2024-12-03 15:51:21,964 - INFO - MOTD loaded from motd.txt.
+2024-12-03 15:51:21,965 - ERROR - Utility 'WORLD_MAP' is not callable. Check its definition.
+2024-12-03 15:51:21,965 - INFO - Ninja MUD Server initialized successfully.
+2024-12-03 15:51:21,966 - INFO - Ninja MUD Server running on port 4000.
+2024-12-03 15:56:09,592 - INFO - utils imported
+2024-12-03 15:56:09,592 - INFO - Loaded utility: ensure_room_exists
+2024-12-03 15:56:09,592 - INFO - Loaded utility: find_zone_by_vnum
+2024-12-03 15:56:09,592 - INFO - Loaded utility: load_world_map
+2024-12-03 15:56:09,592 - INFO - Loaded utility: next_free_vnum
+2024-12-03 15:56:09,592 - INFO - Loaded utility: overlay_zone
+2024-12-03 15:56:09,593 - INFO - Loaded utility: preload_zones_with_anchors
+2024-12-03 15:56:09,593 - INFO - Loaded utility: render_open_land
+2024-12-03 15:56:09,593 - INFO - Loaded utility: render_room
+2024-12-03 15:56:09,593 - INFO - Loaded utility: reverse_dir
+2024-12-03 15:56:09,593 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'load_world_map', 'next_free_vnum', 'overlay_zone', 'preload_zones_with_anchors', 'render_open_land', 'render_room', 'reverse_dir']
+2024-12-03 15:56:09,604 - INFO - Total commands loaded: 0
+2024-12-03 15:56:09,604 - DEBUG - All registered commands: []
+2024-12-03 15:56:09,606 - INFO - Zones loaded
+2024-12-03 15:56:09,606 - DEBUG - Zones loaded after preload_zones()
+2024-12-03 15:56:09,606 - INFO - Initializing Ninja MUD Server...
+2024-12-03 15:56:09,607 - INFO - Logging initialized.
+2024-12-03 15:56:09,608 - DEBUG - Creating player due to lack of existence.
+2024-12-03 15:56:09,608 - INFO - Database tables ensured and default rooms initialized.
+2024-12-03 15:56:09,608 - DEBUG - Database tables ensured and default rooms initialized.
+2024-12-03 15:56:09,608 - INFO - Database connection established using mud_game_10_rooms.db.
+2024-12-03 15:56:09,610 - INFO - Preloaded zone: Eve's Haven
+2024-12-03 15:56:09,610 - INFO - Preloaded zone: Expanse
+2024-12-03 15:56:09,610 - INFO - Preloaded zone: limbo
+2024-12-03 15:56:09,611 - INFO - Zone data preloaded from zones.
+2024-12-03 15:56:09,617 - INFO - Loaded utility: ensure_room_exists
+2024-12-03 15:56:09,617 - INFO - Loaded utility: find_zone_by_vnum
+2024-12-03 15:56:09,617 - INFO - Loaded utility: load_world_map
+2024-12-03 15:56:09,617 - INFO - Loaded utility: next_free_vnum
+2024-12-03 15:56:09,617 - INFO - Loaded utility: overlay_zone
+2024-12-03 15:56:09,617 - INFO - Loaded utility: preload_zones_with_anchors
+2024-12-03 15:56:09,617 - INFO - Loaded utility: render_open_land
+2024-12-03 15:56:09,617 - INFO - Loaded utility: render_room
+2024-12-03 15:56:09,617 - INFO - Loaded utility: reverse_dir
+2024-12-03 15:56:09,618 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'load_world_map', 'next_free_vnum', 'overlay_zone', 'preload_zones_with_anchors', 'render_open_land', 'render_room', 'reverse_dir']
+2024-12-03 15:56:09,631 - INFO - Total commands loaded: 0
+2024-12-03 15:56:09,631 - DEBUG - All registered commands: []
+2024-12-03 15:56:09,631 - INFO - Zones loaded
+2024-12-03 15:56:09,631 - DEBUG - Zones loaded after preload_zones()
+2024-12-03 15:56:09,631 - INFO - general_commands imported
+2024-12-03 15:56:09,632 - INFO - Loaded commands from general_commands
+2024-12-03 15:56:09,633 - INFO - admin_commands imported
+2024-12-03 15:56:09,633 - INFO - Loaded commands from admin_commands
+2024-12-03 15:56:09,634 - INFO - social_commands imported
+2024-12-03 15:56:09,634 - INFO - Loaded commands from social_commands
+2024-12-03 15:56:09,634 - INFO - Commands loaded: 19
+2024-12-03 15:56:09,635 - INFO - MOTD loaded from motd.txt.
+2024-12-03 15:56:09,635 - ERROR - Utility 'WORLD_MAP' is not callable. Check its definition.
+2024-12-03 15:56:09,635 - INFO - Ninja MUD Server initialized successfully.
+2024-12-03 15:56:09,636 - INFO - Ninja MUD Server running on port 4000.
+2024-12-03 16:15:43,713 - INFO - utils imported
+2024-12-03 16:15:43,714 - INFO - Loaded utility: ensure_room_exists
+2024-12-03 16:15:43,714 - INFO - Loaded utility: find_zone_by_vnum
+2024-12-03 16:15:43,714 - INFO - Loaded utility: load_world_map
+2024-12-03 16:15:43,714 - INFO - Loaded utility: next_free_vnum
+2024-12-03 16:15:43,714 - INFO - Loaded utility: overlay_zone
+2024-12-03 16:15:43,714 - INFO - Loaded utility: preload_zones_with_anchors
+2024-12-03 16:15:43,714 - INFO - Loaded utility: render_open_land
+2024-12-03 16:15:43,714 - INFO - Loaded utility: render_room
+2024-12-03 16:15:43,715 - INFO - Loaded utility: reverse_dir
+2024-12-03 16:15:43,715 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'load_world_map', 'next_free_vnum', 'overlay_zone', 'preload_zones_with_anchors', 'render_open_land', 'render_room', 'reverse_dir']
+2024-12-03 16:15:43,735 - INFO - Total commands loaded: 0
+2024-12-03 16:15:43,735 - DEBUG - All registered commands: []
+2024-12-03 16:15:43,738 - INFO - Zones loaded
+2024-12-03 16:15:43,738 - DEBUG - Zones loaded after preload_zones()
+2024-12-03 16:15:43,738 - INFO - general_commands imported
+2024-12-03 16:16:20,640 - INFO - utils imported
+2024-12-03 16:16:20,640 - INFO - Loaded utility: ensure_room_exists
+2024-12-03 16:16:20,640 - INFO - Loaded utility: find_zone_by_vnum
+2024-12-03 16:16:20,640 - INFO - Loaded utility: load_world_map
+2024-12-03 16:16:20,641 - INFO - Loaded utility: next_free_vnum
+2024-12-03 16:16:20,641 - INFO - Loaded utility: overlay_zone
+2024-12-03 16:16:20,641 - INFO - Loaded utility: preload_zones_with_anchors
+2024-12-03 16:16:20,641 - INFO - Loaded utility: render_open_land
+2024-12-03 16:16:20,641 - INFO - Loaded utility: render_room
+2024-12-03 16:16:20,641 - INFO - Loaded utility: reverse_dir
+2024-12-03 16:16:20,641 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'load_world_map', 'next_free_vnum', 'overlay_zone', 'preload_zones_with_anchors', 'render_open_land', 'render_room', 'reverse_dir']
+2024-12-03 16:16:20,655 - INFO - Total commands loaded: 0
+2024-12-03 16:16:20,656 - DEBUG - All registered commands: []
+2024-12-03 16:16:20,656 - INFO - Zones loaded
+2024-12-03 16:16:20,656 - DEBUG - Zones loaded after preload_zones()
+2024-12-03 16:16:20,657 - INFO - general_commands imported
+2024-12-03 16:16:41,044 - INFO - utils imported
+2024-12-03 16:16:41,044 - INFO - Loaded utility: ensure_room_exists
+2024-12-03 16:16:41,044 - INFO - Loaded utility: find_zone_by_vnum
+2024-12-03 16:16:41,044 - INFO - Loaded utility: load_world_map
+2024-12-03 16:16:41,045 - INFO - Loaded utility: next_free_vnum
+2024-12-03 16:16:41,045 - INFO - Loaded utility: overlay_zone
+2024-12-03 16:16:41,045 - INFO - Loaded utility: preload_zones_with_anchors
+2024-12-03 16:16:41,045 - INFO - Loaded utility: render_open_land
+2024-12-03 16:16:41,045 - INFO - Loaded utility: render_room
+2024-12-03 16:16:41,045 - INFO - Loaded utility: reverse_dir
+2024-12-03 16:16:41,045 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'load_world_map', 'next_free_vnum', 'overlay_zone', 'preload_zones_with_anchors', 'render_open_land', 'render_room', 'reverse_dir']
+2024-12-03 16:16:41,058 - INFO - Total commands loaded: 0
+2024-12-03 16:16:41,058 - DEBUG - All registered commands: []
+2024-12-03 16:16:41,058 - INFO - Zones loaded
+2024-12-03 16:16:41,059 - DEBUG - Zones loaded after preload_zones()
+2024-12-03 16:16:41,059 - INFO - Initializing Ninja MUD Server...
+2024-12-03 16:16:41,063 - INFO - Logging initialized.
+2024-12-03 16:16:41,064 - DEBUG - Creating player due to lack of existence.
+2024-12-03 16:16:41,064 - INFO - Database tables ensured and default rooms initialized.
+2024-12-03 16:16:41,064 - DEBUG - Database tables ensured and default rooms initialized.
+2024-12-03 16:16:41,064 - INFO - Database connection established using mud_game_10_rooms.db.
+2024-12-03 16:16:41,075 - INFO - Preloaded zone: Eve's Haven
+2024-12-03 16:16:41,081 - INFO - Preloaded zone: Expanse
+2024-12-03 16:16:41,083 - INFO - Preloaded zone: limbo
+2024-12-03 16:16:41,083 - INFO - Zone data preloaded from zones.
+2024-12-03 16:16:41,088 - INFO - Loaded utility: ensure_room_exists
+2024-12-03 16:16:41,088 - INFO - Loaded utility: find_zone_by_vnum
+2024-12-03 16:16:41,088 - INFO - Loaded utility: load_world_map
+2024-12-03 16:16:41,088 - INFO - Loaded utility: next_free_vnum
+2024-12-03 16:16:41,088 - INFO - Loaded utility: overlay_zone
+2024-12-03 16:16:41,088 - INFO - Loaded utility: preload_zones_with_anchors
+2024-12-03 16:16:41,088 - INFO - Loaded utility: render_open_land
+2024-12-03 16:16:41,088 - INFO - Loaded utility: render_room
+2024-12-03 16:16:41,089 - INFO - Loaded utility: reverse_dir
+2024-12-03 16:16:41,089 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'load_world_map', 'next_free_vnum', 'overlay_zone', 'preload_zones_with_anchors', 'render_open_land', 'render_room', 'reverse_dir']
+2024-12-03 16:16:41,102 - INFO - Total commands loaded: 0
+2024-12-03 16:16:41,102 - DEBUG - All registered commands: []
+2024-12-03 16:16:41,102 - INFO - Zones loaded
+2024-12-03 16:16:41,102 - DEBUG - Zones loaded after preload_zones()
+2024-12-03 16:16:41,102 - INFO - general_commands imported
+2024-12-03 16:16:41,102 - INFO - Loaded commands from general_commands
+2024-12-03 16:16:41,105 - INFO - admin_commands imported
+2024-12-03 16:16:41,106 - INFO - Loaded commands from admin_commands
+2024-12-03 16:16:41,107 - INFO - social_commands imported
+2024-12-03 16:16:41,107 - INFO - Loaded commands from social_commands
+2024-12-03 16:16:41,107 - INFO - Commands loaded: 19
+2024-12-03 16:16:41,108 - INFO - MOTD loaded from motd.txt.
+2024-12-03 16:16:41,108 - ERROR - Utility 'WORLD_MAP' is not callable. Check its definition.
+2024-12-03 16:16:41,109 - INFO - Ninja MUD Server initialized successfully.
+2024-12-03 16:16:41,109 - INFO - Ninja MUD Server running on port 4000.
+2024-12-03 16:23:58,050 - INFO - utils imported
+2024-12-03 16:23:58,050 - INFO - Loaded utility: ensure_room_exists
+2024-12-03 16:23:58,050 - INFO - Loaded utility: find_zone_by_vnum
+2024-12-03 16:23:58,050 - INFO - Loaded utility: load_world_map
+2024-12-03 16:23:58,051 - INFO - Loaded utility: next_free_vnum
+2024-12-03 16:23:58,051 - INFO - Loaded utility: overlay_zone
+2024-12-03 16:23:58,051 - INFO - Loaded utility: preload_zones_with_anchors
+2024-12-03 16:23:58,051 - INFO - Loaded utility: render_open_land
+2024-12-03 16:23:58,051 - INFO - Loaded utility: render_room
+2024-12-03 16:23:58,051 - INFO - Loaded utility: reverse_dir
+2024-12-03 16:23:58,051 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'load_world_map', 'next_free_vnum', 'overlay_zone', 'preload_zones_with_anchors', 'render_open_land', 'render_room', 'reverse_dir']
+2024-12-03 16:23:58,064 - INFO - Total commands loaded: 0
+2024-12-03 16:23:58,064 - DEBUG - All registered commands: []
+2024-12-03 16:23:58,065 - INFO - Zones loaded
+2024-12-03 16:23:58,065 - DEBUG - Zones loaded after preload_zones()
+2024-12-03 16:23:58,065 - INFO - Initializing Ninja MUD Server...
+2024-12-03 16:23:58,065 - INFO - Logging initialized.
+2024-12-03 16:23:58,065 - DEBUG - Creating player due to lack of existence.
+2024-12-03 16:23:58,066 - INFO - Database tables ensured and default rooms initialized.
+2024-12-03 16:23:58,066 - DEBUG - Database tables ensured and default rooms initialized.
+2024-12-03 16:23:58,066 - INFO - Database connection established using mud_game_10_rooms.db.
+2024-12-03 16:23:58,068 - INFO - Preloaded zone: Eve's Haven
+2024-12-03 16:23:58,069 - INFO - Preloaded zone: Expanse
+2024-12-03 16:23:58,069 - INFO - Preloaded zone: limbo
+2024-12-03 16:23:58,069 - INFO - Zone data preloaded from zones.
+2024-12-03 16:23:58,078 - INFO - Loaded utility: ensure_room_exists
+2024-12-03 16:23:58,078 - INFO - Loaded utility: find_zone_by_vnum
+2024-12-03 16:23:58,078 - INFO - Loaded utility: load_world_map
+2024-12-03 16:23:58,078 - INFO - Loaded utility: next_free_vnum
+2024-12-03 16:23:58,079 - INFO - Loaded utility: overlay_zone
+2024-12-03 16:23:58,079 - INFO - Loaded utility: preload_zones_with_anchors
+2024-12-03 16:23:58,079 - INFO - Loaded utility: render_open_land
+2024-12-03 16:23:58,079 - INFO - Loaded utility: render_room
+2024-12-03 16:23:58,079 - INFO - Loaded utility: reverse_dir
+2024-12-03 16:23:58,080 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'load_world_map', 'next_free_vnum', 'overlay_zone', 'preload_zones_with_anchors', 'render_open_land', 'render_room', 'reverse_dir']
+2024-12-03 16:23:58,100 - INFO - Total commands loaded: 0
+2024-12-03 16:23:58,100 - DEBUG - All registered commands: []
+2024-12-03 16:23:58,103 - INFO - Zones loaded
+2024-12-03 16:23:58,103 - DEBUG - Zones loaded after preload_zones()
+2024-12-03 16:23:58,104 - INFO - general_commands imported
+2024-12-03 16:23:58,104 - INFO - Loaded commands from general_commands
+2024-12-03 16:23:58,107 - INFO - admin_commands imported
+2024-12-03 16:23:58,108 - INFO - Loaded commands from admin_commands
+2024-12-03 16:23:58,108 - INFO - social_commands imported
+2024-12-03 16:23:58,108 - INFO - Loaded commands from social_commands
+2024-12-03 16:23:58,108 - INFO - Commands loaded: 19
+2024-12-03 16:23:58,109 - INFO - MOTD loaded from motd.txt.
+2024-12-03 16:23:58,109 - ERROR - Utility 'WORLD_MAP' is not callable. Check its definition.
+2024-12-03 16:23:58,110 - INFO - Ninja MUD Server initialized successfully.
+2024-12-03 16:23:58,111 - INFO - Ninja MUD Server running on port 4000.
+2024-12-03 16:28:47,722 - INFO - utils imported
+2024-12-03 16:28:47,722 - INFO - Loaded utility: ensure_room_exists
+2024-12-03 16:28:47,722 - INFO - Loaded utility: find_zone_by_vnum
+2024-12-03 16:28:47,722 - INFO - Loaded utility: load_world_map
+2024-12-03 16:28:47,722 - INFO - Loaded utility: next_free_vnum
+2024-12-03 16:28:47,722 - INFO - Loaded utility: overlay_zone
+2024-12-03 16:28:47,722 - INFO - Loaded utility: preload_zones_with_anchors
+2024-12-03 16:28:47,723 - INFO - Loaded utility: render_open_land
+2024-12-03 16:28:47,723 - INFO - Loaded utility: render_room
+2024-12-03 16:28:47,723 - INFO - Loaded utility: reverse_dir
+2024-12-03 16:28:47,723 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'load_world_map', 'next_free_vnum', 'overlay_zone', 'preload_zones_with_anchors', 'render_open_land', 'render_room', 'reverse_dir']
+2024-12-03 16:28:47,736 - INFO - Total commands loaded: 0
+2024-12-03 16:28:47,736 - DEBUG - All registered commands: []
+2024-12-03 16:28:47,737 - INFO - Zones loaded
+2024-12-03 16:28:47,737 - DEBUG - Zones loaded after preload_zones()
+2024-12-03 16:28:47,737 - INFO - Initializing Ninja MUD Server...
+2024-12-03 16:28:47,738 - INFO - Logging initialized.
+2024-12-03 16:28:47,739 - DEBUG - Creating player due to lack of existence.
+2024-12-03 16:28:47,739 - INFO - Database tables ensured and default rooms initialized.
+2024-12-03 16:28:47,739 - DEBUG - Database tables ensured and default rooms initialized.
+2024-12-03 16:28:47,739 - INFO - Database connection established using mud_game_10_rooms.db.
+2024-12-03 16:28:47,741 - INFO - Preloaded zone: Eve's Haven
+2024-12-03 16:28:47,742 - INFO - Preloaded zone: Expanse
+2024-12-03 16:28:47,742 - INFO - Preloaded zone: limbo
+2024-12-03 16:28:47,742 - INFO - Zone data preloaded from zones.
+2024-12-03 16:28:47,748 - INFO - Loaded utility: ensure_room_exists
+2024-12-03 16:28:47,748 - INFO - Loaded utility: find_zone_by_vnum
+2024-12-03 16:28:47,748 - INFO - Loaded utility: load_world_map
+2024-12-03 16:28:47,748 - INFO - Loaded utility: next_free_vnum
+2024-12-03 16:28:47,748 - INFO - Loaded utility: overlay_zone
+2024-12-03 16:28:47,749 - INFO - Loaded utility: preload_zones_with_anchors
+2024-12-03 16:28:47,749 - INFO - Loaded utility: render_open_land
+2024-12-03 16:28:47,749 - INFO - Loaded utility: render_room
+2024-12-03 16:28:47,749 - INFO - Loaded utility: reverse_dir
+2024-12-03 16:28:47,749 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'load_world_map', 'next_free_vnum', 'overlay_zone', 'preload_zones_with_anchors', 'render_open_land', 'render_room', 'reverse_dir']
+2024-12-03 16:28:47,762 - INFO - Total commands loaded: 0
+2024-12-03 16:28:47,763 - DEBUG - All registered commands: []
+2024-12-03 16:28:47,764 - INFO - Zones loaded
+2024-12-03 16:28:47,764 - DEBUG - Zones loaded after preload_zones()
+2024-12-03 16:28:47,764 - INFO - general_commands imported
+2024-12-03 16:28:47,764 - INFO - Loaded commands from general_commands
+2024-12-03 16:28:47,765 - INFO - admin_commands imported
+2024-12-03 16:28:47,765 - INFO - Loaded commands from admin_commands
+2024-12-03 16:28:47,766 - INFO - social_commands imported
+2024-12-03 16:28:47,766 - INFO - Loaded commands from social_commands
+2024-12-03 16:28:47,766 - INFO - Commands loaded: 19
+2024-12-03 16:28:47,766 - INFO - MOTD loaded from motd.txt.
+2024-12-03 16:28:47,766 - ERROR - Utility 'WORLD_MAP' is not callable. Check its definition.
+2024-12-03 16:28:47,767 - INFO - Ninja MUD Server initialized successfully.
+2024-12-03 16:28:47,768 - INFO - Ninja MUD Server running on port 4000.
+2024-12-03 16:28:51,986 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=56553).
+2024-12-03 16:28:51,986 - DEBUG - New connection established from [self.transport.getPeer()}.
+2024-12-03 16:28:56,618 - INFO - Received command: Array in state: GET_USERNAME
+2024-12-03 16:29:04,032 - INFO - Received command: 1salvice in state: GET_PASSWORD
+2024-12-03 16:29:04,033 - INFO - Player Array is now in room 3000.
+2024-12-03 16:29:07,073 - INFO - Received command: north in state: COMMAND
+2024-12-03 16:29:07,073 - DEBUG - Command: north, Raw Args: '', Split Args: []
+2024-12-03 16:29:07,073 - INFO - Executing command 'north' for player Array with raw args '' and split args []
+2024-12-03 16:29:07,073 - ERROR - Error executing command 'north' for Array: local variable 'render_open_land' referenced before assignment
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 141, in process_command
+    handler(player, players_in_rooms, raw_args, split_args)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 108, in <lambda>
+    "north": lambda player, players_in_rooms, raw_args, split_args: handle_movement(player, "north"),
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 64, in handle_movement
+    map_view = render_open_land(player.x, player.y, world_map=UTILITIES["WORLD_MAP"])
+UnboundLocalError: local variable 'render_open_land' referenced before assignment
+2024-12-03 16:34:01,286 - INFO - utils imported
+2024-12-03 16:34:01,287 - INFO - Loaded utility: ensure_room_exists
+2024-12-03 16:34:01,287 - INFO - Loaded utility: find_zone_by_vnum
+2024-12-03 16:34:01,287 - INFO - Loaded utility: load_world_map
+2024-12-03 16:34:01,287 - INFO - Loaded utility: next_free_vnum
+2024-12-03 16:34:01,287 - INFO - Loaded utility: overlay_zone
+2024-12-03 16:34:01,287 - INFO - Loaded utility: preload_zones_with_anchors
+2024-12-03 16:34:01,287 - INFO - Loaded utility: render_open_land
+2024-12-03 16:34:01,288 - INFO - Loaded utility: render_room
+2024-12-03 16:34:01,288 - INFO - Loaded utility: reverse_dir
+2024-12-03 16:34:01,288 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'load_world_map', 'next_free_vnum', 'overlay_zone', 'preload_zones_with_anchors', 'render_open_land', 'render_room', 'reverse_dir']
+2024-12-03 16:34:01,302 - INFO - Total commands loaded: 0
+2024-12-03 16:34:01,302 - DEBUG - All registered commands: []
+2024-12-03 16:34:01,303 - INFO - Zones loaded
+2024-12-03 16:34:01,303 - DEBUG - Zones loaded after preload_zones()
+2024-12-03 16:34:01,303 - INFO - Initializing Ninja MUD Server...
+2024-12-03 16:34:01,304 - INFO - Logging initialized.
+2024-12-03 16:34:01,305 - DEBUG - Creating player due to lack of existence.
+2024-12-03 16:34:01,305 - INFO - Database tables ensured and default rooms initialized.
+2024-12-03 16:34:01,305 - DEBUG - Database tables ensured and default rooms initialized.
+2024-12-03 16:34:01,305 - INFO - Database connection established using mud_game_10_rooms.db.
+2024-12-03 16:34:01,305 - INFO - Preloaded zone: Eve's Haven
+2024-12-03 16:34:01,306 - INFO - Preloaded zone: Expanse
+2024-12-03 16:34:01,306 - INFO - Preloaded zone: limbo
+2024-12-03 16:34:01,306 - INFO - Zone data preloaded from zones.
+2024-12-03 16:34:01,308 - INFO - Loaded utility: ensure_room_exists
+2024-12-03 16:34:01,308 - INFO - Loaded utility: find_zone_by_vnum
+2024-12-03 16:34:01,308 - INFO - Loaded utility: load_world_map
+2024-12-03 16:34:01,309 - INFO - Loaded utility: next_free_vnum
+2024-12-03 16:34:01,309 - INFO - Loaded utility: overlay_zone
+2024-12-03 16:34:01,309 - INFO - Loaded utility: preload_zones_with_anchors
+2024-12-03 16:34:01,309 - INFO - Loaded utility: render_open_land
+2024-12-03 16:34:01,309 - INFO - Loaded utility: render_room
+2024-12-03 16:34:01,310 - INFO - Loaded utility: reverse_dir
+2024-12-03 16:34:01,310 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'load_world_map', 'next_free_vnum', 'overlay_zone', 'preload_zones_with_anchors', 'render_open_land', 'render_room', 'reverse_dir']
+2024-12-03 16:34:01,323 - INFO - Total commands loaded: 0
+2024-12-03 16:34:01,323 - DEBUG - All registered commands: []
+2024-12-03 16:34:01,324 - INFO - Zones loaded
+2024-12-03 16:34:01,324 - DEBUG - Zones loaded after preload_zones()
+2024-12-03 16:34:01,324 - INFO - general_commands imported
+2024-12-03 16:34:01,324 - INFO - Loaded commands from general_commands
+2024-12-03 16:34:01,326 - INFO - admin_commands imported
+2024-12-03 16:34:01,326 - INFO - Loaded commands from admin_commands
+2024-12-03 16:34:01,328 - INFO - social_commands imported
+2024-12-03 16:34:01,328 - INFO - Loaded commands from social_commands
+2024-12-03 16:34:01,328 - INFO - Commands loaded: 19
+2024-12-03 16:34:01,328 - INFO - MOTD loaded from motd.txt.
+2024-12-03 16:34:01,329 - ERROR - Utility 'WORLD_MAP' is not callable. Check its definition.
+2024-12-03 16:34:01,329 - INFO - Ninja MUD Server initialized successfully.
+2024-12-03 16:34:01,330 - INFO - Ninja MUD Server running on port 4000.
+2024-12-03 16:34:05,066 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=56593).
+2024-12-03 16:34:05,066 - DEBUG - New connection established from [self.transport.getPeer()}.
+2024-12-03 16:34:13,558 - INFO - Received command: dongdong in state: GET_USERNAME
+2024-12-03 16:34:15,086 - INFO - Received command: 1salvice in state: REGISTER_PASSWORD
+2024-12-03 16:34:17,001 - INFO - Received command: 1salvice in state: CONFIRM_PASSWORD
+2024-12-03 16:34:18,250 - INFO - Received command: a in state: CHOOSE_SPECIALTY
+2024-12-03 16:34:27,163 - INFO - Received command: strength=10 in state: ALLOCATE_STATS
+2024-12-03 16:34:27,170 - INFO - Player dongdong is now in room None.
+2024-12-03 16:34:27,170 - ERROR - Error while searching for zone by VNUM: '<=' not supported between instances of 'int' and 'NoneType'
+2024-12-03 16:34:30,329 - INFO - Received command: look in state: COMMAND
+2024-12-03 16:34:30,329 - DEBUG - Command: look, Raw Args: '', Split Args: []
+2024-12-03 16:34:30,329 - INFO - Executing command 'look' for player dongdong with raw args '' and split args []
+2024-12-03 16:34:30,329 - DEBUG - UTILITIES in general_commands: dict_keys(['ensure_room_exists', 'find_zone_by_vnum', 'load_world_map', 'next_free_vnum', 'overlay_zone', 'preload_zones_with_anchors', 'render_open_land', 'render_room', 'reverse_dir', 'WORLD_MAP'])
+2024-12-03 16:34:30,330 - ERROR - Error executing command 'look' for dongdong: render_open_land() got an unexpected keyword argument 'radius'
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 141, in process_command
+    handler(player, players_in_rooms, raw_args, split_args)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 107, in <lambda>
+    "look": lambda player, players_in_rooms, raw_args, split_args: handle_look(player, players_in_rooms),
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 22, in handle_look
+    player.sendLine(render_open_land(player.x, player.y, radius=1).encode("utf-8"))
+TypeError: render_open_land() got an unexpected keyword argument 'radius'
+2024-12-03 16:45:42,825 - INFO - utils imported
+2024-12-03 16:45:42,825 - INFO - Loaded utility: ensure_room_exists
+2024-12-03 16:45:42,825 - INFO - Loaded utility: find_zone_by_vnum
+2024-12-03 16:45:42,825 - INFO - Loaded utility: load_world_map
+2024-12-03 16:45:42,826 - INFO - Loaded utility: next_free_vnum
+2024-12-03 16:45:42,826 - INFO - Loaded utility: overlay_zone
+2024-12-03 16:45:42,826 - INFO - Loaded utility: preload_zones_with_anchors
+2024-12-03 16:45:42,826 - INFO - Loaded utility: render_open_land
+2024-12-03 16:45:42,826 - INFO - Loaded utility: render_room
+2024-12-03 16:45:42,827 - INFO - Loaded utility: reverse_dir
+2024-12-03 16:45:42,827 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'load_world_map', 'next_free_vnum', 'overlay_zone', 'preload_zones_with_anchors', 'render_open_land', 'render_room', 'reverse_dir']
+2024-12-03 16:45:42,839 - INFO - Total commands loaded: 0
+2024-12-03 16:45:42,839 - DEBUG - All registered commands: []
+2024-12-03 16:45:42,840 - INFO - Zones loaded
+2024-12-03 16:45:42,840 - DEBUG - Zones loaded after preload_zones()
+2024-12-03 16:45:42,840 - INFO - Initializing Ninja MUD Server...
+2024-12-03 16:45:42,841 - INFO - Logging initialized.
+2024-12-03 16:45:42,842 - DEBUG - Creating player due to lack of existence.
+2024-12-03 16:45:42,842 - INFO - Database tables ensured and default rooms initialized.
+2024-12-03 16:45:42,842 - DEBUG - Database tables ensured and default rooms initialized.
+2024-12-03 16:45:42,842 - INFO - Database connection established using mud_game_10_rooms.db.
+2024-12-03 16:45:42,844 - INFO - Preloaded zone: Eve's Haven
+2024-12-03 16:45:42,845 - INFO - Preloaded zone: Expanse
+2024-12-03 16:45:42,846 - INFO - Preloaded zone: limbo
+2024-12-03 16:45:42,846 - INFO - Zone data preloaded from zones.
+2024-12-03 16:45:42,851 - INFO - Loaded utility: ensure_room_exists
+2024-12-03 16:45:42,851 - INFO - Loaded utility: find_zone_by_vnum
+2024-12-03 16:45:42,851 - INFO - Loaded utility: load_world_map
+2024-12-03 16:45:42,851 - INFO - Loaded utility: next_free_vnum
+2024-12-03 16:45:42,851 - INFO - Loaded utility: overlay_zone
+2024-12-03 16:45:42,851 - INFO - Loaded utility: preload_zones_with_anchors
+2024-12-03 16:45:42,851 - INFO - Loaded utility: render_open_land
+2024-12-03 16:45:42,852 - INFO - Loaded utility: render_room
+2024-12-03 16:45:42,852 - INFO - Loaded utility: reverse_dir
+2024-12-03 16:45:42,852 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'load_world_map', 'next_free_vnum', 'overlay_zone', 'preload_zones_with_anchors', 'render_open_land', 'render_room', 'reverse_dir']
+2024-12-03 16:45:42,864 - INFO - Total commands loaded: 0
+2024-12-03 16:45:42,866 - DEBUG - All registered commands: []
+2024-12-03 16:45:42,866 - INFO - Zones loaded
+2024-12-03 16:45:42,867 - DEBUG - Zones loaded after preload_zones()
+2024-12-03 16:45:42,867 - INFO - general_commands imported
+2024-12-03 16:45:42,867 - INFO - Loaded commands from general_commands
+2024-12-03 16:45:42,870 - INFO - admin_commands imported
+2024-12-03 16:45:42,870 - INFO - Loaded commands from admin_commands
+2024-12-03 16:45:42,871 - INFO - social_commands imported
+2024-12-03 16:45:42,871 - INFO - Loaded commands from social_commands
+2024-12-03 16:45:42,871 - INFO - Commands loaded: 19
+2024-12-03 16:45:42,871 - INFO - MOTD loaded from motd.txt.
+2024-12-03 16:45:42,872 - ERROR - Utility 'WORLD_MAP' is not callable. Check its definition.
+2024-12-03 16:45:42,872 - INFO - Ninja MUD Server initialized successfully.
+2024-12-03 16:45:42,873 - INFO - Ninja MUD Server running on port 4000.
+2024-12-03 16:45:47,269 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=56646).
+2024-12-03 16:45:47,269 - DEBUG - New connection established from [self.transport.getPeer()}.
+2024-12-03 16:45:50,852 - INFO - Received command: Array in state: GET_USERNAME
+2024-12-03 16:45:52,559 - INFO - Received command: 1salvice in state: GET_PASSWORD
+2024-12-03 16:45:52,560 - INFO - Player Array is now in room 3000.
+2024-12-03 16:45:55,955 - INFO - Received command: north in state: COMMAND
+2024-12-03 16:45:55,956 - DEBUG - Command: north, Raw Args: '', Split Args: []
+2024-12-03 16:45:55,956 - INFO - Executing command 'north' for player Array with raw args '' and split args []
+2024-12-03 16:45:55,956 - ERROR - Error executing command 'north' for Array: local variable 'render_open_land' referenced before assignment
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 141, in process_command
+    handler(player, players_in_rooms, raw_args, split_args)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 111, in <lambda>
+    "north": lambda player, players_in_rooms, raw_args, split_args: handle_movement(player, "north"),
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 67, in handle_movement
+    map_view = render_open_land(player.x, player.y, world_map=UTILITIES["WORLD_MAP"])
+UnboundLocalError: local variable 'render_open_land' referenced before assignment
+2024-12-04 13:29:57,249 - INFO - utils imported
+2024-12-04 13:29:57,249 - INFO - Loaded utility: ensure_room_exists
+2024-12-04 13:29:57,249 - INFO - Loaded utility: find_zone_by_vnum
+2024-12-04 13:29:57,249 - INFO - Loaded utility: load_world_map
+2024-12-04 13:29:57,250 - INFO - Loaded utility: next_free_vnum
+2024-12-04 13:29:57,250 - INFO - Loaded utility: overlay_zone
+2024-12-04 13:29:57,250 - INFO - Loaded utility: preload_zones_with_anchors
+2024-12-04 13:29:57,250 - INFO - Loaded utility: render_open_land
+2024-12-04 13:29:57,250 - INFO - Loaded utility: render_room
+2024-12-04 13:29:57,250 - INFO - Loaded utility: reverse_dir
+2024-12-04 13:29:57,250 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'load_world_map', 'next_free_vnum', 'overlay_zone', 'preload_zones_with_anchors', 'render_open_land', 'render_room', 'reverse_dir']
+2024-12-04 13:29:57,269 - INFO - Total commands loaded: 0
+2024-12-04 13:29:57,269 - DEBUG - All registered commands: []
+2024-12-04 13:29:57,271 - INFO - Zones loaded
+2024-12-04 13:29:57,271 - DEBUG - Zones loaded after preload_zones()
+2024-12-04 13:29:57,271 - INFO - Initializing Ninja MUD Server...
+2024-12-04 13:29:57,277 - INFO - Logging initialized.
+2024-12-04 13:29:57,278 - DEBUG - Creating player due to lack of existence.
+2024-12-04 13:29:57,278 - INFO - Database tables ensured and default rooms initialized.
+2024-12-04 13:29:57,278 - DEBUG - Database tables ensured and default rooms initialized.
+2024-12-04 13:29:57,278 - INFO - Database connection established using mud_game_10_rooms.db.
+2024-12-04 13:29:57,287 - INFO - Preloaded zone: Eve's Haven
+2024-12-04 13:29:57,293 - INFO - Preloaded zone: Expanse
+2024-12-04 13:29:57,298 - INFO - Preloaded zone: limbo
+2024-12-04 13:29:57,299 - INFO - Zone data preloaded from zones.
+2024-12-04 13:29:57,301 - INFO - Loaded utility: ensure_room_exists
+2024-12-04 13:29:57,301 - INFO - Loaded utility: find_zone_by_vnum
+2024-12-04 13:29:57,301 - INFO - Loaded utility: load_world_map
+2024-12-04 13:29:57,301 - INFO - Loaded utility: next_free_vnum
+2024-12-04 13:29:57,301 - INFO - Loaded utility: overlay_zone
+2024-12-04 13:29:57,301 - INFO - Loaded utility: preload_zones_with_anchors
+2024-12-04 13:29:57,301 - INFO - Loaded utility: render_open_land
+2024-12-04 13:29:57,301 - INFO - Loaded utility: render_room
+2024-12-04 13:29:57,302 - INFO - Loaded utility: reverse_dir
+2024-12-04 13:29:57,302 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'load_world_map', 'next_free_vnum', 'overlay_zone', 'preload_zones_with_anchors', 'render_open_land', 'render_room', 'reverse_dir']
+2024-12-04 13:29:57,314 - INFO - Total commands loaded: 0
+2024-12-04 13:29:57,314 - DEBUG - All registered commands: []
+2024-12-04 13:29:57,314 - INFO - Zones loaded
+2024-12-04 13:29:57,315 - DEBUG - Zones loaded after preload_zones()
+2024-12-04 13:29:57,315 - INFO - general_commands imported
+2024-12-04 13:29:57,315 - INFO - Loaded commands from general_commands
+2024-12-04 13:29:57,316 - INFO - admin_commands imported
+2024-12-04 13:29:57,316 - INFO - Loaded commands from admin_commands
+2024-12-04 13:29:57,316 - INFO - social_commands imported
+2024-12-04 13:29:57,319 - INFO - Loaded commands from social_commands
+2024-12-04 13:29:57,319 - INFO - Commands loaded: 19
+2024-12-04 13:29:57,325 - INFO - MOTD loaded from motd.txt.
+2024-12-04 13:29:57,325 - ERROR - Utility 'WORLD_MAP' is not callable. Check its definition.
+2024-12-04 13:29:57,326 - INFO - Ninja MUD Server initialized successfully.
+2024-12-04 13:29:57,326 - INFO - Ninja MUD Server running on port 4000.
+2024-12-04 13:30:00,913 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=65431).
+2024-12-04 13:30:00,914 - DEBUG - New connection established from [self.transport.getPeer()}.
+2024-12-04 13:30:01,939 - INFO - Received command: north in state: GET_USERNAME
+2024-12-04 13:30:06,666 - INFO - Connection lost for user north. Reason: [Failure instance: Traceback (failure with no frames): <class 'twisted.internet.error.ConnectionDone'>: Connection was closed cleanly.
+]
+2024-12-04 13:30:06,666 - INFO - Player north left room None.
+2024-12-04 13:30:09,267 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=65436).
+2024-12-04 13:30:09,268 - DEBUG - New connection established from [self.transport.getPeer()}.
+2024-12-04 13:30:16,057 - INFO - Received command: poop in state: GET_USERNAME
+2024-12-04 13:30:16,963 - INFO - Received command: poop in state: REGISTER_PASSWORD
+2024-12-04 13:30:17,652 - INFO - Received command: poop in state: CONFIRM_PASSWORD
+2024-12-04 13:30:18,859 - INFO - Received command: a in state: CHOOSE_SPECIALTY
+2024-12-04 13:31:35,389 - INFO - Received command: strength=10 in state: ALLOCATE_STATS
+2024-12-04 13:31:35,395 - INFO - Player poop is now in room None.
+2024-12-04 13:31:35,396 - ERROR - Error while searching for zone by VNUM: '<=' not supported between instances of 'int' and 'NoneType'
+2024-12-04 13:31:37,045 - INFO - Received command: score in state: COMMAND
+2024-12-04 13:31:37,045 - DEBUG - Command: score, Raw Args: '', Split Args: []
+2024-12-04 13:31:37,045 - WARNING - Unknown command 'score' issued by player poop
+2024-12-04 13:31:40,413 - INFO - Received command: status in state: COMMAND
+2024-12-04 13:31:40,413 - DEBUG - Command: status, Raw Args: '', Split Args: []
+2024-12-04 13:31:40,414 - INFO - Executing command 'status' for player poop with raw args '' and split args []
+2024-12-04 15:15:30,985 - INFO - utils imported
+2024-12-04 15:15:30,985 - INFO - Loaded utility: ensure_room_exists
+2024-12-04 15:15:30,985 - INFO - Loaded utility: find_zone_by_vnum
+2024-12-04 15:15:30,985 - INFO - Loaded utility: load_world_map
+2024-12-04 15:15:30,985 - INFO - Loaded utility: next_free_vnum
+2024-12-04 15:15:30,986 - INFO - Loaded utility: overlay_zone
+2024-12-04 15:15:30,986 - INFO - Loaded utility: preload_zones_with_anchors
+2024-12-04 15:15:30,986 - INFO - Loaded utility: render_open_land
+2024-12-04 15:15:30,986 - INFO - Loaded utility: render_room
+2024-12-04 15:15:30,986 - INFO - Loaded utility: reverse_dir
+2024-12-04 15:15:30,986 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'load_world_map', 'next_free_vnum', 'overlay_zone', 'preload_zones_with_anchors', 'render_open_land', 'render_room', 'reverse_dir']
+2024-12-04 15:15:30,999 - INFO - Total commands loaded: 0
+2024-12-04 15:15:30,999 - DEBUG - All registered commands: []
+2024-12-04 15:15:31,000 - INFO - Zones loaded
+2024-12-04 15:15:31,000 - DEBUG - Zones loaded after preload_zones()
+2024-12-04 15:15:31,000 - INFO - Initializing Ninja MUD Server...
+2024-12-04 15:15:31,002 - INFO - Logging initialized.
+2024-12-04 15:15:31,002 - DEBUG - Creating player due to lack of existence.
+2024-12-04 15:15:31,003 - INFO - Database tables ensured and default rooms initialized.
+2024-12-04 15:15:31,003 - DEBUG - Database tables ensured and default rooms initialized.
+2024-12-04 15:15:31,003 - INFO - Database connection established using mud_game_10_rooms.db.
+2024-12-04 15:15:31,004 - INFO - Preloaded zone: Eve's Haven
+2024-12-04 15:15:31,004 - INFO - Preloaded zone: Expanse
+2024-12-04 15:15:31,004 - INFO - Preloaded zone: limbo
+2024-12-04 15:15:31,004 - INFO - Zone data preloaded from zones.
+2024-12-04 15:15:31,012 - INFO - Loaded utility: ensure_room_exists
+2024-12-04 15:15:31,012 - INFO - Loaded utility: find_zone_by_vnum
+2024-12-04 15:15:31,012 - INFO - Loaded utility: load_world_map
+2024-12-04 15:15:31,012 - INFO - Loaded utility: next_free_vnum
+2024-12-04 15:15:31,012 - INFO - Loaded utility: overlay_zone
+2024-12-04 15:15:31,012 - INFO - Loaded utility: preload_zones_with_anchors
+2024-12-04 15:15:31,012 - INFO - Loaded utility: render_open_land
+2024-12-04 15:15:31,012 - INFO - Loaded utility: render_room
+2024-12-04 15:15:31,013 - INFO - Loaded utility: reverse_dir
+2024-12-04 15:15:31,013 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'load_world_map', 'next_free_vnum', 'overlay_zone', 'preload_zones_with_anchors', 'render_open_land', 'render_room', 'reverse_dir']
+2024-12-04 15:15:31,027 - INFO - Total commands loaded: 0
+2024-12-04 15:15:31,027 - DEBUG - All registered commands: []
+2024-12-04 15:15:31,028 - INFO - Zones loaded
+2024-12-04 15:15:31,029 - DEBUG - Zones loaded after preload_zones()
+2024-12-04 15:15:31,029 - INFO - general_commands imported
+2024-12-04 15:15:31,029 - INFO - Loaded commands from general_commands
+2024-12-04 15:15:31,030 - INFO - admin_commands imported
+2024-12-04 15:15:31,030 - INFO - Loaded commands from admin_commands
+2024-12-04 15:15:31,031 - INFO - social_commands imported
+2024-12-04 15:15:31,031 - INFO - Loaded commands from social_commands
+2024-12-04 15:15:31,031 - INFO - Commands loaded: 19
+2024-12-04 15:15:31,032 - INFO - MOTD loaded from motd.txt.
+2024-12-04 15:15:31,032 - ERROR - Utility 'WORLD_MAP' is not callable. Check its definition.
+2024-12-04 15:15:31,033 - INFO - Ninja MUD Server initialized successfully.
+2024-12-04 15:15:31,033 - INFO - Ninja MUD Server running on port 4000.
+2024-12-04 15:15:33,769 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=50334).
+2024-12-04 15:15:33,769 - DEBUG - New connection established from [self.transport.getPeer()}.
+2024-12-04 15:15:37,011 - INFO - Received command: dweeb in state: GET_USERNAME
+2024-12-04 15:15:38,222 - INFO - Received command: dweeb in state: REGISTER_PASSWORD
+2024-12-04 15:15:39,923 - INFO - Received command: dweeb in state: CONFIRM_PASSWORD
+2024-12-04 15:15:41,149 - INFO - Received command: a in state: CHOOSE_SPECIALTY
+2024-12-04 15:15:45,193 - INFO - Received command: strength=10 in state: ALLOCATE_STATS
+2024-12-04 15:15:45,204 - INFO - Player dweeb is now in room 3000.
+2024-12-04 15:15:48,749 - INFO - Received command: north in state: COMMAND
+2024-12-04 15:15:48,749 - DEBUG - Command: north, Raw Args: '', Split Args: []
+2024-12-04 15:15:48,749 - INFO - Executing command 'north' for player dweeb with raw args '' and split args []
+2024-12-04 15:15:48,749 - ERROR - Error executing command 'north' for dweeb: name 'WORLD_MAP' is not defined
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 141, in process_command
+    handler(player, players_in_rooms, raw_args, split_args)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 107, in <lambda>
+    "north": lambda player, players_in_rooms, raw_args, split_args: handle_movement(player, "north"),
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 72, in handle_movement
+    if 0 <= new_x < len(WORLD_MAP[0]) and 0 <= new_y < len(WORLD_MAP):
+NameError: name 'WORLD_MAP' is not defined
+2024-12-04 17:38:28,130 - INFO - utils imported
+2024-12-04 17:38:28,130 - INFO - Loaded utility: ensure_room_exists
+2024-12-04 17:38:28,130 - INFO - Loaded utility: find_zone_by_vnum
+2024-12-04 17:38:28,131 - INFO - Loaded utility: load_world_map
+2024-12-04 17:38:28,131 - INFO - Loaded utility: next_free_vnum
+2024-12-04 17:38:28,131 - INFO - Loaded utility: overlay_zone
+2024-12-04 17:38:28,131 - INFO - Loaded utility: preload_zones_with_anchors
+2024-12-04 17:38:28,131 - INFO - Loaded utility: render_open_land
+2024-12-04 17:38:28,131 - INFO - Loaded utility: render_room
+2024-12-04 17:38:28,131 - INFO - Loaded utility: reverse_dir
+2024-12-04 17:38:28,131 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'load_world_map', 'next_free_vnum', 'overlay_zone', 'preload_zones_with_anchors', 'render_open_land', 'render_room', 'reverse_dir']
+2024-12-04 17:38:28,149 - INFO - Total commands loaded: 0
+2024-12-04 17:38:28,149 - DEBUG - All registered commands: []
+2024-12-04 17:38:28,151 - INFO - Zones loaded
+2024-12-04 17:38:28,151 - DEBUG - Zones loaded after preload_zones()
+2024-12-04 17:38:28,151 - INFO - Initializing Ninja MUD Server...
+2024-12-04 17:38:28,159 - INFO - Logging initialized.
+2024-12-04 17:38:28,175 - DEBUG - Creating player due to lack of existence.
+2024-12-04 17:38:28,192 - INFO - Database tables ensured and default rooms initialized.
+2024-12-04 17:38:28,192 - DEBUG - Database tables ensured and default rooms initialized.
+2024-12-04 17:38:28,192 - INFO - Database connection established using mud_game_10_rooms.db.
+2024-12-04 17:38:28,192 - INFO - Zone data preloaded from zones.
+2024-12-04 17:38:28,199 - INFO - Loaded utility: ensure_room_exists
+2024-12-04 17:38:28,199 - INFO - Loaded utility: find_zone_by_vnum
+2024-12-04 17:38:28,199 - INFO - Loaded utility: load_world_map
+2024-12-04 17:38:28,199 - INFO - Loaded utility: next_free_vnum
+2024-12-04 17:38:28,200 - INFO - Loaded utility: overlay_zone
+2024-12-04 17:38:28,200 - INFO - Loaded utility: preload_zones_with_anchors
+2024-12-04 17:38:28,200 - INFO - Loaded utility: render_open_land
+2024-12-04 17:38:28,200 - INFO - Loaded utility: render_room
+2024-12-04 17:38:28,200 - INFO - Loaded utility: reverse_dir
+2024-12-04 17:38:28,200 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'load_world_map', 'next_free_vnum', 'overlay_zone', 'preload_zones_with_anchors', 'render_open_land', 'render_room', 'reverse_dir']
+2024-12-04 17:38:28,214 - INFO - Total commands loaded: 0
+2024-12-04 17:38:28,214 - DEBUG - All registered commands: []
+2024-12-04 17:38:28,215 - INFO - Zones loaded
+2024-12-04 17:38:28,215 - DEBUG - Zones loaded after preload_zones()
+2024-12-04 17:38:28,215 - INFO - general_commands imported
+2024-12-04 17:38:28,215 - INFO - Loaded commands from general_commands
+2024-12-04 17:38:28,216 - INFO - admin_commands imported
+2024-12-04 17:38:28,216 - INFO - Loaded commands from admin_commands
+2024-12-04 17:38:28,217 - INFO - social_commands imported
+2024-12-04 17:38:28,217 - INFO - Loaded commands from social_commands
+2024-12-04 17:38:28,218 - INFO - Commands loaded: 19
+2024-12-04 17:38:28,218 - INFO - MOTD loaded from motd.txt.
+2024-12-04 17:38:28,218 - ERROR - Utility 'WORLD_MAP' is not callable. Check its definition.
+2024-12-04 17:38:28,229 - INFO - Ninja MUD Server initialized successfully.
+2024-12-04 17:38:28,230 - INFO - Ninja MUD Server running on port 4000.
+2024-12-04 17:38:48,884 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=51244).
+2024-12-04 17:38:48,884 - DEBUG - New connection established from [self.transport.getPeer()}.
+2024-12-04 17:38:51,087 - INFO - Received command: Array in state: GET_USERNAME
+2024-12-04 17:38:52,672 - INFO - Received command: 1salvice in state: REGISTER_PASSWORD
+2024-12-04 17:38:54,284 - INFO - Received command: 1salvice in state: CONFIRM_PASSWORD
+2024-12-04 17:38:54,284 - ERROR - Error in state CONFIRM_PASSWORD: Incorrect number of bindings supplied. The current statement uses 4, and there are 5 supplied.
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 255, in lineReceived
+    handler(command)  # Call the handler with the command
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 354, in confirm_password
+    cursor.execute("""
+sqlite3.ProgrammingError: Incorrect number of bindings supplied. The current statement uses 4, and there are 5 supplied.
+2024-12-04 17:53:48,992 - INFO - utils imported
+2024-12-04 17:53:48,992 - INFO - Loaded utility: ensure_room_exists
+2024-12-04 17:53:48,992 - INFO - Loaded utility: find_zone_by_vnum
+2024-12-04 17:53:48,992 - INFO - Loaded utility: load_world_map
+2024-12-04 17:53:48,992 - INFO - Loaded utility: next_free_vnum
+2024-12-04 17:53:48,992 - INFO - Loaded utility: overlay_zone
+2024-12-04 17:53:48,993 - INFO - Loaded utility: preload_zones_with_anchors
+2024-12-04 17:53:48,993 - INFO - Loaded utility: render_open_land
+2024-12-04 17:53:48,993 - INFO - Loaded utility: render_room
+2024-12-04 17:53:48,993 - INFO - Loaded utility: reverse_dir
+2024-12-04 17:53:48,993 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'load_world_map', 'next_free_vnum', 'overlay_zone', 'preload_zones_with_anchors', 'render_open_land', 'render_room', 'reverse_dir']
+2024-12-04 17:53:49,006 - INFO - Total commands loaded: 0
+2024-12-04 17:53:49,006 - DEBUG - All registered commands: []
+2024-12-04 17:53:49,007 - INFO - Zones loaded
+2024-12-04 17:53:49,007 - DEBUG - Zones loaded after preload_zones()
+2024-12-04 17:53:49,007 - INFO - Initializing Ninja MUD Server...
+2024-12-04 17:53:49,010 - INFO - Logging initialized.
+2024-12-04 17:53:49,010 - DEBUG - Creating player due to lack of existence.
+2024-12-04 17:53:49,010 - INFO - Database tables ensured and default rooms initialized.
+2024-12-04 17:53:49,011 - DEBUG - Database tables ensured and default rooms initialized.
+2024-12-04 17:53:49,011 - INFO - Database connection established using mud_game_10_rooms.db.
+2024-12-04 17:53:49,011 - INFO - Zone data preloaded from zones.
+2024-12-04 17:53:49,016 - INFO - Loaded utility: ensure_room_exists
+2024-12-04 17:53:49,017 - INFO - Loaded utility: find_zone_by_vnum
+2024-12-04 17:53:49,017 - INFO - Loaded utility: load_world_map
+2024-12-04 17:53:49,017 - INFO - Loaded utility: next_free_vnum
+2024-12-04 17:53:49,017 - INFO - Loaded utility: overlay_zone
+2024-12-04 17:53:49,017 - INFO - Loaded utility: preload_zones_with_anchors
+2024-12-04 17:53:49,017 - INFO - Loaded utility: render_open_land
+2024-12-04 17:53:49,017 - INFO - Loaded utility: render_room
+2024-12-04 17:53:49,017 - INFO - Loaded utility: reverse_dir
+2024-12-04 17:53:49,017 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'load_world_map', 'next_free_vnum', 'overlay_zone', 'preload_zones_with_anchors', 'render_open_land', 'render_room', 'reverse_dir']
+2024-12-04 17:53:49,029 - INFO - Total commands loaded: 0
+2024-12-04 17:53:49,029 - DEBUG - All registered commands: []
+2024-12-04 17:53:49,030 - INFO - Zones loaded
+2024-12-04 17:53:49,030 - DEBUG - Zones loaded after preload_zones()
+2024-12-04 17:53:49,030 - INFO - general_commands imported
+2024-12-04 17:53:49,031 - INFO - Loaded commands from general_commands
+2024-12-04 17:53:49,031 - INFO - admin_commands imported
+2024-12-04 17:53:49,032 - INFO - Loaded commands from admin_commands
+2024-12-04 17:53:49,032 - INFO - social_commands imported
+2024-12-04 17:53:49,033 - INFO - Loaded commands from social_commands
+2024-12-04 17:53:49,033 - INFO - Commands loaded: 19
+2024-12-04 17:53:49,033 - INFO - MOTD loaded from motd.txt.
+2024-12-04 17:53:49,033 - ERROR - Utility 'WORLD_MAP' is not callable. Check its definition.
+2024-12-04 17:53:49,033 - INFO - Ninja MUD Server initialized successfully.
+2024-12-04 17:53:49,034 - INFO - Ninja MUD Server running on port 4000.
+2024-12-04 17:53:53,394 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=51330).
+2024-12-04 17:53:53,395 - DEBUG - New connection established from [self.transport.getPeer()}.
+2024-12-04 17:53:55,597 - INFO - Received command: Array in state: GET_USERNAME
+2024-12-04 17:53:57,436 - INFO - Received command: 1salvice in state: REGISTER_PASSWORD
+2024-12-04 17:53:58,317 - INFO - Received command: 1salvice in state: CONFIRM_PASSWORD
+2024-12-04 17:53:58,317 - ERROR - Error in state CONFIRM_PASSWORD: table players has no column named x
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 254, in lineReceived
+    handler(command)  # Call the handler with the command
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 352, in confirm_password
+    cursor.execute("""
+sqlite3.OperationalError: table players has no column named x
+2024-12-04 17:56:02,844 - INFO - utils imported
+2024-12-04 17:56:02,844 - INFO - Loaded utility: ensure_room_exists
+2024-12-04 17:56:02,844 - INFO - Loaded utility: find_zone_by_vnum
+2024-12-04 17:56:02,844 - INFO - Loaded utility: load_world_map
+2024-12-04 17:56:02,844 - INFO - Loaded utility: next_free_vnum
+2024-12-04 17:56:02,845 - INFO - Loaded utility: overlay_zone
+2024-12-04 17:56:02,845 - INFO - Loaded utility: preload_zones_with_anchors
+2024-12-04 17:56:02,845 - INFO - Loaded utility: render_open_land
+2024-12-04 17:56:02,845 - INFO - Loaded utility: render_room
+2024-12-04 17:56:02,845 - INFO - Loaded utility: reverse_dir
+2024-12-04 17:56:02,845 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'load_world_map', 'next_free_vnum', 'overlay_zone', 'preload_zones_with_anchors', 'render_open_land', 'render_room', 'reverse_dir']
+2024-12-04 17:56:02,859 - INFO - Total commands loaded: 0
+2024-12-04 17:56:02,859 - DEBUG - All registered commands: []
+2024-12-04 17:56:02,859 - INFO - Zones loaded
+2024-12-04 17:56:02,859 - DEBUG - Zones loaded after preload_zones()
+2024-12-04 17:56:02,860 - INFO - Initializing Ninja MUD Server...
+2024-12-04 17:56:02,862 - INFO - Logging initialized.
+2024-12-04 17:56:02,868 - DEBUG - Creating player due to lack of existence.
+2024-12-04 17:56:02,872 - INFO - Database tables ensured and default rooms initialized.
+2024-12-04 17:56:02,872 - DEBUG - Database tables ensured and default rooms initialized.
+2024-12-04 17:56:02,872 - INFO - Database connection established using mud_game_10_rooms.db.
+2024-12-04 17:56:02,872 - INFO - Zone data preloaded from zones.
+2024-12-04 17:56:02,878 - INFO - Loaded utility: ensure_room_exists
+2024-12-04 17:56:02,878 - INFO - Loaded utility: find_zone_by_vnum
+2024-12-04 17:56:02,878 - INFO - Loaded utility: load_world_map
+2024-12-04 17:56:02,878 - INFO - Loaded utility: next_free_vnum
+2024-12-04 17:56:02,878 - INFO - Loaded utility: overlay_zone
+2024-12-04 17:56:02,878 - INFO - Loaded utility: preload_zones_with_anchors
+2024-12-04 17:56:02,878 - INFO - Loaded utility: render_open_land
+2024-12-04 17:56:02,879 - INFO - Loaded utility: render_room
+2024-12-04 17:56:02,879 - INFO - Loaded utility: reverse_dir
+2024-12-04 17:56:02,879 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'load_world_map', 'next_free_vnum', 'overlay_zone', 'preload_zones_with_anchors', 'render_open_land', 'render_room', 'reverse_dir']
+2024-12-04 17:56:02,898 - INFO - Total commands loaded: 0
+2024-12-04 17:56:02,899 - DEBUG - All registered commands: []
+2024-12-04 17:56:02,900 - INFO - Zones loaded
+2024-12-04 17:56:02,900 - DEBUG - Zones loaded after preload_zones()
+2024-12-04 17:56:02,900 - INFO - general_commands imported
+2024-12-04 17:56:02,900 - INFO - Loaded commands from general_commands
+2024-12-04 17:56:02,902 - INFO - admin_commands imported
+2024-12-04 17:56:02,903 - INFO - Loaded commands from admin_commands
+2024-12-04 17:56:02,904 - INFO - social_commands imported
+2024-12-04 17:56:02,904 - INFO - Loaded commands from social_commands
+2024-12-04 17:56:02,904 - INFO - Commands loaded: 19
+2024-12-04 17:56:02,904 - INFO - MOTD loaded from motd.txt.
+2024-12-04 17:56:02,904 - ERROR - Utility 'WORLD_MAP' is not callable. Check its definition.
+2024-12-04 17:56:02,904 - INFO - Ninja MUD Server initialized successfully.
+2024-12-04 17:56:02,905 - INFO - Ninja MUD Server running on port 4000.
+2024-12-04 17:56:06,716 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=51347).
+2024-12-04 17:56:06,716 - DEBUG - New connection established from [self.transport.getPeer()}.
+2024-12-04 17:56:08,808 - INFO - Received command: Array in state: GET_USERNAME
+2024-12-04 17:56:10,943 - INFO - Received command: 1salvice in state: REGISTER_PASSWORD
+2024-12-04 17:56:11,780 - INFO - Received command: 1salvice in state: CONFIRM_PASSWORD
+2024-12-04 17:56:13,432 - INFO - Received command: a in state: CHOOSE_SPECIALTY
+2024-12-04 17:56:18,727 - INFO - Received command: Strength=10 in state: ALLOCATE_STATS
+2024-12-04 17:56:18,735 - INFO - Player Array is now in room (500, 500).
+2024-12-04 17:56:22,727 - INFO - Received command: east in state: COMMAND
+2024-12-04 17:56:22,727 - DEBUG - Command: east, Raw Args: '', Split Args: []
+2024-12-04 17:56:22,727 - INFO - Executing command 'east' for player Array with raw args '' and split args []
+2024-12-04 17:56:22,728 - ERROR - Error executing command 'east' for Array: name 'WORLD_MAP' is not defined
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 141, in process_command
+    handler(player, players_in_rooms, raw_args, split_args)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 94, in <lambda>
+    "east": lambda player, players_in_rooms, raw_args, split_args: handle_movement(player, "east"),
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 57, in handle_movement
+    if 0 <= new_x < len(WORLD_MAP[0]) and 0 <= new_y < len(WORLD_MAP):
+NameError: name 'WORLD_MAP' is not defined
+2024-12-04 18:02:28,748 - INFO - utils imported
+2024-12-04 18:02:28,749 - INFO - Loaded utility: ensure_room_exists
+2024-12-04 18:02:28,749 - INFO - Loaded utility: find_zone_by_vnum
+2024-12-04 18:02:28,749 - INFO - Loaded utility: load_world_map
+2024-12-04 18:02:28,750 - INFO - Loaded utility: next_free_vnum
+2024-12-04 18:02:28,750 - INFO - Loaded utility: overlay_zone
+2024-12-04 18:02:28,750 - INFO - Loaded utility: preload_zones_with_anchors
+2024-12-04 18:02:28,750 - INFO - Loaded utility: render_open_land
+2024-12-04 18:02:28,750 - INFO - Loaded utility: render_room
+2024-12-04 18:02:28,750 - INFO - Loaded utility: reverse_dir
+2024-12-04 18:02:28,750 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'load_world_map', 'next_free_vnum', 'overlay_zone', 'preload_zones_with_anchors', 'render_open_land', 'render_room', 'reverse_dir']
+2024-12-04 18:02:28,762 - INFO - Total commands loaded: 0
+2024-12-04 18:02:28,762 - DEBUG - All registered commands: []
+2024-12-04 18:02:28,763 - INFO - Zones loaded
+2024-12-04 18:02:28,764 - DEBUG - Zones loaded after preload_zones()
+2024-12-04 18:02:28,764 - INFO - Initializing Ninja MUD Server...
+2024-12-04 18:02:28,766 - INFO - Logging initialized.
+2024-12-04 18:02:28,767 - DEBUG - Creating player due to lack of existence.
+2024-12-04 18:02:28,767 - INFO - Database tables ensured and default rooms initialized.
+2024-12-04 18:02:28,767 - DEBUG - Database tables ensured and default rooms initialized.
+2024-12-04 18:02:28,767 - INFO - Database connection established using mud_game_10_rooms.db.
+2024-12-04 18:02:28,767 - INFO - Zone data preloaded from zones.
+2024-12-04 18:02:28,771 - INFO - Loaded utility: ensure_room_exists
+2024-12-04 18:02:28,771 - INFO - Loaded utility: find_zone_by_vnum
+2024-12-04 18:02:28,771 - INFO - Loaded utility: load_world_map
+2024-12-04 18:02:28,771 - INFO - Loaded utility: next_free_vnum
+2024-12-04 18:02:28,771 - INFO - Loaded utility: overlay_zone
+2024-12-04 18:02:28,771 - INFO - Loaded utility: preload_zones_with_anchors
+2024-12-04 18:02:28,771 - INFO - Loaded utility: render_open_land
+2024-12-04 18:02:28,771 - INFO - Loaded utility: render_room
+2024-12-04 18:02:28,771 - INFO - Loaded utility: reverse_dir
+2024-12-04 18:02:28,771 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'load_world_map', 'next_free_vnum', 'overlay_zone', 'preload_zones_with_anchors', 'render_open_land', 'render_room', 'reverse_dir']
+2024-12-04 18:02:28,784 - INFO - Total commands loaded: 0
+2024-12-04 18:02:28,785 - DEBUG - All registered commands: []
+2024-12-04 18:02:28,785 - INFO - Zones loaded
+2024-12-04 18:02:28,785 - DEBUG - Zones loaded after preload_zones()
+2024-12-04 18:02:28,786 - INFO - general_commands imported
+2024-12-04 18:02:28,786 - INFO - Loaded commands from general_commands
+2024-12-04 18:02:28,788 - INFO - admin_commands imported
+2024-12-04 18:02:28,788 - INFO - Loaded commands from admin_commands
+2024-12-04 18:02:28,789 - INFO - social_commands imported
+2024-12-04 18:02:28,790 - INFO - Loaded commands from social_commands
+2024-12-04 18:02:28,790 - INFO - Commands loaded: 19
+2024-12-04 18:02:28,790 - INFO - MOTD loaded from motd.txt.
+2024-12-04 18:02:28,790 - ERROR - Utility 'WORLD_MAP' is not callable. Check its definition.
+2024-12-04 18:02:28,790 - INFO - Ninja MUD Server initialized successfully.
+2024-12-04 18:02:28,791 - INFO - Ninja MUD Server running on port 4000.
+2024-12-04 18:02:32,009 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=51419).
+2024-12-04 18:02:32,009 - DEBUG - New connection established from [self.transport.getPeer()}.
+2024-12-04 18:02:34,357 - INFO - Received command: Array in state: GET_USERNAME
+2024-12-04 18:02:37,382 - INFO - Received command: 1salvice in state: GET_PASSWORD
+2024-12-04 18:02:37,382 - INFO - Player Array is now in room (1, 1).
+2024-12-04 18:02:42,049 - INFO - Received command: e in state: COMMAND
+2024-12-04 18:02:42,049 - DEBUG - Command: e, Raw Args: '', Split Args: []
+2024-12-04 18:02:42,049 - WARNING - Unknown command 'e' issued by player Array
+2024-12-04 18:02:43,972 - INFO - Received command: east in state: COMMAND
+2024-12-04 18:02:43,973 - DEBUG - Command: east, Raw Args: '', Split Args: []
+2024-12-04 18:02:43,973 - INFO - Executing command 'east' for player Array with raw args '' and split args []
+2024-12-04 18:02:43,973 - ERROR - Error executing command 'east' for Array: handle_movement() takes 2 positional arguments but 3 were given
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 141, in process_command
+    handler(player, players_in_rooms, raw_args, split_args)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 96, in <lambda>
+    "east": lambda player, players_in_rooms, raw_args, split_args: handle_movement(player, "east", UTILITIES["WORLD_MAP"]),
+TypeError: handle_movement() takes 2 positional arguments but 3 were given
+2024-12-05 11:13:05,364 - INFO - utils imported
+2024-12-05 11:13:05,364 - INFO - Loaded utility: ensure_room_exists
+2024-12-05 11:13:05,364 - INFO - Loaded utility: find_zone_by_vnum
+2024-12-05 11:13:05,364 - INFO - Loaded utility: load_world_map
+2024-12-05 11:13:05,364 - INFO - Loaded utility: next_free_vnum
+2024-12-05 11:13:05,364 - INFO - Loaded utility: overlay_zone
+2024-12-05 11:13:05,364 - INFO - Loaded utility: preload_zones_with_anchors
+2024-12-05 11:13:05,364 - INFO - Loaded utility: render_open_land
+2024-12-05 11:13:05,364 - INFO - Loaded utility: render_room
+2024-12-05 11:13:05,365 - INFO - Loaded utility: reverse_dir
+2024-12-05 11:13:05,365 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'load_world_map', 'next_free_vnum', 'overlay_zone', 'preload_zones_with_anchors', 'render_open_land', 'render_room', 'reverse_dir']
+2024-12-05 11:13:05,384 - INFO - Total commands loaded: 0
+2024-12-05 11:13:05,384 - DEBUG - All registered commands: []
+2024-12-05 11:13:05,384 - INFO - Zones loaded
+2024-12-05 11:13:05,384 - DEBUG - Zones loaded after preload_zones()
+2024-12-05 11:13:05,384 - INFO - general_commands imported
+2024-12-05 11:13:15,221 - INFO - utils imported
+2024-12-05 11:13:15,222 - INFO - Loaded utility: ensure_room_exists
+2024-12-05 11:13:15,222 - INFO - Loaded utility: find_zone_by_vnum
+2024-12-05 11:13:15,222 - INFO - Loaded utility: load_world_map
+2024-12-05 11:13:15,222 - INFO - Loaded utility: next_free_vnum
+2024-12-05 11:13:15,222 - INFO - Loaded utility: overlay_zone
+2024-12-05 11:13:15,222 - INFO - Loaded utility: preload_zones_with_anchors
+2024-12-05 11:13:15,222 - INFO - Loaded utility: render_open_land
+2024-12-05 11:13:15,222 - INFO - Loaded utility: render_room
+2024-12-05 11:13:15,222 - INFO - Loaded utility: reverse_dir
+2024-12-05 11:13:15,222 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'load_world_map', 'next_free_vnum', 'overlay_zone', 'preload_zones_with_anchors', 'render_open_land', 'render_room', 'reverse_dir']
+2024-12-05 11:13:15,234 - INFO - Total commands loaded: 0
+2024-12-05 11:13:15,235 - DEBUG - All registered commands: []
+2024-12-05 11:13:15,235 - INFO - Zones loaded
+2024-12-05 11:13:15,235 - DEBUG - Zones loaded after preload_zones()
+2024-12-05 11:13:15,235 - INFO - Initializing Ninja MUD Server...
+2024-12-05 11:13:15,244 - INFO - Logging initialized.
+2024-12-05 11:13:15,244 - DEBUG - Creating player due to lack of existence.
+2024-12-05 11:13:15,244 - INFO - Database tables ensured and default rooms initialized.
+2024-12-05 11:13:15,245 - DEBUG - Database tables ensured and default rooms initialized.
+2024-12-05 11:13:15,245 - INFO - Database connection established using mud_game_10_rooms.db.
+2024-12-05 11:13:15,245 - INFO - Zone data preloaded from zones.
+2024-12-05 11:13:15,248 - INFO - Loaded utility: ensure_room_exists
+2024-12-05 11:13:15,248 - INFO - Loaded utility: find_zone_by_vnum
+2024-12-05 11:13:15,248 - INFO - Loaded utility: load_world_map
+2024-12-05 11:13:15,248 - INFO - Loaded utility: next_free_vnum
+2024-12-05 11:13:15,248 - INFO - Loaded utility: overlay_zone
+2024-12-05 11:13:15,248 - INFO - Loaded utility: preload_zones_with_anchors
+2024-12-05 11:13:15,248 - INFO - Loaded utility: render_open_land
+2024-12-05 11:13:15,248 - INFO - Loaded utility: render_room
+2024-12-05 11:13:15,248 - INFO - Loaded utility: reverse_dir
+2024-12-05 11:13:15,249 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'load_world_map', 'next_free_vnum', 'overlay_zone', 'preload_zones_with_anchors', 'render_open_land', 'render_room', 'reverse_dir']
+2024-12-05 11:13:15,262 - INFO - Total commands loaded: 0
+2024-12-05 11:13:15,262 - DEBUG - All registered commands: []
+2024-12-05 11:13:15,262 - INFO - Zones loaded
+2024-12-05 11:13:15,262 - DEBUG - Zones loaded after preload_zones()
+2024-12-05 11:13:15,262 - INFO - general_commands imported
+2024-12-05 11:13:15,263 - INFO - Loaded commands from general_commands
+2024-12-05 11:13:15,265 - INFO - admin_commands imported
+2024-12-05 11:13:15,265 - INFO - Loaded commands from admin_commands
+2024-12-05 11:13:15,266 - INFO - social_commands imported
+2024-12-05 11:13:15,267 - INFO - Loaded commands from social_commands
+2024-12-05 11:13:15,267 - INFO - Commands loaded: 19
+2024-12-05 11:13:15,272 - INFO - MOTD loaded from motd.txt.
+2024-12-05 11:13:15,273 - ERROR - Utility 'WORLD_MAP' is not callable. Check its definition.
+2024-12-05 11:13:15,273 - INFO - Ninja MUD Server initialized successfully.
+2024-12-05 11:13:15,274 - INFO - Ninja MUD Server running on port 4000.
+2024-12-05 11:13:18,910 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=59112).
+2024-12-05 11:13:18,910 - DEBUG - New connection established from [self.transport.getPeer()}.
+2024-12-05 11:13:21,371 - INFO - Received command: Array in state: GET_USERNAME
+2024-12-05 11:13:22,590 - INFO - Received command: 1salvice in state: GET_PASSWORD
+2024-12-05 11:13:22,591 - INFO - Player Array is now in room (1, 1).
+2024-12-05 11:13:23,950 - INFO - Received command: e in state: COMMAND
+2024-12-05 11:13:23,951 - DEBUG - Command: e, Raw Args: '', Split Args: []
+2024-12-05 11:13:23,951 - WARNING - Unknown command 'e' issued by player Array
+2024-12-05 11:13:25,096 - INFO - Received command: east in state: COMMAND
+2024-12-05 11:13:25,096 - DEBUG - Command: east, Raw Args: '', Split Args: []
+2024-12-05 11:13:25,096 - INFO - Executing command 'east' for player Array with raw args '' and split args []
+2024-12-05 11:13:25,096 - ERROR - Error executing command 'east' for Array: handle_movement() missing 1 required positional argument: 'world_map'
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 141, in process_command
+    handler(player, players_in_rooms, raw_args, split_args)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 92, in <lambda>
+    "east": lambda player, players_in_rooms, raw_args, split_args: handle_movement(player, "east"),
+TypeError: handle_movement() missing 1 required positional argument: 'world_map'
+2024-12-05 11:13:38,433 - INFO - Received command: look in state: COMMAND
+2024-12-05 11:13:38,433 - DEBUG - Command: look, Raw Args: '', Split Args: []
+2024-12-05 11:13:38,433 - INFO - Executing command 'look' for player Array with raw args '' and split args []
+2024-12-05 11:13:38,434 - INFO - Received command: look in state: COMMAND
+2024-12-05 11:13:38,434 - DEBUG - Command: look, Raw Args: '', Split Args: []
+2024-12-05 11:13:38,434 - INFO - Executing command 'look' for player Array with raw args '' and split args []
+2024-12-05 11:13:45,076 - INFO - Received command: look in state: COMMAND
+2024-12-05 11:13:45,077 - DEBUG - Command: look, Raw Args: '', Split Args: []
+2024-12-05 11:13:45,077 - INFO - Executing command 'look' for player Array with raw args '' and split args []
+2024-12-05 11:13:49,176 - INFO - Received command: south in state: COMMAND
+2024-12-05 11:13:49,176 - DEBUG - Command: south, Raw Args: '', Split Args: []
+2024-12-05 11:13:49,176 - INFO - Executing command 'south' for player Array with raw args '' and split args []
+2024-12-05 11:13:49,176 - ERROR - Error executing command 'south' for Array: handle_movement() missing 1 required positional argument: 'world_map'
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 141, in process_command
+    handler(player, players_in_rooms, raw_args, split_args)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 91, in <lambda>
+    "south": lambda player, players_in_rooms, raw_args, split_args: handle_movement(player, "south"),
+TypeError: handle_movement() missing 1 required positional argument: 'world_map'
+2024-12-05 11:13:56,363 - INFO - Received command: survey in state: COMMAND
+2024-12-05 11:13:56,363 - DEBUG - Command: survey, Raw Args: '', Split Args: []
+2024-12-05 11:13:56,363 - INFO - Executing command 'survey' for player Array with raw args '' and split args []
+2024-12-05 11:13:56,363 - ERROR - Error executing command 'survey' for Array: render_open_land() got an unexpected keyword argument 'radius'
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 141, in process_command
+    handler(player, players_in_rooms, raw_args, split_args)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 89, in <lambda>
+    "survey": lambda player, players_in_rooms, raw_args, split_args: handle_survey(player),
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 84, in handle_survey
+    player.sendLine(UTILITIES["render_open_land"](player.x, player.y, radius=5).encode("utf-8"))
+TypeError: render_open_land() got an unexpected keyword argument 'radius'
+2024-12-05 11:14:07,934 - INFO - Received command: status in state: COMMAND
+2024-12-05 11:14:07,934 - DEBUG - Command: status, Raw Args: '', Split Args: []
+2024-12-05 11:14:07,934 - INFO - Executing command 'status' for player Array with raw args '' and split args []
+2024-12-05 11:14:11,766 - INFO - Received command: look in state: COMMAND
+2024-12-05 11:14:11,766 - DEBUG - Command: look, Raw Args: '', Split Args: []
+2024-12-05 11:14:11,766 - INFO - Executing command 'look' for player Array with raw args '' and split args []
+2024-12-05 11:14:17,065 - INFO - Received command: South in state: COMMAND
+2024-12-05 11:14:17,066 - DEBUG - Command: south, Raw Args: '', Split Args: []
+2024-12-05 11:14:17,066 - INFO - Executing command 'south' for player Array with raw args '' and split args []
+2024-12-05 11:14:17,066 - ERROR - Error executing command 'south' for Array: handle_movement() missing 1 required positional argument: 'world_map'
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 141, in process_command
+    handler(player, players_in_rooms, raw_args, split_args)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 91, in <lambda>
+    "south": lambda player, players_in_rooms, raw_args, split_args: handle_movement(player, "south"),
+TypeError: handle_movement() missing 1 required positional argument: 'world_map'
+2024-12-05 11:16:29,883 - INFO - utils imported
+2024-12-05 11:16:29,883 - INFO - Loaded utility: ensure_room_exists
+2024-12-05 11:16:29,883 - INFO - Loaded utility: find_zone_by_vnum
+2024-12-05 11:16:29,883 - INFO - Loaded utility: load_world_map
+2024-12-05 11:16:29,883 - INFO - Loaded utility: next_free_vnum
+2024-12-05 11:16:29,883 - INFO - Loaded utility: overlay_zone
+2024-12-05 11:16:29,884 - INFO - Loaded utility: preload_zones_with_anchors
+2024-12-05 11:16:29,884 - INFO - Loaded utility: render_open_land
+2024-12-05 11:16:29,884 - INFO - Loaded utility: render_room
+2024-12-05 11:16:29,884 - INFO - Loaded utility: reverse_dir
+2024-12-05 11:16:29,884 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'load_world_map', 'next_free_vnum', 'overlay_zone', 'preload_zones_with_anchors', 'render_open_land', 'render_room', 'reverse_dir']
+2024-12-05 11:16:29,896 - INFO - Total commands loaded: 0
+2024-12-05 11:16:29,896 - DEBUG - All registered commands: []
+2024-12-05 11:16:29,896 - INFO - Zones loaded
+2024-12-05 11:16:29,897 - DEBUG - Zones loaded after preload_zones()
+2024-12-05 11:16:29,897 - INFO - Initializing Ninja MUD Server...
+2024-12-05 11:16:29,899 - INFO - Logging initialized.
+2024-12-05 11:16:29,899 - DEBUG - Creating player due to lack of existence.
+2024-12-05 11:16:29,900 - INFO - Database tables ensured and default rooms initialized.
+2024-12-05 11:16:29,900 - DEBUG - Database tables ensured and default rooms initialized.
+2024-12-05 11:16:29,900 - INFO - Database connection established using mud_game_10_rooms.db.
+2024-12-05 11:16:29,900 - INFO - Zone data preloaded from zones.
+2024-12-05 11:16:29,904 - INFO - Loaded utility: ensure_room_exists
+2024-12-05 11:16:29,904 - INFO - Loaded utility: find_zone_by_vnum
+2024-12-05 11:16:29,904 - INFO - Loaded utility: load_world_map
+2024-12-05 11:16:29,904 - INFO - Loaded utility: next_free_vnum
+2024-12-05 11:16:29,905 - INFO - Loaded utility: overlay_zone
+2024-12-05 11:16:29,905 - INFO - Loaded utility: preload_zones_with_anchors
+2024-12-05 11:16:29,905 - INFO - Loaded utility: render_open_land
+2024-12-05 11:16:29,905 - INFO - Loaded utility: render_room
+2024-12-05 11:16:29,905 - INFO - Loaded utility: reverse_dir
+2024-12-05 11:16:29,906 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'load_world_map', 'next_free_vnum', 'overlay_zone', 'preload_zones_with_anchors', 'render_open_land', 'render_room', 'reverse_dir']
+2024-12-05 11:16:29,917 - INFO - Total commands loaded: 0
+2024-12-05 11:16:29,917 - DEBUG - All registered commands: []
+2024-12-05 11:16:29,917 - INFO - Zones loaded
+2024-12-05 11:16:29,918 - DEBUG - Zones loaded after preload_zones()
+2024-12-05 11:16:29,918 - INFO - general_commands imported
+2024-12-05 11:16:29,918 - INFO - Loaded commands from general_commands
+2024-12-05 11:16:29,921 - INFO - admin_commands imported
+2024-12-05 11:16:29,921 - INFO - Loaded commands from admin_commands
+2024-12-05 11:16:29,922 - INFO - social_commands imported
+2024-12-05 11:16:29,922 - INFO - Loaded commands from social_commands
+2024-12-05 11:16:29,922 - INFO - Commands loaded: 19
+2024-12-05 11:16:29,922 - INFO - MOTD loaded from motd.txt.
+2024-12-05 11:16:29,923 - ERROR - Utility 'WORLD_MAP' is not callable. Check its definition.
+2024-12-05 11:16:29,923 - INFO - Ninja MUD Server initialized successfully.
+2024-12-05 11:16:29,923 - INFO - Ninja MUD Server running on port 4000.
+2024-12-05 11:16:36,558 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=59147).
+2024-12-05 11:16:36,558 - DEBUG - New connection established from [self.transport.getPeer()}.
+2024-12-05 11:16:41,365 - INFO - Received command: Array in state: GET_USERNAME
+2024-12-05 11:16:42,843 - INFO - Received command: 1salvice in state: GET_PASSWORD
+2024-12-05 11:16:42,843 - INFO - Player Array is now in room (1, 1).
+2024-12-05 11:16:45,029 - INFO - Received command: east in state: COMMAND
+2024-12-05 11:16:45,029 - DEBUG - Command: east, Raw Args: '', Split Args: []
+2024-12-05 11:16:45,030 - INFO - Executing command 'east' for player Array with raw args '' and split args []
+2024-12-05 11:16:45,030 - ERROR - Error executing command 'east' for Array: name 'WORLD_MAP' is not defined
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 141, in process_command
+    handler(player, players_in_rooms, raw_args, split_args)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 92, in <lambda>
+    "east": lambda player, players_in_rooms, raw_args, split_args: handle_movement(player, "east"),
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 54, in handle_movement
+    if 0 <= new_x < len(WORLD_MAP[0]) and 0 <= new_y < len(WORLD_MAP):
+NameError: name 'WORLD_MAP' is not defined
+2024-12-05 11:16:54,157 - INFO - Received command: look in state: COMMAND
+2024-12-05 11:16:54,158 - DEBUG - Command: look, Raw Args: '', Split Args: []
+2024-12-05 11:16:54,158 - INFO - Executing command 'look' for player Array with raw args '' and split args []
+2024-12-05 11:17:05,711 - INFO - Received command: south in state: COMMAND
+2024-12-05 11:17:05,711 - DEBUG - Command: south, Raw Args: '', Split Args: []
+2024-12-05 11:17:05,711 - INFO - Executing command 'south' for player Array with raw args '' and split args []
+2024-12-05 11:17:05,711 - ERROR - Error executing command 'south' for Array: name 'WORLD_MAP' is not defined
+Traceback (most recent call last):
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\shinobi_mud.py", line 141, in process_command
+    handler(player, players_in_rooms, raw_args, split_args)
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 91, in <lambda>
+    "south": lambda player, players_in_rooms, raw_args, split_args: handle_movement(player, "south"),
+  File "C:\EVE\MUDs\Ninja\Shinobi_mud\general_commands.py", line 54, in handle_movement
+    if 0 <= new_x < len(WORLD_MAP[0]) and 0 <= new_y < len(WORLD_MAP):
+NameError: name 'WORLD_MAP' is not defined
+2024-12-05 11:19:33,777 - INFO - utils imported
+2024-12-05 11:19:33,777 - INFO - Loaded utility: ensure_room_exists
+2024-12-05 11:19:33,777 - INFO - Loaded utility: find_zone_by_vnum
+2024-12-05 11:19:33,777 - INFO - Loaded utility: load_world_map
+2024-12-05 11:19:33,778 - INFO - Loaded utility: next_free_vnum
+2024-12-05 11:19:33,778 - INFO - Loaded utility: overlay_zone
+2024-12-05 11:19:33,778 - INFO - Loaded utility: preload_zones_with_anchors
+2024-12-05 11:19:33,778 - INFO - Loaded utility: render_open_land
+2024-12-05 11:19:33,778 - INFO - Loaded utility: render_room
+2024-12-05 11:19:33,778 - INFO - Loaded utility: reverse_dir
+2024-12-05 11:19:33,778 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'load_world_map', 'next_free_vnum', 'overlay_zone', 'preload_zones_with_anchors', 'render_open_land', 'render_room', 'reverse_dir']
+2024-12-05 11:19:33,790 - INFO - Total commands loaded: 0
+2024-12-05 11:19:33,790 - DEBUG - All registered commands: []
+2024-12-05 11:19:33,791 - INFO - Zones loaded
+2024-12-05 11:19:33,791 - DEBUG - Zones loaded after preload_zones()
+2024-12-05 11:19:33,791 - INFO - Initializing Ninja MUD Server...
+2024-12-05 11:19:33,793 - INFO - Logging initialized.
+2024-12-05 11:19:33,794 - DEBUG - Creating player due to lack of existence.
+2024-12-05 11:19:33,794 - INFO - Database tables ensured and default rooms initialized.
+2024-12-05 11:19:33,794 - DEBUG - Database tables ensured and default rooms initialized.
+2024-12-05 11:19:33,794 - INFO - Database connection established using mud_game_10_rooms.db.
+2024-12-05 11:19:33,794 - INFO - Zone data preloaded from zones.
+2024-12-05 11:19:33,798 - INFO - Loaded utility: ensure_room_exists
+2024-12-05 11:19:33,798 - INFO - Loaded utility: find_zone_by_vnum
+2024-12-05 11:19:33,798 - INFO - Loaded utility: load_world_map
+2024-12-05 11:19:33,798 - INFO - Loaded utility: next_free_vnum
+2024-12-05 11:19:33,798 - INFO - Loaded utility: overlay_zone
+2024-12-05 11:19:33,798 - INFO - Loaded utility: preload_zones_with_anchors
+2024-12-05 11:19:33,798 - INFO - Loaded utility: render_open_land
+2024-12-05 11:19:33,799 - INFO - Loaded utility: render_room
+2024-12-05 11:19:33,799 - INFO - Loaded utility: reverse_dir
+2024-12-05 11:19:33,799 - DEBUG - UTILITIES after loading in shinobi_mud: ['ensure_room_exists', 'find_zone_by_vnum', 'load_world_map', 'next_free_vnum', 'overlay_zone', 'preload_zones_with_anchors', 'render_open_land', 'render_room', 'reverse_dir']
+2024-12-05 11:19:33,811 - INFO - Total commands loaded: 0
+2024-12-05 11:19:33,812 - DEBUG - All registered commands: []
+2024-12-05 11:19:33,812 - INFO - Zones loaded
+2024-12-05 11:19:33,812 - DEBUG - Zones loaded after preload_zones()
+2024-12-05 11:19:33,813 - INFO - general_commands imported
+2024-12-05 11:19:33,813 - INFO - Loaded commands from general_commands
+2024-12-05 11:19:33,815 - INFO - admin_commands imported
+2024-12-05 11:19:33,815 - INFO - Loaded commands from admin_commands
+2024-12-05 11:19:33,816 - INFO - social_commands imported
+2024-12-05 11:19:33,817 - INFO - Loaded commands from social_commands
+2024-12-05 11:19:33,817 - INFO - Commands loaded: 19
+2024-12-05 11:19:33,817 - INFO - MOTD loaded from motd.txt.
+2024-12-05 11:19:33,817 - ERROR - Utility 'WORLD_MAP' is not callable. Check its definition.
+2024-12-05 11:19:33,817 - INFO - Ninja MUD Server initialized successfully.
+2024-12-05 11:19:33,818 - INFO - Ninja MUD Server running on port 4000.
+2024-12-05 11:19:37,122 - INFO - New connection established from IPv4Address(type='TCP', host='127.0.0.1', port=59170).
+2024-12-05 11:19:37,123 - DEBUG - New connection established from [self.transport.getPeer()}.
+2024-12-05 11:19:41,302 - INFO - Received command: Array in state: GET_USERNAME
+2024-12-05 11:19:43,145 - INFO - Received command: 1salvice in state: GET_PASSWORD
+2024-12-05 11:19:43,145 - INFO - Player Array is now in room (1, 1).
+2024-12-05 11:19:46,353 - INFO - Received command: look in state: COMMAND
+2024-12-05 11:19:46,353 - DEBUG - Command: look, Raw Args: '', Split Args: []
+2024-12-05 11:19:46,353 - INFO - Executing command 'look' for player Array with raw args '' and split args []
+2024-12-05 11:19:48,361 - INFO - Received command: south in state: COMMAND
+2024-12-05 11:19:48,361 - DEBUG - Command: south, Raw Args: '', Split Args: []
+2024-12-05 11:19:48,361 - INFO - Executing command 'south' for player Array with raw args '' and split args []
+2024-12-05 11:19:51,618 - INFO - Received command: north in state: COMMAND
+2024-12-05 11:19:51,618 - DEBUG - Command: north, Raw Args: '', Split Args: []
+2024-12-05 11:19:51,618 - INFO - Executing command 'north' for player Array with raw args '' and split args []
+2024-12-05 11:19:53,621 - INFO - Received command: east in state: COMMAND
+2024-12-05 11:19:53,621 - DEBUG - Command: east, Raw Args: '', Split Args: []
+2024-12-05 11:19:53,621 - INFO - Executing command 'east' for player Array with raw args '' and split args []
+2024-12-05 11:19:57,926 - INFO - Received command: west! in state: COMMAND
+2024-12-05 11:19:57,926 - DEBUG - Command: west!, Raw Args: '', Split Args: []
+2024-12-05 11:19:57,926 - WARNING - Unknown command 'west!' issued by player Array
+2024-12-05 11:20:00,960 - INFO - Received command: west in state: COMMAND
+2024-12-05 11:20:00,960 - DEBUG - Command: west, Raw Args: '', Split Args: []
+2024-12-05 11:20:00,960 - INFO - Executing command 'west' for player Array with raw args '' and split args []
+2024-12-05 11:53:17,444 - INFO - Connection lost for user Array. Reason: [Failure instance: Traceback (failure with no frames): <class 'twisted.internet.error.ConnectionDone'>: Connection was closed cleanly.
+]
+2024-12-05 11:53:17,445 - INFO - Player Array left room (1, 1).

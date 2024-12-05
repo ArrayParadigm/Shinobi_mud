@@ -129,17 +129,29 @@ def reverse_dir(direction):
     """
     return {"north": "south", "south": "north", "east": "west", "west": "east"}.get(direction, "")
 
-def render_open_land(x, y, radius=3):
-    WORLD_MAP = UTILITIES["WORLD_MAP"]  # Access WORLD_MAP
+def render_open_land(player_x, player_y, world_map=None):
+    """Renders a portion of the world map centered around the player's position."""
+    if world_map is None:
+        raise ValueError("A valid world_map must be provided.")
+    
+    # Fixed dimensions: 41 wide (20 left/right of the player), 20 high (10 up/down)
+    width_radius = 20  # Half-width minus one
+    height_radius = 10  # Half-height minus one
+
     visible_map = []
-    for j in range(y - radius, y + radius + 1):
+
+    for y in range(player_y - height_radius, player_y + height_radius + 1):
         row = ""
-        for i in range(x - radius, x + radius + 1):
-            if 0 <= j < len(WORLD_MAP) and 0 <= i < len(WORLD_MAP[0]):
-                row += WORLD_MAP[j][i]
+        for x in range(player_x - width_radius, player_x + width_radius + 1):
+            if 0 <= y < len(world_map) and 0 <= x < len(world_map[0]):
+                if x == player_x and y == player_y:
+                    row += "P"  # Mark the player
+                else:
+                    row += world_map[y][x]
             else:
-                row += "?"
+                row += "?"  # Out-of-bounds area
         visible_map.append(row)
+
     return "\n".join(visible_map)
 
 def render_room(player):
