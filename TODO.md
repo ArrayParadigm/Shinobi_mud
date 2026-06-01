@@ -13,6 +13,22 @@ The foundation checkpoint in `FOUNDATION_CHECKLIST.md` is complete.
 
 ---
 
+## Planning Approach
+
+Use this file as the active ordered roadmap. The documents under `Content/` remain design references for the larger vision, but they are not the current implementation queue.
+
+Work in small milestone sprints rather than fixed calendar sprints. Each sprint should deliver one testable vertical slice and end with:
+
+- Automated regression tests.
+- A manual smoke-test path.
+- Updated README documentation when player or admin behavior changes.
+- A changelog entry.
+- A focused Git commit.
+
+Only keep one sprint active at a time. Reassess the order after each sprint when new dependencies become visible.
+
+---
+
 ## Phase 7: Private Alpha Hardening
 
 Improve operational confidence before adding systems with larger state surfaces.
@@ -24,7 +40,7 @@ Improve operational confidence before adding systems with larger state surfaces.
 
 ### Deferred Until Needed
 
-- [ ] Add a repeatable two-client soak test for login, movement, chat, disconnects, and reconnects.
+- [ ] Add a repeatable two-client soak test for login, movement, chat, disconnects, and reconnects. Scheduled for Sprint 16.
 - [ ] Add encrypted transport before any open-internet password testing.
 
 ### Private Alpha Status
@@ -100,6 +116,86 @@ One authored hostile NPC can be attacked, counterattack, recover after defeat, a
 
 ---
 
+## Sprint 12: Combat Reliability
+
+Turn the Phase 11 proof of concept into a dependable base for later ninja abilities.
+
+- [ ] Define current and maximum health semantics for players and NPCs.
+- [ ] Add hit chance using attacker and defender stats instead of guaranteed melee hits.
+- [ ] Broadcast attacks, damage, and defeats to other players at the same location.
+- [ ] Add `consider <character>` or equivalent combat inspection.
+- [ ] Add a deliberate recovery rule for player defeat, including location behavior.
+- [ ] Add transaction and multiplayer tests for two players attacking the same NPC.
+
+### Done When
+
+Two players can fight the same authored NPC without state corruption, nearby players understand what happened, and health behavior is explicit enough to support abilities.
+
+---
+
+## Sprint 13: Character Foundation
+
+Repair the rough character-creation flow before adding progression systems that depend on it.
+
+- [ ] Replace the current incremental stat-allocation prompt with a clearer allocation workflow.
+- [ ] Separate current resources from maximum health, stamina, and chakra.
+- [ ] Decide the initial clan and natural-release data model.
+- [ ] Display the new character fields in `score`.
+- [ ] Add migrations and tests for new accounts and existing-account upgrades.
+
+### Done When
+
+New players can create understandable ninja characters, and existing private-alpha accounts migrate without losing progress.
+
+---
+
+## Sprint 14: First Chakra Ability
+
+Add one complete ninja ability only after combat and character resource semantics are stable.
+
+- [ ] Define authored ability data for chakra cost, range, cast time, cooldown, and effect.
+- [ ] Add one offensive jutsu and one defensive response.
+- [ ] Consume chakra and restore it through a deliberate recovery rule.
+- [ ] Integrate ability timing with the world scheduler.
+- [ ] Add tests for casting, cooldowns, insufficient chakra, and defensive timing.
+
+### Done When
+
+Players can use and counter one chakra-driven ability without bypassing the combat rules established in Sprint 12.
+
+---
+
+## Sprint 15: Builder and Training Playground
+
+Make it practical to expand content without editing Python.
+
+- [ ] Replace placeholder `dig` with coordinate-aware overlay editing.
+- [ ] Add room-description editing for authored zones.
+- [ ] Add a small admin workflow for creating or updating authored NPC templates and spawns.
+- [ ] Build a compact training area that exercises melee, recovery, and the first chakra ability.
+- [ ] Add reload and persistence tests for edited content.
+
+### Done When
+
+An admin can build a small training encounter through authored content tools and reload it without restarting the server.
+
+---
+
+## Sprint 16: Private Alpha Exercise
+
+Exercise the playable loop before widening the feature surface.
+
+- [ ] Add a repeatable two-client soak test for login, movement, chat, combat, disconnects, and reconnects.
+- [ ] Run a private Linux test session through a firewall allowlist, private network, or VPN.
+- [ ] Review runtime logs and fix the highest-impact failures.
+- [ ] Decide whether encrypted transport is the next operational priority.
+
+### Done When
+
+The current game loop survives a real private test session and produces actionable logs when something goes wrong.
+
+---
+
 ## Communication and Social Backlog
 
 - [ ] Add `whisper`.
@@ -115,8 +211,8 @@ One authored hostile NPC can be attacked, counterattack, recover after defeat, a
 - [x] Add `zoneinfo [vnum]`.
 - [x] Add `placezone <zone_file> <x> <y>`.
 - [x] Add `reloadcontent` for applying authored JSON edits to live templates and missing spawns.
-- [ ] Replace placeholder `dig` with coordinate-aware overlay editing.
-- [ ] Add room-description editing for authored zones.
+- [ ] Replace placeholder `dig` with coordinate-aware overlay editing. Scheduled for Sprint 15.
+- [ ] Add room-description editing for authored zones. Scheduled for Sprint 15.
 - [ ] Create a robust live-management admin surface after command-line builder tools mature.
 
 ---

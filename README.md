@@ -2,6 +2,8 @@
 
 **Shinobi_mud** is a text-based Multi-User Dungeon (MUD) game inspired by the Naruto universe. The current private-alpha foundation supports accounts, multiplayer exploration, chat, and authored zones over a persistent wilderness grid.
 
+The active implementation queue lives in [TODO.md](TODO.md). Older documents under `Content/` are design references for the larger vision.
+
 ## Features
 
 - **Command System:** Separate modules for general, admin, and social commands.

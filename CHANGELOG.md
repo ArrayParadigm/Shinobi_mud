@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-06-01 - Post-Combat Roadmap Checkpoint
+
+### Changed
+
+- Reconciled the active roadmap after the basic NPC combat slice.
+- Adopted milestone sprints with one testable vertical slice, regression coverage, smoke-test notes, documentation, changelog updates, and a focused commit per sprint.
+- Ordered the next work as combat reliability, character foundation, first chakra ability, builder tools and training content, then a private Linux exercise.
+- Clarified that `TODO.md` is the active implementation queue while documents under `Content/` remain long-term design references.
+
+### Verification
+
+- Passed `python -m unittest discover -s tests -v` with 74 tests.
+- Passed Python syntax compilation across the repository.
+
 ## 2026-06-01 - Basic NPC Combat Slice
 
 ### Added
