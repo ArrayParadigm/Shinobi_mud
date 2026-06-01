@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-06-01 - Combat Reliability
+
+### Added
+
+- Added bounded hit chances using player dexterity versus NPC evasion and NPC accuracy versus player agility.
+- Added authored NPC accuracy and evasion metadata with migration 6 for existing databases.
+- Added `consider <character>` for inspecting visible NPC health and combat stats.
+- Added room broadcasts for attacks, misses, damage, and defeats.
+
+### Changed
+
+- Applied equipped item damage bonuses to basic melee attacks without hardcoding Practice Kunai behavior.
+- Wrapped shared NPC combat turns in SQLite write transactions so failed turns roll back cleanly.
+- Defined player defeat recovery as full health at the same grid coordinate.
+
+### Verification
+
+- Added coverage for misses, weapon bonuses, combat inspection, room broadcasts, shared-NPC multiplayer damage, rollback behavior, and legacy NPC schema upgrades.
+- Upgraded the preserved local development database through migration 6.
+- Passed `python -m unittest discover -s tests -v` with 86 tests.
+- Passed Python syntax compilation across the repository.
+
 ## 2026-06-01 - Inventory Management and Character Foundation
 
 ### Added

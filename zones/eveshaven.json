@@ -336,6 +336,8 @@
             "behavior": "hostile",
             "max_health": 12,
             "attack_damage": 2,
+            "accuracy": 5,
+            "evasion": 5,
             "respawn_seconds": 60
         }
     ],

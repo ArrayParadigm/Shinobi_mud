@@ -131,12 +131,18 @@ def migration_005_inventory_and_character_foundation(cursor):
     ensure_player_foundation_columns(cursor)
 
 
+def migration_006_combat_reliability(cursor):
+    """Add authored NPC accuracy and evasion for stat-based combat."""
+    create_npc_tables(cursor)
+
+
 MIGRATIONS = (
     (1, migration_001_non_admin_default),
     (2, migration_002_persistent_items),
     (3, migration_003_authored_content_and_npcs),
     (4, migration_004_npc_combat_state),
     (5, migration_005_inventory_and_character_foundation),
+    (6, migration_006_combat_reliability),
 )
 
 

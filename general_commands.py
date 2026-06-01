@@ -10,8 +10,15 @@ from items import (
     remove_item,
     wield_item,
 )
-from locations import LocationPersistenceError, get_location, move_player, online_players
-from npcs import attack_npc, talk_to_npc
+from locations import (
+    LocationPersistenceError,
+    broadcast_at,
+    coordinate_key,
+    get_location,
+    move_player,
+    online_players,
+)
+from npcs import attack_npc, consider_npc, talk_to_npc
 from shinobi_mud import (
     COMMAND_REGISTRY,
     UTILITIES,
@@ -275,6 +282,39 @@ def handle_talk(player, npc_name):
         player.sendLine(b"Unable to talk to that character right now.")
 
 
+def handle_consider(player, npc_name):
+    """Display one visible NPC's authored combat details."""
+    try:
+        npc = consider_npc(player.cursor, player.x, player.y, npc_name.strip())
+        if not npc:
+            player.sendLine(b"You do not see that character here.")
+            return
+        player.sendLine(npc["name"].encode("utf-8"))
+        player.sendLine(npc["description"].encode("utf-8"))
+        player.sendLine(f'Health: {npc["health"]}/{npc["max_health"]}'.encode("utf-8"))
+        if npc["behavior"] != "hostile":
+            player.sendLine(b"This character is not a combat target.")
+            return
+        player.sendLine(
+            (
+                f'Attack: {npc["attack_damage"]}  '
+                f'Accuracy: {npc["accuracy"]}  Evasion: {npc["evasion"]}'
+            ).encode("utf-8")
+        )
+    except Exception as exc:
+        logging.error("Unable to consider NPC for %s: %s", player.username, exc, exc_info=True)
+        player.sendLine(b"Unable to inspect that character right now.")
+
+
+def _broadcast_combat(player, message):
+    broadcast_at(
+        players_in_rooms,
+        coordinate_key(player.x, player.y),
+        message,
+        exclude=player,
+    )
+
+
 def handle_attack(player, npc_name):
     """Resolve one turn of melee combat against an NPC."""
     try:
@@ -295,26 +335,62 @@ def handle_attack(player, npc_name):
             player.sendLine(f'{result["npc_name"]} is not a combat target.'.encode("utf-8"))
             return
         if result["status"] == "npc_defeated":
-            player.sendLine(
+            message = (
+                f'You strike {result["npc_name"]} for {result["player_damage"]} '
+                "damage and defeat it."
+            )
+            player.sendLine(message.encode("utf-8"))
+            _broadcast_combat(
+                player,
                 (
-                    f'You strike {result["npc_name"]} for {result["player_damage"]} '
-                    "damage and defeat it."
-                ).encode("utf-8")
+                    f'{player.username} strikes {result["npc_name"]} for '
+                    f'{result["player_damage"]} damage and defeats it.'
+                ),
             )
             return
 
-        player.sendLine(
-            (
+        if result["player_hit"]:
+            player.sendLine(
+                (
                 f'You strike {result["npc_name"]} for {result["player_damage"]} damage. '
                 f'{result["npc_name"]} has {result["npc_health"]} health remaining.'
-            ).encode("utf-8")
-        )
-        if result["player_defeated"]:
+                ).encode("utf-8")
+            )
+            _broadcast_combat(
+                player,
+                (
+                    f'{player.username} strikes {result["npc_name"]} for '
+                    f'{result["player_damage"]} damage. '
+                    f'{result["npc_name"]} has {result["npc_health"]} health remaining.'
+                ),
+            )
+        else:
+            player.sendLine(f'You attack {result["npc_name"]}, but miss.'.encode("utf-8"))
+            _broadcast_combat(
+                player,
+                f'{player.username} attacks {result["npc_name"]}, but misses.',
+            )
+
+        if not result["npc_hit"]:
+            player.sendLine(f'{result["npc_name"]} attacks you, but misses.'.encode("utf-8"))
+            _broadcast_combat(
+                player,
+                f'{result["npc_name"]} attacks {player.username}, but misses.',
+            )
+        elif result["player_defeated"]:
             player.sendLine(
                 (
                     f'{result["npc_name"]} strikes you for {result["npc_damage"]} damage. '
-                    f'You are defeated, then recover with {result["player_health"]} health.'
+                    f'You are defeated, then recover here with {result["player_health"]} health.'
                 ).encode("utf-8")
+            )
+            _broadcast_combat(
+                player,
+                (
+                    f'{result["npc_name"]} strikes {player.username} for '
+                    f'{result["npc_damage"]} damage. '
+                    f'{player.username} is defeated and recovers here.'
+                ),
             )
         else:
             player.sendLine(
@@ -322,6 +398,14 @@ def handle_attack(player, npc_name):
                     f'{result["npc_name"]} strikes you for {result["npc_damage"]} damage. '
                     f'You have {result["player_health"]} health remaining.'
                 ).encode("utf-8")
+            )
+            _broadcast_combat(
+                player,
+                (
+                    f'{result["npc_name"]} strikes {player.username} for '
+                    f'{result["npc_damage"]} damage. '
+                    f'{player.username} has {result["player_health"]} health remaining.'
+                ),
             )
     except Exception as exc:
         logging.error("Unable to attack NPC for %s: %s", player.username, exc, exc_info=True)
@@ -376,6 +460,7 @@ COMMANDS = {
     "wield": CommandSpec("wield", lambda player, rooms, raw, args: handle_wield(player, raw), "wield <item>", "Equip a carried item.", min_args=1),
     "remove": CommandSpec("remove", lambda player, rooms, raw, args: handle_remove(player, raw), "remove <item>", "Unequip a carried item.", min_args=1),
     "talk": CommandSpec("talk", lambda player, rooms, raw, args: handle_talk(player, raw), "talk <character>", "Talk to a character at your location.", min_args=1),
+    "consider": CommandSpec("consider", lambda player, rooms, raw, args: handle_consider(player, raw), "consider <character>", "Inspect a character's combat details.", min_args=1),
     "attack": CommandSpec("attack", lambda player, rooms, raw, args: handle_attack(player, raw), "attack <character>", "Strike a hostile character at your location.", min_args=1),
     "north": CommandSpec("north", lambda player, rooms, raw, args: handle_movement(player, "north"), "north", "Move north.", max_args=0),
     "south": CommandSpec("south", lambda player, rooms, raw, args: handle_movement(player, "south"), "south", "Move south.", max_args=0),

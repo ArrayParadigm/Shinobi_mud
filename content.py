@@ -94,9 +94,9 @@ def _sync_npc_templates(cursor, templates):
             """
             INSERT INTO npc_templates (
                 npc_key, name, description, dialogue, behavior,
-                max_health, attack_damage, respawn_seconds
+                max_health, attack_damage, accuracy, evasion, respawn_seconds
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(npc_key) DO UPDATE SET
                 name=excluded.name,
                 description=excluded.description,
@@ -104,6 +104,8 @@ def _sync_npc_templates(cursor, templates):
                 behavior=excluded.behavior,
                 max_health=excluded.max_health,
                 attack_damage=excluded.attack_damage,
+                accuracy=excluded.accuracy,
+                evasion=excluded.evasion,
                 respawn_seconds=excluded.respawn_seconds
             """,
             (
@@ -114,6 +116,8 @@ def _sync_npc_templates(cursor, templates):
                 template.get("behavior", "static"),
                 int(template.get("max_health", 1)),
                 int(template.get("attack_damage", 0)),
+                int(template.get("accuracy", 5)),
+                int(template.get("evasion", 5)),
                 int(template.get("respawn_seconds", 60)),
             ),
         )

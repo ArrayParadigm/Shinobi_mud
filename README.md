@@ -135,6 +135,7 @@ Eve's Haven is the first complete overlay example. Its anchor and room offsets l
 - `wield <item>`: equip a carried item in its authored slot.
 - `remove <item>`: unequip a carried item.
 - `talk <character>`: speak with an NPC at your grid location.
+- `consider <character>`: inspect a visible character's combat details.
 - `attack <character>`: resolve one melee turn against a hostile NPC at your grid location.
 - `who`: list connected characters.
 - `say <message>`: speak to characters at your grid location.
@@ -163,7 +164,7 @@ Room items, character inventories, equipped slots, and NPC instances persist in 
 
 Eve's Haven authors a Haven Map at its entrance, a Practice Kunai in its garden, a Crystal Token in its library, a Haven Guide NPC at the entrance, and a hostile Practice Construct in the garden. `reloadcontent` lets an admin apply JSON template edits and create newly-authored spawns without restarting the server.
 
-The first combat loop is command-driven and turn-based. `attack <character>` applies strength-based player damage, then a surviving hostile NPC immediately counterattacks. Defeated NPCs disappear until their authored respawn delay elapses; player defeat recovers the character to maximum health.
+The combat loop is command-driven and turn-based. `attack <character>` resolves player dexterity against authored NPC evasion, applies strength-based damage plus equipped-weapon metadata on a hit, then resolves a surviving hostile NPC's authored accuracy against player agility. Roommates see the exchange. Defeated NPCs disappear until their authored respawn delay elapses. A defeated player recovers to maximum health at the same grid coordinate.
 
 ### Early Linux Testing
 

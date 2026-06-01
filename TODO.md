@@ -143,13 +143,13 @@ Players can identify, inspect, pick up, carry, drop, and wield authored items wi
 
 Turn the Phase 11 proof of concept into a dependable base for later ninja abilities.
 
-- [ ] Define current and maximum health semantics for players and NPCs.
-- [ ] Add hit chance using attacker and defender stats instead of guaranteed melee hits.
-- [ ] Apply equipped-weapon metadata to basic attacks without hardcoding kunai behavior in Python.
-- [ ] Broadcast attacks, damage, and defeats to other players at the same location.
-- [ ] Add `consider <character>` or equivalent combat inspection.
-- [ ] Add a deliberate recovery rule for player defeat, including location behavior.
-- [ ] Add transaction and multiplayer tests for two players attacking the same NPC.
+- [x] Define current and maximum health semantics for players and NPCs.
+- [x] Add hit chance using attacker and defender stats instead of guaranteed melee hits.
+- [x] Apply equipped-weapon metadata to basic attacks without hardcoding kunai behavior in Python.
+- [x] Broadcast attacks, damage, and defeats to other players at the same location.
+- [x] Add `consider <character>` or equivalent combat inspection.
+- [x] Add a deliberate recovery rule for player defeat, including location behavior.
+- [x] Add transaction and multiplayer tests for two players attacking the same NPC.
 
 ### Done When
 

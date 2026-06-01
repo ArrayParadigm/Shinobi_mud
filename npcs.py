@@ -1,5 +1,13 @@
 """Persistent NPC templates, live instances, and lightweight combat."""
 
+import random
+
+
+BASE_HIT_CHANCE = 50
+STAT_HIT_CHANCE_STEP = 5
+MIN_HIT_CHANCE = 5
+MAX_HIT_CHANCE = 95
+
 
 def create_npc_tables(cursor):
     """Create persistent NPC template and spawned-instance tables."""
@@ -14,6 +22,8 @@ def create_npc_tables(cursor):
             behavior TEXT NOT NULL DEFAULT 'static',
             max_health INTEGER NOT NULL DEFAULT 1,
             attack_damage INTEGER NOT NULL DEFAULT 0,
+            accuracy INTEGER NOT NULL DEFAULT 5,
+            evasion INTEGER NOT NULL DEFAULT 5,
             respawn_seconds INTEGER NOT NULL DEFAULT 60
         )
         """
@@ -48,6 +58,8 @@ def ensure_npc_combat_columns(cursor):
     for column_name, definition in (
         ("max_health", "INTEGER NOT NULL DEFAULT 1"),
         ("attack_damage", "INTEGER NOT NULL DEFAULT 0"),
+        ("accuracy", "INTEGER NOT NULL DEFAULT 5"),
+        ("evasion", "INTEGER NOT NULL DEFAULT 5"),
         ("respawn_seconds", "INTEGER NOT NULL DEFAULT 60"),
     ):
         if column_name not in template_columns:
@@ -97,20 +109,14 @@ def talk_to_npc(cursor, x, y, npc_name):
     ).fetchone()
 
 
-def attack_npc(cursor, username, x, y, npc_name):
-    """Resolve one player attack and an immediate hostile counterattack."""
-    player = cursor.execute(
-        "SELECT id, health, max_health, strength FROM players WHERE username=?",
-        (username,),
-    ).fetchone()
-    if not player:
-        return {"status": "missing_player"}
-
-    npc = cursor.execute(
+def consider_npc(cursor, x, y, npc_name):
+    """Return visible NPC combat details for player inspection."""
+    return cursor.execute(
         """
-        SELECT npc_instances.id, npc_instances.health,
-               npc_templates.name, npc_templates.behavior,
-               npc_templates.attack_damage
+        SELECT npc_templates.name, npc_templates.description,
+               npc_templates.behavior, npc_instances.health,
+               npc_templates.max_health, npc_templates.attack_damage,
+               npc_templates.accuracy, npc_templates.evasion
         FROM npc_instances
         JOIN npc_templates ON npc_templates.id = npc_instances.npc_template_id
         WHERE npc_instances.x=? AND npc_instances.y=?
@@ -121,14 +127,77 @@ def attack_npc(cursor, username, x, y, npc_name):
         """,
         (x, y, npc_name),
     ).fetchone()
-    if not npc:
-        return {"status": "missing_target"}
-    if npc["behavior"] != "hostile":
-        return {"status": "not_attackable", "npc_name": npc["name"]}
 
-    player_damage = max(1, player["strength"] // 2)
-    npc_health = max(0, npc["health"] - player_damage)
+
+def hit_chance(attacker_accuracy, defender_evasion):
+    """Return a bounded percentage chance to land one combat action."""
+    chance = BASE_HIT_CHANCE + (
+        int(attacker_accuracy) - int(defender_evasion)
+    ) * STAT_HIT_CHANCE_STEP
+    return max(MIN_HIT_CHANCE, min(MAX_HIT_CHANCE, chance))
+
+
+def _equipped_damage_bonus(cursor, player_id):
+    return cursor.execute(
+        """
+        SELECT COALESCE(SUM(item_definitions.damage_bonus), 0)
+        FROM character_inventory
+        JOIN item_definitions
+          ON item_definitions.id=character_inventory.item_definition_id
+        WHERE character_inventory.player_id=?
+          AND character_inventory.equipped_slot IS NOT NULL
+        """,
+        (player_id,),
+    ).fetchone()[0]
+
+
+def attack_npc(cursor, username, x, y, npc_name):
+    """Resolve one locked melee turn and an immediate hostile counterattack."""
+    connection = cursor.connection
     try:
+        cursor.execute("BEGIN IMMEDIATE")
+        player = cursor.execute(
+            """
+            SELECT id, health, max_health, strength, dexterity, agility
+            FROM players
+            WHERE username=?
+            """,
+            (username,),
+        ).fetchone()
+        if not player:
+            connection.rollback()
+            return {"status": "missing_player"}
+
+        npc = cursor.execute(
+            """
+            SELECT npc_instances.id, npc_instances.health,
+                   npc_templates.name, npc_templates.behavior,
+                   npc_templates.attack_damage, npc_templates.accuracy,
+                   npc_templates.evasion
+            FROM npc_instances
+            JOIN npc_templates ON npc_templates.id = npc_instances.npc_template_id
+            WHERE npc_instances.x=? AND npc_instances.y=?
+              AND npc_instances.health > 0
+              AND npc_templates.name=? COLLATE NOCASE
+            ORDER BY npc_instances.id
+            LIMIT 1
+            """,
+            (x, y, npc_name),
+        ).fetchone()
+        if not npc:
+            connection.rollback()
+            return {"status": "missing_target"}
+        if npc["behavior"] != "hostile":
+            connection.rollback()
+            return {"status": "not_attackable", "npc_name": npc["name"]}
+
+        weapon_damage = _equipped_damage_bonus(cursor, player["id"])
+        player_damage = max(1, player["strength"] // 2 + weapon_damage)
+        player_hit_chance = hit_chance(player["dexterity"], npc["evasion"])
+        player_hit = random.randint(1, 100) <= player_hit_chance
+        npc_health = npc["health"]
+        if player_hit:
+            npc_health = max(0, npc_health - player_damage)
         if npc_health == 0:
             cursor.execute(
                 """
@@ -138,36 +207,49 @@ def attack_npc(cursor, username, x, y, npc_name):
                 """,
                 (npc["id"],),
             )
-            cursor.connection.commit()
+            connection.commit()
             return {
                 "status": "npc_defeated",
                 "npc_name": npc["name"],
                 "player_damage": player_damage,
+                "weapon_damage": weapon_damage,
+                "player_hit_chance": player_hit_chance,
             }
 
-        cursor.execute(
-            "UPDATE npc_instances SET health=? WHERE id=?",
-            (npc_health, npc["id"]),
-        )
+        if player_hit:
+            cursor.execute(
+                "UPDATE npc_instances SET health=? WHERE id=?",
+                (npc_health, npc["id"]),
+            )
         npc_damage = max(0, npc["attack_damage"])
-        player_health = max(0, player["health"] - npc_damage)
+        npc_hit_chance = hit_chance(npc["accuracy"], player["agility"])
+        npc_hit = random.randint(1, 100) <= npc_hit_chance
+        player_health = player["health"]
+        if npc_hit:
+            player_health = max(0, player_health - npc_damage)
         player_defeated = player_health == 0
         if player_defeated:
             player_health = player["max_health"]
-        cursor.execute(
-            "UPDATE players SET health=? WHERE id=?",
-            (player_health, player["id"]),
-        )
-        cursor.connection.commit()
+        if npc_hit:
+            cursor.execute(
+                "UPDATE players SET health=? WHERE id=?",
+                (player_health, player["id"]),
+            )
+        connection.commit()
     except Exception:
-        cursor.connection.rollback()
+        connection.rollback()
         raise
 
     return {
-        "status": "hit",
+        "status": "exchange",
         "npc_name": npc["name"],
+        "player_hit": player_hit,
+        "player_hit_chance": player_hit_chance,
         "player_damage": player_damage,
+        "weapon_damage": weapon_damage,
         "npc_health": npc_health,
+        "npc_hit": npc_hit,
+        "npc_hit_chance": npc_hit_chance,
         "npc_damage": npc_damage,
         "player_health": player_health,
         "player_defeated": player_defeated,
