@@ -75,6 +75,28 @@ python promote_admin.py YourUsername
 
 Restart the MUD or reconnect that character after promotion.
 
+### Testing
+
+Run the automated test suite from the project root:
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+The tests use temporary or in-memory databases. They do not modify your local character database.
+
+### Local Development Workflow
+
+For a clean local test cycle:
+
+```bash
+python reset_dev_db.py
+python -m unittest discover -s tests -v
+python shinobi_mud.py
+```
+
+The server reads its TCP port from `config.json`.
+
 ### Early Linux Testing
 
 The current MUD socket uses plain-text TCP. Passwords are hashed safely in the database, but they are still sent over the network as plain text during login.

@@ -1,5 +1,26 @@
 # Changelog
 
+## 2026-06-01 - Test Harness and Runtime Baseline
+
+### Added
+
+- Added a standard-library `unittest` suite for account lifecycle, permissions, and startup behavior.
+- Added a startup smoke test using an isolated temporary SQLite database and a fake reactor.
+- Added startup validation for configuration, database tables, utilities, command registration, world-map data, and the configured zone directory.
+- Documented the local reset, test, and run workflow.
+
+### Changed
+
+- Loaded the TCP listening port from `config.json` instead of hardcoding `4000`.
+- Split server initialization from reactor startup so runtime behavior can be smoke-tested without opening a real socket.
+- Reused the active `shinobi_mud` module when launched as a script so command imports do not create a second copy of global server state.
+- Made repeated logging initialization close and replace existing handlers cleanly.
+
+### Verification
+
+- Passed `python -m unittest discover -s tests -v` with 11 tests.
+- Passed Python syntax compilation across the repository.
+
 ## 2026-06-01 - Foundation and Account Security Checkpoint
 
 ### Added

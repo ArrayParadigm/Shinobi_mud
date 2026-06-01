@@ -6,19 +6,37 @@ import logging
 import importlib
 import json
 import inspect
+import sys
 from auth import hash_password, validate_username, verify_password
 from migrations import apply_migrations, create_players_table
 
 DEBUG_MODE = True  # True allows for debugging options; False disables them
+DEFAULT_CONFIG_FILE = "config.json"
+DEFAULT_DB_FILE = "mud_game_10_rooms.db"
+DEFAULT_MOTD = "Welcome to Ninja MUD!"
+DEFAULT_PORT = 4000
 
-logging.basicConfig(
-    level=logging.DEBUG if DEBUG_MODE else logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.FileHandler("mud_debug.log"),
-        logging.StreamHandler()
-    ]
-)
+# Command modules import shinobi_mud. Reuse this module when launched as a script.
+sys.modules.setdefault("shinobi_mud", sys.modules[__name__])
+
+def configure_logging(log_file="mud_debug.log"):
+    """Replace root logging handlers so repeated initialization stays clean."""
+    root_logger = logging.getLogger()
+    for handler in root_logger.handlers[:]:
+        root_logger.removeHandler(handler)
+        handler.close()
+
+    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+    file_handler = logging.FileHandler(log_file)
+    file_handler.setFormatter(formatter)
+    stream_handler = logging.StreamHandler()
+    stream_handler.setFormatter(formatter)
+    root_logger.addHandler(file_handler)
+    root_logger.addHandler(stream_handler)
+    root_logger.setLevel(logging.DEBUG if DEBUG_MODE else logging.INFO)
+
+
+configure_logging()
 
 COMMAND_REGISTRY = {}
 UTILITIES = {}
@@ -77,20 +95,11 @@ def get_all_commands():
 ALL_COMMANDS = get_all_commands()
 logging.debug(f"All registered commands: {sorted(ALL_COMMANDS)}")
 
-# Setup for enhanced logging
-logging.basicConfig(
-    level=logging.DEBUG,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.FileHandler("mud_debug.log"),
-        logging.StreamHandler()
-    ]
-)
-
 # Database setup
-conn = sqlite3.connect('mud_game_10_rooms.db')
+conn = sqlite3.connect(DEFAULT_DB_FILE)
 conn.row_factory = sqlite3.Row
 cursor = conn.cursor()
+MOTD = DEFAULT_MOTD
 
 def debug_log(message):
     """Wrapper for debug-level logging."""
@@ -158,22 +167,24 @@ def is_username_active(username, exclude=None):
     )
 
 
-def ensure_tables_exist():
+def ensure_tables_exist(connection=None):
+    active_connection = connection or conn
+    active_cursor = active_connection.cursor()
     try:
         # Create players table if it doesn't exist
-        create_players_table(cursor)
+        create_players_table(active_cursor)
 
         debug_log("Creating player due to lack of existence.")
 
         # Create rooms table if it doesn't exist
-        cursor.execute('''CREATE TABLE IF NOT EXISTS rooms (
+        active_cursor.execute('''CREATE TABLE IF NOT EXISTS rooms (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT,
             description TEXT,
             exits TEXT
         )''')
 
-        conn.commit()
+        active_connection.commit()
         logging.info("Database tables ensured and default rooms initialized.")
         debug_log("Database tables ensured and default rooms initialized.")
     except Exception as e:
@@ -433,7 +444,7 @@ class NinjaMUDFactory(protocol.Factory):
 
 import json
 
-def load_config(config_file="config.json"):
+def load_config(config_file=DEFAULT_CONFIG_FILE):
     """Loads server configuration from a JSON file."""
     try:
         with open(config_file, "r") as file:
@@ -446,31 +457,26 @@ def load_config(config_file="config.json"):
         return {}
 
 
-def initialize_server():
+def initialize_server(config_file=DEFAULT_CONFIG_FILE):
     """Initializes all systems required for the MUD server."""
     logging.info("Initializing Ninja MUD Server...")
 
     # 1. Load Configuration
-    config = load_config()
+    config = load_config(config_file)
 
     # 2. Setup Logging
-    logging.basicConfig(
-        level=logging.DEBUG if DEBUG_MODE else logging.INFO,
-        format="%(asctime)s - %(levelname)s - %(message)s",
-        handlers=[
-            logging.FileHandler(config.get("log_file", "mud_debug.log")),
-            logging.StreamHandler()
-        ]
-    )
+    configure_logging(config.get("log_file", "mud_debug.log"))
     logging.info("Logging initialized.")
 
     # 3. Initialize Database
-    global conn, cursor
-    db_file = config.get("db_file", "mud_game_10_rooms.db")
+    global conn, cursor, MOTD
+    db_file = config.get("db_file", DEFAULT_DB_FILE)
+    if conn:
+        conn.close()
     conn = sqlite3.connect(db_file)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-    ensure_tables_exist()
+    ensure_tables_exist(conn)
     apply_migrations(conn)
     logging.info(f"Database connection established using {db_file}.")
     
@@ -490,6 +496,7 @@ def initialize_server():
     #logging.info(f"Utilities loaded: {len(UTILITIES)}")
 
     # 7. Load Commands
+    COMMAND_REGISTRY.clear()
     load_commands()
     logging.info(f"Commands loaded: {len(COMMAND_REGISTRY)}")
 
@@ -497,38 +504,75 @@ def initialize_server():
     try:
         motd_file = config.get("motd_file", "motd.txt")
         with open(motd_file, "r") as file:
-            global MOTD
             MOTD = file.read().strip()
             logging.info(f"MOTD loaded from {motd_file}.")
     except FileNotFoundError:
-        MOTD = "Welcome to Ninja MUD!"
+        MOTD = DEFAULT_MOTD
         logging.warning("MOTD file not found. Using default message.")    
 
     # Final Validation
-    validate_server_state()
+    validate_server_state(config)
 
     logging.info("Ninja MUD Server initialized successfully.")
+    return config
 
-def validate_server_state():
+def validate_server_state(config):
     """Performs validation checks to ensure server state is operational."""
+    errors = []
+
     if not COMMAND_REGISTRY:
-        logging.error("No commands loaded. Check command modules.")
+        errors.append("No commands loaded. Check command modules.")
     else:
         for cmd, handler in COMMAND_REGISTRY.items():
             if not callable(handler):
-                logging.error(f"Command '{cmd}' is not callable. Check its handler.")
+                errors.append(f"Command '{cmd}' is not callable. Check its handler.")
     
     if not UTILITIES:
-        logging.error("No utilities loaded. Check utils module.")
+        errors.append("No utilities loaded. Check utils module.")
     else:
         for name, func in UTILITIES.items():
-            if not callable(func):
-                logging.error(f"Utility '{name}' is not callable. Check its definition.")
+            if name != "WORLD_MAP" and not callable(func):
+                errors.append(f"Utility '{name}' is not callable. Check its definition.")
+
+    if not WORLD_MAP or not WORLD_MAP[0]:
+        errors.append("World map is empty.")
+
+    if not os.path.isdir(config.get("zone_directory", "zones")):
+        errors.append("Configured zone directory does not exist.")
+
+    try:
+        port = int(config.get("server_port", DEFAULT_PORT))
+        if not 1 <= port <= 65535:
+            raise ValueError
+    except (TypeError, ValueError):
+        errors.append("Configured server_port must be an integer between 1 and 65535.")
+
+    required_tables = {"players", "rooms", "schema_migrations"}
+    tables = {
+        row[0]
+        for row in cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+    }
+    missing_tables = sorted(required_tables - tables)
+    if missing_tables:
+        errors.append(f"Database is missing tables: {', '.join(missing_tables)}.")
+
+    if errors:
+        for error in errors:
+            logging.error(error)
+        raise RuntimeError("Server validation failed.")
+
+    logging.info("Server state validation passed.")
+    return True
+
+
+def run_server(config_file=DEFAULT_CONFIG_FILE, reactor_instance=reactor):
+    """Initialize the MUD and listen on the configured TCP port."""
+    config = initialize_server(config_file)
+    port = int(config.get("server_port", DEFAULT_PORT))
+    reactor_instance.listenTCP(port, NinjaMUDFactory())
+    logging.info("Ninja MUD Server running on port %s.", port)
+    reactor_instance.run()
+    return config
 
 if __name__ == "__main__":
-    initialize_server()
-
-    # Start the reactor
-    reactor.listenTCP(4000, NinjaMUDFactory())
-    logging.info("Ninja MUD Server running on port 4000.")
-    reactor.run()
+    run_server()

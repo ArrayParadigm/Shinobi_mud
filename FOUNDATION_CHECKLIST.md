@@ -63,13 +63,13 @@ A new non-admin player can register, allocate stats, disconnect, reconnect, and 
 
 Add a safety net before refactoring shared gameplay state.
 
-- [ ] 2.1 Add a lightweight automated test setup.
-- [ ] 2.2 Add account tests for registration, login, legacy password upgrades, username validation, duplicate sessions, and stat allocation.
-- [ ] 2.3 Add permission tests proving non-admin players cannot run admin commands.
-- [ ] 2.4 Add a startup smoke test.
-- [ ] 2.5 Load the configured server port instead of hardcoding `4000`.
-- [ ] 2.6 Add startup validation for configuration, database setup, utilities, and command registration.
-- [ ] 2.7 Document a clean local setup, reset, run, and test workflow.
+- [x] 2.1 Add a lightweight automated test setup.
+- [x] 2.2 Add account tests for registration, login, legacy password upgrades, username validation, duplicate sessions, and stat allocation.
+- [x] 2.3 Add permission tests proving non-admin players cannot run admin commands.
+- [x] 2.4 Add a startup smoke test.
+- [x] 2.5 Load the configured server port instead of hardcoding `4000`.
+- [x] 2.6 Add startup validation for configuration, database setup, utilities, and command registration.
+- [x] 2.7 Document a clean local setup, reset, run, and test workflow.
 
 ### Done When
 
