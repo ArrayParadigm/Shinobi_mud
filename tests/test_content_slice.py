@@ -1,0 +1,235 @@
+import json
+import os
+import sqlite3
+import tempfile
+import unittest
+from pathlib import Path
+
+import admin_commands
+import general_commands
+import shinobi_mud
+import social_commands
+import utils
+from migrations import apply_migrations
+from tests.test_accounts import TestProtocol
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+
+class ContentSliceTests(unittest.TestCase):
+    def setUp(self):
+        self.connection = sqlite3.connect(":memory:")
+        self.connection.row_factory = sqlite3.Row
+        shinobi_mud.conn = self.connection
+        shinobi_mud.cursor = self.connection.cursor()
+        shinobi_mud.ensure_tables_exist(self.connection)
+        apply_migrations(self.connection)
+        shinobi_mud.players_in_rooms.clear()
+        shinobi_mud.WORLD_OVERLAYS.clear()
+        self.world_map = [list("...."), list("...."), list("....")]
+        self.original_general_map = general_commands.UTILITIES["WORLD_MAP"]
+        general_commands.UTILITIES["WORLD_MAP"] = self.world_map
+        self.player = self.create_player("Explorer", 1, 1)
+
+    def tearDown(self):
+        general_commands.UTILITIES["WORLD_MAP"] = self.original_general_map
+        shinobi_mud.players_in_rooms.clear()
+        shinobi_mud.WORLD_OVERLAYS.clear()
+        self.connection.close()
+
+    def create_player(self, username, x, y):
+        self.connection.execute(
+            "INSERT INTO players (username, password, x, y) VALUES (?, ?, ?, ?)",
+            (username, "hash", x, y),
+        )
+        self.connection.commit()
+        player = TestProtocol(shinobi_mud.cursor)
+        player.username = username
+        player.x = x
+        player.y = y
+        player.state = "COMMAND"
+        player.track_player()
+        player.messages.clear()
+        return player
+
+    def test_eves_haven_loads_distinct_rooms_from_persisted_anchor(self):
+        overlays = utils.preload_zones_with_anchors(
+            {},
+            str(PROJECT_ROOT / "zones"),
+        )
+
+        self.assertEqual(len(overlays), 30)
+        self.assertEqual(overlays[(500, 500)]["vnum"], 3000)
+        self.assertEqual(overlays[(500, 499)]["vnum"], 3001)
+        self.assertEqual(
+            utils.find_overlay_by_vnum(overlays, 3029)[1]["zone_name"],
+            "Eve's Haven",
+        )
+
+    def test_entry_exit_chat_and_overlay_description_remain_coordinate_first(self):
+        shinobi_mud.WORLD_OVERLAYS[(2, 1)] = {
+            "zone_name": "Test Town",
+            "vnum": 3000,
+            "room": {"description": "A compact town square.", "exits": {"west": 2999}},
+        }
+        resident = self.create_player("Resident", 2, 1)
+
+        general_commands.handle_movement(self.player, "east")
+        social_commands.handle_say(
+            self.player,
+            "hello",
+            ["hello"],
+            shinobi_mud.players_in_rooms,
+        )
+        general_commands.handle_movement(self.player, "west")
+
+        self.assertIn("Test Town [3000]\nA compact town square.\nExits: west", self.player.messages)
+        self.assertIn('Explorer says, "hello"', resident.messages)
+        self.assertIn("You see open land around you.", self.player.messages)
+        self.assertEqual((self.player.x, self.player.y), (1, 1))
+        saved = self.connection.execute(
+            "SELECT x, y FROM players WHERE username=?",
+            ("Explorer",),
+        ).fetchone()
+        self.assertEqual(tuple(saved), (1, 1))
+
+    def test_admin_goto_and_zoneinfo_use_overlay_coordinates(self):
+        shinobi_mud.WORLD_OVERLAYS[(2, 1)] = {
+            "zone_name": "Test Town",
+            "vnum": 3000,
+            "room": {"description": "A compact town square.", "exits": {}},
+        }
+
+        admin_commands.goto(self.player, "3000")
+        admin_commands.zoneinfo(self.player)
+
+        self.assertEqual((self.player.x, self.player.y), (2, 1))
+        self.assertIn("Teleported to Test Town [3000] at (2, 1).", self.player.messages)
+        self.assertIn("Test Town [3000] at (2, 1)", self.player.messages)
+
+    def test_reconnect_restores_coordinate_inside_overlay(self):
+        shinobi_mud.WORLD_OVERLAYS[(2, 1)] = {
+            "zone_name": "Test Town",
+            "vnum": 3000,
+            "room": {"description": "A compact town square.", "exits": {}},
+        }
+        self.connection.execute(
+            "UPDATE players SET password=? WHERE username=?",
+            (shinobi_mud.hash_password("password"), "Explorer"),
+        )
+        self.connection.commit()
+        general_commands.handle_movement(self.player, "east")
+        shinobi_mud.players_in_rooms.clear()
+        returning_player = TestProtocol(shinobi_mud.cursor)
+
+        returning_player.handle_username("Explorer")
+        returning_player.handle_password("password")
+
+        self.assertEqual((returning_player.x, returning_player.y), (2, 1))
+        self.assertEqual(
+            shinobi_mud.WORLD_OVERLAYS[(returning_player.x, returning_player.y)]["vnum"],
+            3000,
+        )
+
+    def test_placezone_persists_anchor_and_reloads_overlays(self):
+        original_directory = os.getcwd()
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            os.chdir(temporary_directory)
+            try:
+                Path("zones").mkdir()
+                zone_path = Path("zones/sample.json")
+                zone_path.write_text(
+                    json.dumps(
+                        {
+                            "name": "Sample",
+                            "range": {"start": 7000, "end": 7000},
+                            "rooms": {
+                                "7000": {
+                                    "description": "Sample square.",
+                                    "exits": {},
+                                    "x_offset": 0,
+                                    "y_offset": 0,
+                                }
+                            },
+                        }
+                    ),
+                    encoding="utf-8",
+                )
+
+                admin_commands.placezone(self.player, "sample", "10", "20")
+
+                zone_data = json.loads(zone_path.read_text(encoding="utf-8"))
+                self.assertEqual(zone_data["anchor"], {"x": 10, "y": 20})
+                self.assertEqual(shinobi_mud.WORLD_OVERLAYS[(10, 20)]["vnum"], 7000)
+            finally:
+                os.chdir(original_directory)
+
+    def test_failed_placezone_rolls_back_anchor_and_live_overlays(self):
+        original_directory = os.getcwd()
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            os.chdir(temporary_directory)
+            try:
+                Path("zones").mkdir()
+                zone_path = Path("zones/sample.json")
+                zone_path.write_text(
+                    json.dumps(
+                        {
+                            "name": "Sample",
+                            "range": {"start": 7000, "end": 7001},
+                            "rooms": {
+                                "7000": {"description": "One.", "exits": {}},
+                                "7001": {"description": "Two.", "exits": {}},
+                            },
+                        }
+                    ),
+                    encoding="utf-8",
+                )
+                shinobi_mud.WORLD_OVERLAYS[(99, 99)] = {"vnum": 9999}
+
+                admin_commands.placezone(self.player, "sample", "10", "20")
+
+                zone_data = json.loads(zone_path.read_text(encoding="utf-8"))
+                self.assertNotIn("anchor", zone_data)
+                self.assertEqual(shinobi_mud.WORLD_OVERLAYS, {})
+                self.assertIn("Unable to place zone", self.player.messages[-1])
+            finally:
+                os.chdir(original_directory)
+
+    def test_out_of_bounds_placezone_rolls_back_anchor(self):
+        original_directory = os.getcwd()
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            os.chdir(temporary_directory)
+            try:
+                Path("zones").mkdir()
+                zone_path = Path("zones/sample.json")
+                zone_path.write_text(
+                    json.dumps(
+                        {
+                            "name": "Sample",
+                            "range": {"start": 7000, "end": 7000},
+                            "rooms": {
+                                "7000": {
+                                    "description": "Sample square.",
+                                    "exits": {},
+                                    "x_offset": 0,
+                                    "y_offset": 0,
+                                }
+                            },
+                        }
+                    ),
+                    encoding="utf-8",
+                )
+
+                admin_commands.placezone(self.player, "sample", "-1", "20")
+
+                zone_data = json.loads(zone_path.read_text(encoding="utf-8"))
+                self.assertNotIn("anchor", zone_data)
+                self.assertEqual(shinobi_mud.WORLD_OVERLAYS, {})
+                self.assertIn("outside the world map", self.player.messages[-1])
+            finally:
+                os.chdir(original_directory)
+
+
+if __name__ == "__main__":
+    unittest.main()

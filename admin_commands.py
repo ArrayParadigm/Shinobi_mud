@@ -3,8 +3,9 @@ import os
 import logging
 import sys
 from command_system import CommandSpec
+from locations import is_within_bounds, teleport_player
 from twisted.internet import reactor
-from shinobi_mud import UTILITIES
+from shinobi_mud import UTILITIES, WORLD_MAP, WORLD_OVERLAYS, players_in_rooms
 
 logging.info("admin_commands imported")
 
@@ -47,12 +48,83 @@ def create_zone(protocol, zone_name, start_vnum, end_vnum):
         logging.error(f"Error creating zone: {e}", exc_info=True)
         protocol.sendLine(f"Failed to create zone: {e}".encode('utf-8'))
 
-# TODO: fix "goto" to allow navigation to specific coordinations and players.
 def goto(protocol, vnum):
-    """
-    Reserved for the future coordinate-overlay builder workflow.
-    """
-    protocol.sendLine(b"VNUM goto is unavailable until grid overlays are enabled.")
+    """Teleport an admin to an authored room without replacing grid coordinates."""
+    located_overlay = UTILITIES["find_overlay_by_vnum"](WORLD_OVERLAYS, vnum)
+    if not located_overlay:
+        protocol.sendLine(f"No overlay room found for VNUM {vnum}.".encode("utf-8"))
+        return
+
+    coordinates, overlay = located_overlay
+    if not teleport_player(protocol, *coordinates, WORLD_MAP, players_in_rooms):
+        protocol.sendLine(b"Overlay destination falls outside the world map.")
+        return
+
+    protocol.sendLine(
+        f"Teleported to {overlay['zone_name']} [{overlay['vnum']}] at {coordinates}.".encode("utf-8")
+    )
+    protocol.display_room()
+
+
+def zoneinfo(protocol, vnum=None):
+    """Inspect the overlay at the current location or a requested VNUM."""
+    if vnum is None:
+        coordinates = (protocol.x, protocol.y)
+        overlay = WORLD_OVERLAYS.get(coordinates)
+    else:
+        located_overlay = UTILITIES["find_overlay_by_vnum"](WORLD_OVERLAYS, vnum)
+        if not located_overlay:
+            protocol.sendLine(f"No overlay room found for VNUM {vnum}.".encode("utf-8"))
+            return
+        coordinates, overlay = located_overlay
+
+    if not overlay:
+        protocol.sendLine(b"No authored overlay exists at your current location.")
+        return
+
+    room = overlay["room"]
+    protocol.sendLine(
+        f"{overlay['zone_name']} [{overlay['vnum']}] at {coordinates}".encode("utf-8")
+    )
+    protocol.sendLine(room.get("description", "No description.").encode("utf-8"))
+
+
+def placezone(protocol, zone_file, anchor_x, anchor_y):
+    """Persist a zone anchor and reload the live coordinate overlay registry."""
+    safe_name = os.path.basename(zone_file)
+    if not safe_name.endswith(".json"):
+        safe_name += ".json"
+    zone_path = os.path.join("zones", safe_name)
+    if not os.path.isfile(zone_path):
+        protocol.sendLine(f"Zone file not found: {safe_name}".encode("utf-8"))
+        return
+
+    try:
+        with open(zone_path, "r") as file:
+            zone_data = json.load(file)
+        original_zone_data = dict(zone_data)
+        zone_data["anchor"] = {"x": int(anchor_x), "y": int(anchor_y)}
+        with open(zone_path, "w") as file:
+            json.dump(zone_data, file, indent=4)
+            file.write("\n")
+        UTILITIES["preload_zones_with_anchors"](WORLD_OVERLAYS)
+        if any(
+            not is_within_bounds(WORLD_MAP, *coordinates)
+            for coordinates in WORLD_OVERLAYS
+        ):
+            raise ValueError("Zone placement falls outside the world map.")
+    except (ValueError, KeyError) as exc:
+        if "original_zone_data" in locals():
+            with open(zone_path, "w") as file:
+                json.dump(original_zone_data, file, indent=4)
+                file.write("\n")
+            UTILITIES["preload_zones_with_anchors"](WORLD_OVERLAYS)
+        protocol.sendLine(f"Unable to place zone: {exc}".encode("utf-8"))
+        return
+
+    protocol.sendLine(
+        f"Placed {zone_data['name']} at ({anchor_x}, {anchor_y}) with {len(zone_data['rooms'])} overlay rooms.".encode("utf-8")
+    )
 
 
 def dig(protocol, direction, room_name):
@@ -166,6 +238,8 @@ def setdojo(protocol, username, dojo):
 COMMANDS = {
     "createzone": CommandSpec("createzone", lambda protocol, rooms, raw, args: create_zone(protocol, *args), "createzone <zone_name> <start_vnum> <end_vnum>", "Create an authored zone.", permission="admin", min_args=3, max_args=3),
     "goto": CommandSpec("goto", lambda protocol, rooms, raw, args: goto(protocol, args[0]), "goto <room_id>", "Travel to an authored room.", permission="admin", min_args=1, max_args=1, args_validator=lambda args: args[0].isdigit()),
+    "zoneinfo": CommandSpec("zoneinfo", lambda protocol, rooms, raw, args: zoneinfo(protocol, args[0] if args else None), "zoneinfo [vnum]", "Inspect an authored overlay room.", permission="admin", max_args=1, args_validator=lambda args: not args or args[0].isdigit()),
+    "placezone": CommandSpec("placezone", lambda protocol, rooms, raw, args: placezone(protocol, *args), "placezone <zone_file> <x> <y>", "Anchor a zone file on the world grid.", permission="admin", min_args=3, max_args=3, args_validator=lambda args: args[1].lstrip("-").isdigit() and args[2].lstrip("-").isdigit()),
     "dig": CommandSpec("dig", lambda protocol, rooms, raw, args: dig(protocol, args[0], " ".join(args[1:])), "dig <direction> <room_name>", "Create an authored room exit.", permission="admin", min_args=2),
     "shutdown": CommandSpec("shutdown", lambda protocol, rooms, raw, args: shutdown(protocol), "shutdown", "Stop the server.", permission="admin", max_args=0),
     "copyover": CommandSpec("copyover", lambda protocol, rooms, raw, args: copyover(protocol), "copyover", "Restart the server while retaining player state.", permission="admin", max_args=0),

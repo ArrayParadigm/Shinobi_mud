@@ -70,12 +70,23 @@ def overlay_zone(zone_data, anchor_x, anchor_y, overlays=None):
         x_offset = room_data.get("x_offset", 0)
         y_offset = room_data.get("y_offset", 0)
         x, y = anchor_x + x_offset, anchor_y + y_offset
+        if (x, y) in overlays:
+            raise ValueError(f"Multiple authored rooms overlap at ({x}, {y}).")
         overlays[(x, y)] = {
             "zone_name": zone_data["name"],
             "vnum": int(vnum),
             "room": room_data,
         }
     return overlays
+
+
+def find_overlay_by_vnum(overlays, vnum):
+    """Return the coordinate and overlay metadata for an authored room VNUM."""
+    target_vnum = int(vnum)
+    for coordinates, overlay in overlays.items():
+        if overlay["vnum"] == target_vnum:
+            return coordinates, overlay
+    return None
 
 def next_free_vnum(zone_data):
     """
@@ -102,21 +113,21 @@ def load_world_map(filename="world.map"):
     with open(filename, "r") as file:
         return [list(line.strip()) for line in file.readlines()]
 
-def preload_zones_with_anchors(overlays=None):
+def preload_zones_with_anchors(overlays=None, zones_directory="zones"):
     """Load zone metadata into a coordinate overlay registry."""
-    zones_directory = "zones"
     overlays = overlays if overlays is not None else {}
-    anchor_points = {
-        "Eve's Haven": (500, 500),  # Anchor at 500, 500
-    }
+    loaded_overlays = {}
     
     for zone_file in os.listdir(zones_directory):
         if zone_file.endswith(".json"):
             with open(os.path.join(zones_directory, zone_file), "r") as file:
                 zone_data = json.load(file)
-                zone_name = zone_data["name"]
-                anchor_x, anchor_y = anchor_points.get(zone_name, (0, 0))
-                overlay_zone(zone_data, anchor_x, anchor_y, overlays)
+                anchor = zone_data.get("anchor")
+                if not anchor:
+                    continue
+                overlay_zone(zone_data, int(anchor["x"]), int(anchor["y"]), loaded_overlays)
+    overlays.clear()
+    overlays.update(loaded_overlays)
     return overlays
 
 def reverse_dir(direction):
@@ -171,4 +182,6 @@ def render_room(player, overlays=None):
     room = overlay["room"]
     exits = ", ".join(room.get("exits", {}).keys()) or "None"
     description = room.get("description", "No description.")
-    player.sendLine(f"{description}\nExits: {exits}".encode("utf-8"))
+    player.sendLine(
+        f"{overlay['zone_name']} [{overlay['vnum']}]\n{description}\nExits: {exits}".encode("utf-8")
+    )

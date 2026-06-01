@@ -103,6 +103,8 @@ The world map is persistent terrain. Player positions use `(x, y)` coordinates a
 
 Authored cities, dungeons, and other zones can be attached as optional overlays keyed by coordinates. Overlay metadata may include a zone name, VNUM, and room description without replacing or mutating the terrain underneath. This keeps open-world movement consistent while leaving room for drop-in areas later.
 
+Eve's Haven is the first complete overlay example. Its anchor and room offsets live in `zones/eveshaven.json`; startup loads its 30 authored rooms over the wilderness around `(500, 500)`.
+
 ### Player Commands
 
 - `look`: display nearby terrain and players at your location.
@@ -118,6 +120,12 @@ Authored cities, dungeons, and other zones can be attached as optional overlays 
 - `help [command]`: list available commands or display usage details.
 
 Commands accept unique prefixes. The stable shortcuts `n`, `s`, `e`, `w`, and `l` always mean `north`, `south`, `east`, `west`, and `look`. Ambiguous prefixes list their possible matches instead of guessing.
+
+Admin overlay tools:
+
+- `goto <vnum>`: teleport to an authored overlay room while retaining canonical coordinates.
+- `zoneinfo [vnum]`: inspect the current or requested overlay room.
+- `placezone <zone_file> <x> <y>`: persist a zone anchor and reload overlays.
 
 ### Early Linux Testing
 

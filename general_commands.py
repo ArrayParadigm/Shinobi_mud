@@ -30,12 +30,7 @@ def handle_look(player, players_in_rooms=None):
             overlays=WORLD_OVERLAYS,
         )
         player.sendLine(map_view.encode("utf-8"))  # Send the rendered map to the player
-        location = get_location(WORLD_MAP, player.x, player.y, WORLD_OVERLAYS)
-        overlay = location["overlay"]
-        if overlay:
-            player.sendLine(f"You are in {overlay['zone_name']}.".encode("utf-8"))
-        else:
-            player.sendLine(b"You see open land around you.")
+        UTILITIES["render_room"](player, WORLD_OVERLAYS)
         player.list_players_in_room()
     except KeyError:
         player.sendLine(b"Error: Map rendering function is not available.")
@@ -59,6 +54,7 @@ def handle_movement(player, direction):
                 overlays=WORLD_OVERLAYS,
             )
             player.sendLine(map_view.encode("utf-8"))
+            UTILITIES["render_room"](player, WORLD_OVERLAYS)
             player.list_players_in_room()
         else:
             player.sendLine(b"You can't go that way.")

@@ -47,12 +47,8 @@ def destination_for(x, y, direction):
     return coordinate_key(x + dx, y + dy)
 
 
-def move_player(player, direction, world_map, players_by_location):
-    """Move and persist a player while keeping tracking buckets synchronized."""
-    new_x, new_y = destination_for(player.x, player.y, direction)
-    if not is_within_bounds(world_map, new_x, new_y):
-        return False
-
+def relocate_player(player, new_x, new_y, players_by_location, departure_message, arrival_message):
+    """Persist and track a location change after the destination is validated."""
     old_key = coordinate_key(player.x, player.y)
     new_key = coordinate_key(new_x, new_y)
     try:
@@ -68,7 +64,7 @@ def move_player(player, direction, world_map, players_by_location):
     broadcast_at(
         players_by_location,
         old_key,
-        f"{player.username} leaves {direction}.",
+        departure_message,
         exclude=player,
     )
     _remove_from_bucket(player, players_by_location, old_key)
@@ -78,10 +74,41 @@ def move_player(player, direction, world_map, players_by_location):
     broadcast_at(
         players_by_location,
         new_key,
-        f"{player.username} arrives.",
+        arrival_message,
         exclude=player,
     )
     return True
+
+
+def move_player(player, direction, world_map, players_by_location):
+    """Move and persist a player while keeping tracking buckets synchronized."""
+    new_x, new_y = destination_for(player.x, player.y, direction)
+    if not is_within_bounds(world_map, new_x, new_y):
+        return False
+
+    return relocate_player(
+        player,
+        new_x,
+        new_y,
+        players_by_location,
+        f"{player.username} leaves {direction}.",
+        f"{player.username} arrives.",
+    )
+
+
+def teleport_player(player, new_x, new_y, world_map, players_by_location):
+    """Teleport a player to a valid coordinate while preserving canonical state."""
+    if not is_within_bounds(world_map, new_x, new_y):
+        return False
+
+    return relocate_player(
+        player,
+        new_x,
+        new_y,
+        players_by_location,
+        f"{player.username} vanishes.",
+        f"{player.username} appears.",
+    )
 
 
 def track_player(player, players_by_location):

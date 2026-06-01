@@ -136,13 +136,13 @@ Commands are predictable, discoverable, and permission-aware without each module
 
 Begin this phase only after the foundation is stable.
 
-- [ ] 6.1 Define a grid-overlay lookup that can attach optional zone data to coordinates.
-- [ ] 6.2 Keep coordinates canonical while exposing optional VNUM and room metadata.
-- [ ] 6.3 Drop one small VNUM-backed zone onto the grid.
-- [ ] 6.4 Add room descriptions and a few points of interest.
-- [ ] 6.5 Add or repair admin tools needed to inspect and place the sample zone.
-- [ ] 6.6 Validate entry, exit, movement, chat, reconnects, and admin building tools.
-- [ ] 6.7 Add automated tests for overlay lookup and entering or leaving the sample zone.
+- [x] 6.1 Define a grid-overlay lookup that can attach optional zone data to coordinates.
+- [x] 6.2 Keep coordinates canonical while exposing optional VNUM and room metadata.
+- [x] 6.3 Drop one small VNUM-backed zone onto the grid.
+- [x] 6.4 Add room descriptions and a few points of interest.
+- [x] 6.5 Add or repair admin tools needed to inspect and place the sample zone.
+- [x] 6.6 Validate entry, exit, movement, chat, reconnects, and admin building tools.
+- [x] 6.7 Add automated tests for overlay lookup and entering or leaving the sample zone.
 
 ### Done When
 

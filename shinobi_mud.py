@@ -9,7 +9,7 @@ import inspect
 import sys
 from auth import hash_password, validate_username, verify_password
 from command_system import CommandSpec
-from locations import broadcast_at, coordinate_key, players_at, track_player, untrack_player
+from locations import broadcast_at, coordinate_key, is_within_bounds, players_at, track_player, untrack_player
 from migrations import apply_migrations, create_players_table
 
 DEBUG_MODE = True  # True allows for debugging options; False disables them
@@ -416,6 +416,7 @@ class NinjaMUDProtocol(basic.LineReceiver):
                 overlays=WORLD_OVERLAYS,
             )
             self.sendLine(map_view.encode("utf-8"))
+            UTILITIES["render_room"](self, WORLD_OVERLAYS)
             self.list_players_in_room()
         except KeyError:
             self.sendLine(b"Error: Map rendering function is unavailable.")
@@ -564,8 +565,12 @@ def initialize_server(config_file=DEFAULT_CONFIG_FILE):
 
     # 5. Preload Zones
     zone_directory = config.get("zone_directory", "zones")
-#    preload_zones(zone_directory)
-    logging.info(f"Zone data preloaded from {zone_directory}.")
+    UTILITIES["preload_zones_with_anchors"](WORLD_OVERLAYS, zone_directory)
+    logging.info(
+        "Zone data preloaded from %s with %s overlay rooms.",
+        zone_directory,
+        len(WORLD_OVERLAYS),
+    )
 
 # Load utilities moved to first spot after defining due to timing issues. Lazy import wasn't working and I didn't want to get stopped by this problem with so much work to be done. Hopefully I'll come back and clean it up when I get further along.
     #6. Load Utilities
@@ -619,6 +624,14 @@ def validate_server_state(config):
 
     if not WORLD_MAP or not WORLD_MAP[0]:
         errors.append("World map is empty.")
+
+    invalid_overlays = sorted(
+        coordinates
+        for coordinates in WORLD_OVERLAYS
+        if not is_within_bounds(WORLD_MAP, *coordinates)
+    )
+    if invalid_overlays:
+        errors.append(f"Zone overlays fall outside the world map: {invalid_overlays}.")
 
     if not os.path.isdir(config.get("zone_directory", "zones")):
         errors.append("Configured zone directory does not exist.")

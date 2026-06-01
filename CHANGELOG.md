@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-06-01 - First Overlay Content Slice
+
+### Added
+
+- Anchored Eve's Haven at `(500, 500)` with 30 distinct VNUM-backed room overlays.
+- Loaded anchored zone overlays during startup without mutating wilderness terrain.
+- Displayed authored zone names, VNUMs, descriptions, and exits when players enter or inspect overlay rooms.
+- Added `goto <vnum>`, `zoneinfo [vnum]`, and `placezone <zone_file> <x> <y>` admin tools.
+
+### Changed
+
+- Kept `(x, y)` coordinates canonical for wilderness movement, overlay movement, admin teleports, chat, persistence, and reconnects.
+- Made overlay reload atomic and rolled back failed zone placements.
+
+### Verification
+
+- Added vertical-slice tests for loading, entry, exit, local chat, reconnects, VNUM lookup, admin inspection, teleports, persisted anchors, and failed-placement rollback.
+- Passed `python -m unittest discover -s tests -v` with 50 tests.
+- Passed Python syntax compilation across the repository.
+
 ## 2026-06-01 - Command Prefix Matching
 
 ### Added

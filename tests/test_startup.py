@@ -59,6 +59,8 @@ class StartupSmokeTests(unittest.TestCase):
             }
             connection.close()
             self.assertTrue({"players", "rooms", "schema_migrations"} <= tables)
+            self.assertEqual(len(shinobi_mud.WORLD_OVERLAYS), 30)
+            self.assertEqual(shinobi_mud.WORLD_OVERLAYS[(500, 500)]["vnum"], 3000)
             shinobi_mud.conn.close()
 
     def test_validation_rejects_invalid_port(self):
