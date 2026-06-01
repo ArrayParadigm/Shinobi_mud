@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-06-01 - Command Prefix Matching
+
+### Added
+
+- Added automatic unique-prefix matching for registered commands.
+- Reserved `n`, `s`, `e`, `w`, and `l` as stable shortcuts for movement and `look`.
+- Added clear ambiguity responses when a prefix matches more than one command.
+
+### Verification
+
+- Added command-resolution tests for exact matches, unique prefixes, stable shortcuts, ambiguous prefixes, and unknown commands.
+- Passed `python -m unittest discover -s tests -v` with 35 tests.
+- Passed Python syntax compilation across the repository.
+
 ## 2026-06-01 - Movement Lock Recovery
 
 ### Fixed

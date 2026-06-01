@@ -41,6 +41,13 @@ def configure_logging(log_file="mud_debug.log"):
 configure_logging()
 
 COMMAND_REGISTRY = {}
+COMMAND_SHORTCUTS = {
+    "n": "north",
+    "s": "south",
+    "e": "east",
+    "w": "west",
+    "l": "look",
+}
 UTILITIES = {}
 players_in_rooms = {}
 WORLD_OVERLAYS = {}
@@ -143,6 +150,29 @@ def preload_zones(zone_directory):
                 logging.error(f"Error preloading zone file {file_name}: {e}", exc_info=True)
 
 
+def resolve_command_name(command_name):
+    """Resolve exact names, reserved shortcuts, and unambiguous command prefixes."""
+    command_name = command_name.strip().lower()
+    if not command_name:
+        return None, []
+
+    if command_name in COMMAND_REGISTRY:
+        return command_name, []
+
+    shortcut = COMMAND_SHORTCUTS.get(command_name)
+    if shortcut in COMMAND_REGISTRY:
+        return shortcut, []
+
+    matches = sorted(
+        registered_name
+        for registered_name in COMMAND_REGISTRY
+        if registered_name.startswith(command_name)
+    )
+    if len(matches) == 1:
+        return matches[0], []
+    return None, matches
+
+
 def process_command(player, command):
     command = command.strip()  # Strip any leading/trailing whitespace
     
@@ -153,15 +183,21 @@ def process_command(player, command):
     split_args = raw_args.split()  # Split arguments into a list
     
     # Use COMMAND_REGISTRY for all commands
-    handler = COMMAND_REGISTRY.get(cmd)
+    resolved_cmd, matches = resolve_command_name(cmd)
+    handler = COMMAND_REGISTRY.get(resolved_cmd)
     if handler:
-        logging.info("Executing command '%s' for player %s.", cmd, player.username)
+        logging.info("Executing command '%s' for player %s.", resolved_cmd, player.username)
         try:
             # Pass player, players_in_rooms, raw argument string, and split arguments
             handler(player, players_in_rooms, raw_args, split_args)
         except Exception as e:
-            logging.error(f"Error executing command '{cmd}' for {player.username}: {e}", exc_info=True)
+            logging.error(f"Error executing command '{resolved_cmd}' for {player.username}: {e}", exc_info=True)
             player.sendLine(b"An error occurred while executing your command.")
+    elif matches:
+        player.sendLine(
+            f"Ambiguous command '{cmd}': {', '.join(matches)}".encode("utf-8")
+        )
+        logging.info("Ambiguous command '%s' issued by player %s.", cmd, player.username)
     else:
         player.sendLine(f"Unknown command: {cmd}".encode('utf-8'))
         logging.warning(f"Unknown command '{cmd}' issued by player {player.username}")

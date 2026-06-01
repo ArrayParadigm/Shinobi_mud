@@ -116,6 +116,8 @@ Authored cities, dungeons, and other zones can be attached as optional overlays 
 - `think`: perform the built-in thinking emote at your grid location.
 - `ooc <message>`: speak on the global out-of-character channel.
 
+Commands accept unique prefixes. The stable shortcuts `n`, `s`, `e`, `w`, and `l` always mean `north`, `south`, `east`, `west`, and `look`. Ambiguous prefixes list their possible matches instead of guessing.
+
 ### Early Linux Testing
 
 The current MUD socket uses plain-text TCP. Passwords are hashed safely in the database, but they are still sent over the network as plain text during login.

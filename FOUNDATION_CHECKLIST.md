@@ -122,9 +122,9 @@ Build a consistent command layer after the core gameplay loop is reliable.
 - [ ] 5.2 Route the Phase 1 admin gate through command permission metadata.
 - [ ] 5.3 Normalize argument handling.
 - [ ] 5.4 Return useful usage messages instead of generic errors.
-- [ ] 5.5 Add basic aliases: `n`, `s`, `e`, `w`, and `l`.
+- [x] 5.5 Add automatic unique-prefix command matching, with reserved `n`, `s`, `e`, `w`, and `l` shortcuts.
 - [ ] 5.6 Add a `help` command driven by command metadata.
-- [ ] 5.7 Add automated tests for aliases, usage errors, help output, and permissions.
+- [ ] 5.7 Add automated tests for prefix matching, usage errors, help output, and permissions. Prefix-matching coverage is complete.
 
 ### Done When
 
