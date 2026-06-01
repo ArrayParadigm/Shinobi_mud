@@ -108,6 +108,28 @@ class ContentSliceTests(unittest.TestCase):
         self.assertIn("Teleported to Test Town [3000] at (2, 1).", self.player.messages)
         self.assertIn("Test Town [3000] at (2, 1)", self.player.messages)
 
+    def test_admin_goto_grid_and_player_use_canonical_coordinates(self):
+        target = self.create_player("Target", 3, 2)
+
+        admin_commands.goto(self.player, "grid", "2", "1")
+        admin_commands.goto(self.player, "player", "Target")
+
+        self.assertEqual((self.player.x, self.player.y), (3, 2))
+        self.assertIn("Teleported to grid location (2, 1).", self.player.messages)
+        self.assertIn("Teleported to Target at (3, 2).", self.player.messages)
+
+        target.untrack_player()
+
+    def test_copyover_reports_disabled_status(self):
+        admin_commands.copyover(self.player)
+
+        self.assertEqual(
+            self.player.messages,
+            [
+                "Copyover is disabled for now. Restart the server normally; players can reconnect safely."
+            ],
+        )
+
     def test_reconnect_restores_coordinate_inside_overlay(self):
         shinobi_mud.WORLD_OVERLAYS[(2, 1)] = {
             "zone_name": "Test Town",

@@ -5,7 +5,7 @@ import general_commands
 import shinobi_mud
 import utils
 from auth import hash_password
-from locations import LocationPersistenceError, get_location, move_player, players_at, track_player
+from locations import LocationPersistenceError, get_location, move_player, nearby_players, players_at, track_player
 from migrations import apply_migrations
 from tests.test_accounts import TestProtocol
 
@@ -120,6 +120,32 @@ class LocationTests(unittest.TestCase):
             [other],
         )
 
+    def test_nearby_players_orders_nearest_and_excludes_current_location(self):
+        same_room = TestProtocol(shinobi_mud.cursor)
+        same_room.username = "SameRoom"
+        same_room.x = 1
+        same_room.y = 1
+        nearby = TestProtocol(shinobi_mud.cursor)
+        nearby.username = "Nearby"
+        nearby.x = 2
+        nearby.y = 1
+        farther = TestProtocol(shinobi_mud.cursor)
+        farther.username = "Farther"
+        farther.x = 3
+        farther.y = 3
+        for player in (same_room, nearby, farther):
+            track_player(player, shinobi_mud.players_in_rooms)
+
+        results = nearby_players(
+            shinobi_mud.players_in_rooms,
+            self.player.x,
+            self.player.y,
+            2,
+            exclude=self.player,
+        )
+
+        self.assertEqual(results, [(1, nearby), (2, farther)])
+
     def test_overlay_lookup_does_not_mutate_terrain(self):
         zone = {
             "name": "Test Town",
@@ -154,7 +180,10 @@ class LocationTests(unittest.TestCase):
             height_radius=1,
         )
 
-        self.assertEqual(rendered.splitlines(), ["...", ".P#", "..."])
+        self.assertEqual(
+            rendered.splitlines(),
+            ["...", ".P#", "...", "Legend: P=you  #=authored area"],
+        )
 
     def test_survey_uses_supported_renderer_arguments(self):
         original_map = general_commands.UTILITIES["WORLD_MAP"]
@@ -164,7 +193,7 @@ class LocationTests(unittest.TestCase):
         finally:
             general_commands.UTILITIES["WORLD_MAP"] = original_map
 
-        self.assertEqual(len(self.player.messages[-1].splitlines()), 11)
+        self.assertEqual(len(self.player.messages[-1].splitlines()), 12)
 
 
 if __name__ == "__main__":

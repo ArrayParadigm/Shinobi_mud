@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-06-01 - Private Alpha Hardening and Player Feedback
+
+### Added
+
+- Added a basic Linux private-alpha checklist with an optional `systemd` service.
+- Logged unexpected reactor failures in the existing timestamped launch log.
+- Added compact player prompts, map legends, location-aware `score` output, and configurable nearby-character listings.
+- Added `goto grid <x> <y>` and `goto player <name>` admin travel while retaining `goto <vnum>`.
+
+### Changed
+
+- Disabled unfinished `copyover` behavior with an explicit admin-facing status response.
+- Documented the plain-text TCP limitation and the trusted-network requirement for private tests.
+
+### Verification
+
+- Added regression coverage for crash logging, disabled copyover, prompts, nearby-character listings, map legends, and admin grid/player teleports.
+- Passed `python -m unittest discover -s tests -v` with 58 tests.
+- Passed Python syntax compilation across the repository.
+
 ## 2026-06-01 - Post-Foundation Roadmap Checkpoint
 
 ### Added

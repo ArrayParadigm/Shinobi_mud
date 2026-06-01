@@ -143,6 +143,18 @@ def online_players(players_by_location):
     return sorted(unique_players.values(), key=lambda player: player.username.lower())
 
 
+def nearby_players(players_by_location, x, y, radius, exclude=None):
+    """Return players within a square grid radius, nearest first."""
+    nearby = []
+    for player in online_players(players_by_location):
+        if player is exclude:
+            continue
+        distance = max(abs(player.x - x), abs(player.y - y))
+        if 0 < distance <= radius:
+            nearby.append((distance, player))
+    return sorted(nearby, key=lambda result: (result[0], result[1].username.lower()))
+
+
 def broadcast_at(players_by_location, location, message, exclude=None):
     """Send a message to tracked players at a coordinate."""
     for recipient in players_by_location.get(location, []):

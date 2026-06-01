@@ -23,6 +23,11 @@ class FakeReactor:
         self.ran = True
 
 
+class FailingReactor(FakeReactor):
+    def run(self):
+        raise RuntimeError("reactor smoke failure")
+
+
 class StartupSmokeTests(unittest.TestCase):
     def tearDown(self):
         if shinobi_mud.conn:
@@ -91,6 +96,33 @@ class StartupSmokeTests(unittest.TestCase):
             shinobi_mud.configure_logging()
 
         self.assertEqual(Path(shinobi_mud.DEFAULT_LOG_FILE).parts[0], "logs")
+
+    def test_run_server_logs_unexpected_reactor_failure(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            temp = Path(temporary_directory)
+            config_path = temp / "config.json"
+            log_path = temp / "logs" / "failure.log"
+            config_path.write_text(
+                json.dumps(
+                    {
+                        "db_file": str(temp / "smoke.db"),
+                        "log_file": str(log_path),
+                        "motd_file": str(PROJECT_ROOT / "motd.txt"),
+                        "server_port": 4567,
+                        "zone_directory": str(PROJECT_ROOT / "zones"),
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            try:
+                with self.assertRaisesRegex(RuntimeError, "reactor smoke failure"):
+                    shinobi_mud.run_server(str(config_path), FailingReactor())
+            finally:
+                shinobi_mud.conn.close()
+                shinobi_mud.configure_logging()
+
+            self.assertIn("Unexpected server failure.", log_path.read_text())
 
 
 if __name__ == "__main__":

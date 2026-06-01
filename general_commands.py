@@ -32,6 +32,7 @@ def handle_look(player, players_in_rooms=None):
         player.sendLine(map_view.encode("utf-8"))  # Send the rendered map to the player
         UTILITIES["render_room"](player, WORLD_OVERLAYS)
         player.list_players_in_room()
+        player.list_nearby_players()
     except KeyError:
         player.sendLine(b"Error: Map rendering function is not available.")
     except Exception as e:
@@ -56,6 +57,7 @@ def handle_movement(player, direction):
             player.sendLine(map_view.encode("utf-8"))
             UTILITIES["render_room"](player, WORLD_OVERLAYS)
             player.list_players_in_room()
+            player.list_nearby_players()
         else:
             player.sendLine(b"You can't go that way.")
     except LocationPersistenceError:
@@ -78,6 +80,12 @@ def handle_score(player, players_in_rooms=None):
             player.sendLine(f"Strength: {stats[3]}  Dexterity: {stats[4]}  Agility: {stats[5]}".encode("utf-8"))
             player.sendLine(f"Intelligence: {stats[6]}  Wisdom: {stats[7]}".encode("utf-8"))
             player.sendLine(f"Dojo Alignment: {stats[8]}".encode("utf-8"))
+            player.sendLine(f"Location: ({player.x}, {player.y})".encode("utf-8"))
+            overlay = WORLD_OVERLAYS.get((player.x, player.y))
+            if overlay:
+                player.sendLine(
+                    f"Area: {overlay['zone_name']}  VNUM: {overlay['vnum']}".encode("utf-8")
+                )
         else:
             player.sendLine(b"No stats found for your character.")
     except Exception as e:

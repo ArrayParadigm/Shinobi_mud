@@ -1,9 +1,8 @@
 import json
 import os
 import logging
-import sys
 from command_system import CommandSpec
-from locations import is_within_bounds, teleport_player
+from locations import is_within_bounds, online_players, teleport_player
 from twisted.internet import reactor
 from shinobi_mud import UTILITIES, WORLD_MAP, WORLD_OVERLAYS, players_in_rooms
 
@@ -48,7 +47,7 @@ def create_zone(protocol, zone_name, start_vnum, end_vnum):
         logging.error(f"Error creating zone: {e}", exc_info=True)
         protocol.sendLine(f"Failed to create zone: {e}".encode('utf-8'))
 
-def goto(protocol, vnum):
+def goto_vnum(protocol, vnum):
     """Teleport an admin to an authored room without replacing grid coordinates."""
     located_overlay = UTILITIES["find_overlay_by_vnum"](WORLD_OVERLAYS, vnum)
     if not located_overlay:
@@ -64,6 +63,53 @@ def goto(protocol, vnum):
         f"Teleported to {overlay['zone_name']} [{overlay['vnum']}] at {coordinates}.".encode("utf-8")
     )
     protocol.display_room()
+
+
+def goto_grid(protocol, x, y):
+    """Teleport an admin to canonical grid coordinates."""
+    coordinates = int(x), int(y)
+    if not teleport_player(protocol, *coordinates, WORLD_MAP, players_in_rooms):
+        protocol.sendLine(b"Grid destination falls outside the world map.")
+        return
+
+    protocol.sendLine(f"Teleported to grid location {coordinates}.".encode("utf-8"))
+    protocol.display_room()
+
+
+def goto_player(protocol, username):
+    """Teleport an admin to another online character."""
+    target = next(
+        (
+            player
+            for player in online_players(players_in_rooms)
+            if player.username.lower() == username.lower()
+        ),
+        None,
+    )
+    if not target:
+        protocol.sendLine(f"Online player not found: {username}".encode("utf-8"))
+        return
+
+    if not teleport_player(protocol, target.x, target.y, WORLD_MAP, players_in_rooms):
+        protocol.sendLine(b"Player destination falls outside the world map.")
+        return
+
+    protocol.sendLine(
+        f"Teleported to {target.username} at ({target.x}, {target.y}).".encode("utf-8")
+    )
+    protocol.display_room()
+
+
+def goto(protocol, *args):
+    """Dispatch backward-compatible VNUM, grid, and player teleports."""
+    if len(args) == 1 and args[0].isdigit():
+        goto_vnum(protocol, args[0])
+    elif len(args) == 3 and args[0].lower() == "grid":
+        goto_grid(protocol, args[1], args[2])
+    elif len(args) == 2 and args[0].lower() == "player":
+        goto_player(protocol, args[1])
+    else:
+        protocol.sendLine(b"Usage: goto <vnum> | goto grid <x> <y> | goto player <name>")
 
 
 def zoneinfo(protocol, vnum=None):
@@ -169,32 +215,11 @@ def shutdown(protocol, players_in_rooms=None):
 
 
 def copyover(protocol, players_in_rooms=None):
-    """
-    Soft reboot (copyover) while saving minimal player state.
-    """
-    try:
-        protocol.sendLine(b"Initiating copyover... Please hold on.")
-        logging.info(f"User {protocol.username} initiated copyover.")
-
-        # Save player room and username
-        with open("copyover_state.json", "w") as f:
-            state_data = {
-                "players": [
-                    {
-                        "username": protocol.username,
-                        "x": protocol.x,
-                        "y": protocol.y,
-                    }
-                ]
-            }
-            json.dump(state_data, f)
-
-        args = sys.argv[:]
-        args.insert(0, sys.executable)
-        os.execv(sys.executable, args)
-    except Exception as e:
-        logging.error(f"Copyover failed: {e}", exc_info=True)
-        protocol.sendLine(b"Copyover failed. Please contact an admin.")
+    """Report that soft reboot is intentionally disabled for private alpha."""
+    logging.info("User %s attempted disabled copyover.", protocol.username)
+    protocol.sendLine(
+        b"Copyover is disabled for now. Restart the server normally; players can reconnect safely."
+    )
 
 def setrole(protocol, username, role_type):
     """
@@ -237,12 +262,12 @@ def setdojo(protocol, username, dojo):
 # Command registry
 COMMANDS = {
     "createzone": CommandSpec("createzone", lambda protocol, rooms, raw, args: create_zone(protocol, *args), "createzone <zone_name> <start_vnum> <end_vnum>", "Create an authored zone.", permission="admin", min_args=3, max_args=3),
-    "goto": CommandSpec("goto", lambda protocol, rooms, raw, args: goto(protocol, args[0]), "goto <room_id>", "Travel to an authored room.", permission="admin", min_args=1, max_args=1, args_validator=lambda args: args[0].isdigit()),
+    "goto": CommandSpec("goto", lambda protocol, rooms, raw, args: goto(protocol, *args), "goto <vnum> | goto grid <x> <y> | goto player <name>", "Travel to an authored room, grid location, or online player.", permission="admin", min_args=1, max_args=3, args_validator=lambda args: (len(args) == 1 and args[0].isdigit()) or (len(args) == 3 and args[0].lower() == "grid" and args[1].lstrip("-").isdigit() and args[2].lstrip("-").isdigit()) or (len(args) == 2 and args[0].lower() == "player")),
     "zoneinfo": CommandSpec("zoneinfo", lambda protocol, rooms, raw, args: zoneinfo(protocol, args[0] if args else None), "zoneinfo [vnum]", "Inspect an authored overlay room.", permission="admin", max_args=1, args_validator=lambda args: not args or args[0].isdigit()),
     "placezone": CommandSpec("placezone", lambda protocol, rooms, raw, args: placezone(protocol, *args), "placezone <zone_file> <x> <y>", "Anchor a zone file on the world grid.", permission="admin", min_args=3, max_args=3, args_validator=lambda args: args[1].lstrip("-").isdigit() and args[2].lstrip("-").isdigit()),
     "dig": CommandSpec("dig", lambda protocol, rooms, raw, args: dig(protocol, args[0], " ".join(args[1:])), "dig <direction> <room_name>", "Create an authored room exit.", permission="admin", min_args=2),
     "shutdown": CommandSpec("shutdown", lambda protocol, rooms, raw, args: shutdown(protocol), "shutdown", "Stop the server.", permission="admin", max_args=0),
-    "copyover": CommandSpec("copyover", lambda protocol, rooms, raw, args: copyover(protocol), "copyover", "Restart the server while retaining player state.", permission="admin", max_args=0),
+    "copyover": CommandSpec("copyover", lambda protocol, rooms, raw, args: copyover(protocol), "copyover", "Report the disabled soft-restart status.", permission="admin", max_args=0),
     "setrole": CommandSpec("setrole", lambda protocol, rooms, raw, args: setrole(protocol, *args), "setrole <username> <role_type>", "Set a character role.", permission="admin", min_args=2, max_args=2),
     "setstat": CommandSpec("setstat", lambda protocol, rooms, raw, args: setstat(protocol, *args), "setstat <username> <stat> <value>", "Set a character stat.", permission="admin", min_args=3, max_args=3),
     "setdojo": CommandSpec("setdojo", lambda protocol, rooms, raw, args: setdojo(protocol, *args), "setdojo <username> <dojo>", "Set a character dojo alignment.", permission="admin", min_args=2, max_args=2),

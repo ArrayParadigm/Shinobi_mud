@@ -99,6 +99,8 @@ The server reads its TCP port from `config.json`.
 
 Each launch writes a timestamped runtime log under `logs/`. These local logs are ignored by Git and include command activity, warnings, and exception tracebacks for debugging.
 
+For a basic private Linux deployment, follow [LINUX_ALPHA.md](LINUX_ALPHA.md).
+
 ### World Locations
 
 The world map is persistent terrain. Player positions use `(x, y)` coordinates as the single source of truth.
@@ -126,11 +128,16 @@ Commands accept unique prefixes. The stable shortcuts `n`, `s`, `e`, `w`, and `l
 Admin overlay tools:
 
 - `goto <vnum>`: teleport to an authored overlay room while retaining canonical coordinates.
+- `goto grid <x> <y>`: teleport to canonical world coordinates.
+- `goto player <name>`: teleport to an online character.
 - `zoneinfo [vnum]`: inspect the current or requested overlay room.
 - `placezone <zone_file> <x> <y>`: persist a zone anchor and reload overlays.
+- `copyover`: report that soft restarts are intentionally disabled for now.
+
+The player prompt reports health, stamina, chakra, and location after commands. Map output includes a legend. Nearby-character listings are controlled by `show_nearby_players` and `nearby_player_radius` in `config.json`.
 
 ### Early Linux Testing
 
-The current MUD socket uses plain-text TCP. Passwords are hashed safely in the database, but they are still sent over the network as plain text during login.
+The current MUD socket uses plain-text TCP. Passwords are hashed safely in the database, but they are still sent over the network as plain text during login. Encrypted transport means wrapping that connection in TLS, or keeping it inside a trusted VPN, so someone watching network traffic cannot read login passwords.
 
 For early Linux testing, restrict access with a firewall allowlist, private network, or VPN. Do not expose password login to the open internet until encrypted transport is added.

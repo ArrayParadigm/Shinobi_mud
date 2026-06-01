@@ -111,7 +111,11 @@ class MultiplayerTests(unittest.TestCase):
         finally:
             general_commands.UTILITIES["WORLD_MAP"] = original_map
 
-        self.assertEqual(self.array.messages[-1], "Also here: Waiting")
+        self.assertIn("Also here: Waiting", self.array.messages)
+        self.assertEqual(
+            self.array.messages[-1],
+            "Nearby: Distant (2, 2; 1 away), Eve (1, 1; 1 away)",
+        )
         self.assertIn("Array arrives.", waiting_player.messages)
 
     def test_room_display_lists_players_already_present(self):
@@ -122,7 +126,8 @@ class MultiplayerTests(unittest.TestCase):
         finally:
             shinobi_mud.WORLD_MAP = original_map
 
-        self.assertEqual(self.array.messages[-1], "Also here: Eve")
+        self.assertIn("Also here: Eve", self.array.messages)
+        self.assertEqual(self.array.messages[-1], "Nearby: Distant (2, 2; 1 away)")
 
     def test_movement_reports_database_lock_without_moving_player(self):
         class BlockedCursor:
@@ -153,10 +158,49 @@ class MultiplayerTests(unittest.TestCase):
         self.assertEqual(self.array.messages[1:], ["  Array", "  Distant", "  Eve"])
 
     def test_score_displays_character_sheet(self):
+        shinobi_mud.WORLD_OVERLAYS[(1, 1)] = {
+            "zone_name": "Test Town",
+            "vnum": 3000,
+            "room": {},
+        }
+
         general_commands.handle_score(self.array)
 
         self.assertEqual(self.array.messages[0], "Score for Array")
         self.assertIn("Health: 10  Stamina: 10  Chakra: 10", self.array.messages)
+        self.assertIn("Location: (1, 1)", self.array.messages)
+        self.assertIn("Area: Test Town  VNUM: 3000", self.array.messages)
+
+    def test_prompt_displays_resources_and_overlay_location(self):
+        shinobi_mud.WORLD_OVERLAYS[(1, 1)] = {
+            "zone_name": "Test Town",
+            "vnum": 3000,
+            "room": {},
+        }
+
+        self.array.display_prompt()
+
+        self.assertEqual(
+            self.array.messages,
+            ["[HP:10 ST:10 CH:10 | Test Town [3000] (1, 1)]"],
+        )
+
+    def test_nearby_player_listing_shows_distance_but_not_roommates(self):
+        shinobi_mud.NEARBY_PLAYER_RADIUS = 20
+
+        self.array.list_nearby_players()
+
+        self.assertEqual(self.array.messages, ["Nearby: Distant (2, 2; 1 away)"])
+
+    def test_nearby_player_listing_can_be_disabled(self):
+        original_setting = shinobi_mud.SHOW_NEARBY_PLAYERS
+        shinobi_mud.SHOW_NEARBY_PLAYERS = False
+        try:
+            self.array.list_nearby_players()
+        finally:
+            shinobi_mud.SHOW_NEARBY_PLAYERS = original_setting
+
+        self.assertEqual(self.array.messages, [])
 
     def test_loc_displays_grid_and_optional_overlay(self):
         original_map = general_commands.UTILITIES["WORLD_MAP"]

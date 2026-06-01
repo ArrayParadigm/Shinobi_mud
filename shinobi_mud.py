@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 from auth import hash_password, validate_username, verify_password
 from command_system import CommandSpec
-from locations import broadcast_at, coordinate_key, is_within_bounds, players_at, track_player, untrack_player
+from locations import broadcast_at, coordinate_key, is_within_bounds, nearby_players, players_at, track_player, untrack_player
 from migrations import apply_migrations, create_players_table
 
 DEBUG_MODE = True  # True allows for debugging options; False disables them
@@ -19,6 +19,7 @@ DEFAULT_DB_FILE = "mud_game_10_rooms.db"
 DEFAULT_MOTD = "Welcome to Ninja MUD!"
 DEFAULT_PORT = 4000
 DATABASE_BUSY_TIMEOUT_SECONDS = 1
+DEFAULT_NEARBY_PLAYER_RADIUS = 20
 DEFAULT_LOG_FILE = os.path.join(
     "logs",
     f"mud_{datetime.now():%Y%m%d_%H%M%S}_{os.getpid()}.log",
@@ -62,6 +63,8 @@ COMMAND_SHORTCUTS = {
 UTILITIES = {}
 players_in_rooms = {}
 WORLD_OVERLAYS = {}
+SHOW_NEARBY_PLAYERS = True
+NEARBY_PLAYER_RADIUS = DEFAULT_NEARBY_PLAYER_RADIUS
 
 # List of explicitly approved command modules
 COMMAND_MODULES = [
@@ -389,6 +392,7 @@ class NinjaMUDProtocol(basic.LineReceiver):
         self.state = "COMMAND"
         self.track_player()
         self.display_room()
+        self.display_prompt()
             
     def list_players_in_room(self):
         """List other players at the current world coordinate."""
@@ -399,6 +403,25 @@ class NinjaMUDProtocol(basic.LineReceiver):
             self.sendLine(f"Also here: {', '.join(others)}".encode('utf-8'))
         else:
             self.sendLine(b"You are alone in this room.")
+
+    def list_nearby_players(self):
+        """List characters in the configured nearby grid radius."""
+        if not SHOW_NEARBY_PLAYERS:
+            return
+
+        nearby = nearby_players(
+            players_in_rooms,
+            self.x,
+            self.y,
+            NEARBY_PLAYER_RADIUS,
+            exclude=self,
+        )
+        if nearby:
+            player_list = ", ".join(
+                f"{player.username} ({player.x}, {player.y}; {distance} away)"
+                for distance, player in nearby
+            )
+            self.sendLine(f"Nearby: {player_list}".encode("utf-8"))
 
     def register_password(self, password):
         self.character_creation_data['password'] = password
@@ -414,6 +437,8 @@ class NinjaMUDProtocol(basic.LineReceiver):
         except Exception as e:
             logging.error(f"Error while handling command '{command}' for {self.username}: {e}", exc_info=True)
             self.sendLine(b"An error occurred while processing your command.")
+        finally:
+            self.display_prompt()
 
     def display_room(self):
         """Displays the grid map around the player."""
@@ -427,6 +452,7 @@ class NinjaMUDProtocol(basic.LineReceiver):
             self.sendLine(map_view.encode("utf-8"))
             UTILITIES["render_room"](self, WORLD_OVERLAYS)
             self.list_players_in_room()
+            self.list_nearby_players()
         except KeyError:
             self.sendLine(b"Error: Map rendering function is unavailable.")
         except Exception as e:
@@ -457,6 +483,28 @@ class NinjaMUDProtocol(basic.LineReceiver):
     @property
     def location_key(self):
         return coordinate_key(self.x, self.y)
+
+    def display_prompt(self):
+        """Display a compact command prompt with current resources and location."""
+        try:
+            self.cursor.execute(
+                "SELECT health, stamina, chakra FROM players WHERE username=?",
+                (self.username,),
+            )
+            stats = self.cursor.fetchone()
+            if not stats:
+                return
+
+            overlay = WORLD_OVERLAYS.get(self.location_key)
+            if overlay:
+                location = f"{overlay['zone_name']} [{overlay['vnum']}] ({self.x}, {self.y})"
+            else:
+                location = f"({self.x}, {self.y})"
+            self.sendLine(
+                f"[HP:{stats[0]} ST:{stats[1]} CH:{stats[2]} | {location}]".encode("utf-8")
+            )
+        except Exception as exc:
+            logging.error("Unable to display prompt for %s: %s", self.username, exc, exc_info=True)
 
     def confirm_password(self, password):
         if self.character_creation_data['password'] == password:
@@ -520,6 +568,7 @@ class NinjaMUDProtocol(basic.LineReceiver):
                 self.state = "COMMAND"
                 self.track_player()
                 self.display_room()
+                self.display_prompt()
             else:
                 self.sendLine(f"{stat.capitalize()} set to {self.character_creation_data[stat]}. Remaining points: {self.character_creation_data['remaining_points']}".encode('utf-8'))
     
@@ -557,7 +606,7 @@ def initialize_server(config_file=DEFAULT_CONFIG_FILE):
     logging.info("Logging initialized.")
 
     # 3. Initialize Database
-    global conn, cursor, MOTD
+    global conn, cursor, MOTD, SHOW_NEARBY_PLAYERS, NEARBY_PLAYER_RADIUS
     db_file = config.get("db_file", DEFAULT_DB_FILE)
     if conn:
         conn.close()
@@ -603,6 +652,10 @@ def initialize_server(config_file=DEFAULT_CONFIG_FILE):
 
     # Final Validation
     validate_server_state(config)
+    SHOW_NEARBY_PLAYERS = config.get("show_nearby_players", True)
+    NEARBY_PLAYER_RADIUS = int(
+        config.get("nearby_player_radius", DEFAULT_NEARBY_PLAYER_RADIUS)
+    )
 
     logging.info("Ninja MUD Server initialized successfully.")
     return config
@@ -652,6 +705,20 @@ def validate_server_state(config):
     except (TypeError, ValueError):
         errors.append("Configured server_port must be an integer between 1 and 65535.")
 
+    show_nearby_players = config.get("show_nearby_players", True)
+    if not isinstance(show_nearby_players, bool):
+        errors.append("Configured show_nearby_players must be true or false.")
+
+    try:
+        nearby_player_radius = config.get(
+            "nearby_player_radius",
+            DEFAULT_NEARBY_PLAYER_RADIUS,
+        )
+        if isinstance(nearby_player_radius, bool) or int(nearby_player_radius) < 0:
+            raise ValueError
+    except (TypeError, ValueError):
+        errors.append("Configured nearby_player_radius must be a non-negative integer.")
+
     required_tables = {"players", "rooms", "schema_migrations"}
     tables = {
         row[0]
@@ -672,12 +739,16 @@ def validate_server_state(config):
 
 def run_server(config_file=DEFAULT_CONFIG_FILE, reactor_instance=reactor):
     """Initialize the MUD and listen on the configured TCP port."""
-    config = initialize_server(config_file)
-    port = int(config.get("server_port", DEFAULT_PORT))
-    reactor_instance.listenTCP(port, NinjaMUDFactory())
-    logging.info("Ninja MUD Server running on port %s.", port)
-    reactor_instance.run()
-    return config
+    try:
+        config = initialize_server(config_file)
+        port = int(config.get("server_port", DEFAULT_PORT))
+        reactor_instance.listenTCP(port, NinjaMUDFactory())
+        logging.info("Ninja MUD Server running on port %s.", port)
+        reactor_instance.run()
+        return config
+    except Exception:
+        logging.exception("Unexpected server failure.")
+        raise
 
 if __name__ == "__main__":
     run_server()

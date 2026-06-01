@@ -18,15 +18,18 @@ The foundation checkpoint in `FOUNDATION_CHECKLIST.md` is complete.
 Improve operational confidence before adding systems with larger state surfaces.
 
 - [x] Write timestamped runtime logs under `logs/` for each server launch.
-- [ ] Add a top-level crash handler or dedicated crash log for unexpected reactor failures.
-- [ ] Add Linux deployment notes and a `systemd` service example.
-- [ ] Decide whether to repair `copyover` or disable it until reconnect-based restarts are sufficient.
+- [x] Log unexpected reactor failures in the existing per-launch runtime log.
+- [x] Add Linux deployment notes and a `systemd` service example.
+- [x] Disable `copyover` until reconnect-based restarts need improvement.
+
+### Deferred Until Needed
+
 - [ ] Add a repeatable two-client soak test for login, movement, chat, disconnects, and reconnects.
 - [ ] Add encrypted transport before any open-internet password testing.
 
-### Done When
+### Private Alpha Status
 
-Private Linux alpha sessions are easy to launch, inspect, restart, and debug without exposing plain-text passwords publicly.
+Ready for trusted private Linux alpha sessions through a firewall allowlist, private network, or VPN. Complete the deferred items before broader testing.
 
 ---
 
@@ -34,13 +37,13 @@ Private Linux alpha sessions are easy to launch, inspect, restart, and debug wit
 
 Make the existing world easier to read before adding inventory or combat.
 
-- [ ] Add a player prompt with health, stamina, chakra, and current coordinates or authored room name.
-- [ ] Include current coordinates and authored room details in `score`.
-- [ ] Beautify map output with a compact border or legend while keeping the player marker clear.
-- [ ] Add optional nearby-player listings within a configurable radius, defaulting to 20 grid cells.
-- [ ] Add an admin or config toggle for nearby-player listings.
-- [ ] Add `goto grid <x> <y>` for admins.
-- [ ] Add `goto player <name>` for admins.
+- [x] Add a player prompt with health, stamina, chakra, and current coordinates or authored room name.
+- [x] Include current coordinates and authored room details in `score`.
+- [x] Beautify map output with a compact border or legend while keeping the player marker clear.
+- [x] Add optional nearby-player listings within a configurable radius, defaulting to 20 grid cells.
+- [x] Add an admin or config toggle for nearby-player listings.
+- [x] Add `goto grid <x> <y>` for admins.
+- [x] Add `goto player <name>` for admins.
 
 ### Done When
 

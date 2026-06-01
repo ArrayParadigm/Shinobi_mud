@@ -170,6 +170,7 @@ def render_open_land(
                 row += "?"  # Out-of-bounds area
         visible_map.append(row)
 
+    visible_map.append("Legend: P=you  #=authored area")
     return "\n".join(visible_map)
 
 def render_room(player, overlays=None):

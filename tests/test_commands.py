@@ -130,7 +130,10 @@ class CommandMetadataTests(unittest.TestCase):
 
         shinobi_mud.process_command(self.player, "goto definitely-not-a-room")
 
-        self.assertEqual(self.player.messages, ["Usage: goto <room_id>"])
+        self.assertEqual(
+            self.player.messages,
+            ["Usage: goto <vnum> | goto grid <x> <y> | goto player <name>"],
+        )
 
     def test_help_lists_player_commands_without_admin_commands(self):
         shinobi_mud.process_command(self.player, "help")
