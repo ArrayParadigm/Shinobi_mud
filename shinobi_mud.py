@@ -16,6 +16,7 @@ DEFAULT_CONFIG_FILE = "config.json"
 DEFAULT_DB_FILE = "mud_game_10_rooms.db"
 DEFAULT_MOTD = "Welcome to Ninja MUD!"
 DEFAULT_PORT = 4000
+DATABASE_BUSY_TIMEOUT_SECONDS = 1
 
 # Command modules import shinobi_mud. Reuse this module when launched as a script.
 sys.modules.setdefault("shinobi_mud", sys.modules[__name__])
@@ -98,8 +99,17 @@ ALL_COMMANDS = get_all_commands()
 logging.debug(f"All registered commands: {sorted(ALL_COMMANDS)}")
 
 # Database setup
-conn = sqlite3.connect(DEFAULT_DB_FILE)
-conn.row_factory = sqlite3.Row
+def connect_database(db_file):
+    """Open a server database connection that fails quickly when writes are blocked."""
+    connection = sqlite3.connect(db_file, timeout=DATABASE_BUSY_TIMEOUT_SECONDS)
+    connection.row_factory = sqlite3.Row
+    connection.execute(
+        f"PRAGMA busy_timeout = {DATABASE_BUSY_TIMEOUT_SECONDS * 1000}"
+    )
+    return connection
+
+
+conn = connect_database(DEFAULT_DB_FILE)
 cursor = conn.cursor()
 MOTD = DEFAULT_MOTD
 
@@ -484,8 +494,7 @@ def initialize_server(config_file=DEFAULT_CONFIG_FILE):
     db_file = config.get("db_file", DEFAULT_DB_FILE)
     if conn:
         conn.close()
-    conn = sqlite3.connect(db_file)
-    conn.row_factory = sqlite3.Row
+    conn = connect_database(db_file)
     cursor = conn.cursor()
     ensure_tables_exist(conn)
     apply_migrations(conn)

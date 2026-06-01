@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-06-01 - Movement Lock Recovery
+
+### Fixed
+
+- Limited SQLite lock waits so a blocked location save does not stall every connected player.
+- Made movement persistence atomic: players remain at their original location when a coordinate update cannot be saved.
+- Added a clear retry message when movement persistence is temporarily blocked.
+
+### Verification
+
+- Added regression coverage for blocked movement saves and the player-facing retry response.
+- Passed `python -m unittest discover -s tests -v` with 28 tests.
+- Passed Python syntax compilation and a file-backed SQLite lock probe.
+
 ## 2026-06-01 - Multiplayer Basics
 
 ### Added

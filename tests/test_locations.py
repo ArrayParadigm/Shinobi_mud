@@ -5,7 +5,7 @@ import general_commands
 import shinobi_mud
 import utils
 from auth import hash_password
-from locations import get_location, move_player, players_at, track_player
+from locations import LocationPersistenceError, get_location, move_player, players_at, track_player
 from migrations import apply_migrations
 from tests.test_accounts import TestProtocol
 
@@ -87,6 +87,26 @@ class LocationTests(unittest.TestCase):
         self.assertFalse(moved)
         self.assertEqual((self.player.x, self.player.y), (0, 0))
         self.assertEqual(shinobi_mud.players_in_rooms[(0, 0)], [self.player])
+
+    def test_move_does_not_change_tracking_when_database_write_is_blocked(self):
+        class BlockedCursor:
+            connection = self.connection
+
+            def execute(self, query, params):
+                raise sqlite3.OperationalError("database is locked")
+
+        self.player.cursor = BlockedCursor()
+
+        with self.assertRaises(LocationPersistenceError):
+            move_player(
+                self.player,
+                "east",
+                self.world_map,
+                shinobi_mud.players_in_rooms,
+            )
+
+        self.assertEqual((self.player.x, self.player.y), (1, 1))
+        self.assertEqual(shinobi_mud.players_in_rooms, {(1, 1): [self.player]})
 
     def test_players_at_uses_coordinate_key(self):
         other = TestProtocol(shinobi_mud.cursor)

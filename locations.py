@@ -1,5 +1,7 @@
 """Coordinate-first world location helpers."""
 
+import sqlite3
+
 
 DIRECTION_OFFSETS = {
     "north": (0, -1),
@@ -7,6 +9,10 @@ DIRECTION_OFFSETS = {
     "east": (1, 0),
     "west": (-1, 0),
 }
+
+
+class LocationPersistenceError(RuntimeError):
+    """Raised when a location change cannot be saved."""
 
 
 def coordinate_key(x, y):
@@ -49,6 +55,16 @@ def move_player(player, direction, world_map, players_by_location):
 
     old_key = coordinate_key(player.x, player.y)
     new_key = coordinate_key(new_x, new_y)
+    try:
+        player.cursor.execute(
+            "UPDATE players SET x=?, y=? WHERE username=?",
+            (new_x, new_y, player.username),
+        )
+        player.cursor.connection.commit()
+    except sqlite3.OperationalError as exc:
+        player.cursor.connection.rollback()
+        raise LocationPersistenceError("Unable to save player location.") from exc
+
     broadcast_at(
         players_by_location,
         old_key,
@@ -65,11 +81,6 @@ def move_player(player, direction, world_map, players_by_location):
         f"{player.username} arrives.",
         exclude=player,
     )
-    player.cursor.execute(
-        "UPDATE players SET x=?, y=? WHERE username=?",
-        (player.x, player.y, player.username),
-    )
-    player.cursor.connection.commit()
     return True
 
 

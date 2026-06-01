@@ -101,6 +101,28 @@ class MultiplayerTests(unittest.TestCase):
         move_player(arrival_observer, "east", self.world_map, shinobi_mud.players_in_rooms)
         self.assertIn("Observer arrives.", self.array.messages)
 
+    def test_movement_reports_database_lock_without_moving_player(self):
+        class BlockedCursor:
+            connection = self.connection
+
+            def execute(self, query, params):
+                raise sqlite3.OperationalError("database is locked")
+
+        self.array.cursor = BlockedCursor()
+        original_map = general_commands.UTILITIES["WORLD_MAP"]
+        general_commands.UTILITIES["WORLD_MAP"] = self.world_map
+        try:
+            general_commands.handle_movement(self.array, "east")
+        finally:
+            general_commands.UTILITIES["WORLD_MAP"] = original_map
+
+        self.assertEqual(
+            self.array.messages,
+            ["Movement could not be saved. Please try again."],
+        )
+        self.assertEqual((self.array.x, self.array.y), (1, 1))
+        self.assertNotIn("Array leaves east.", self.eve.messages)
+
     def test_who_lists_each_online_player(self):
         general_commands.handle_who(self.array, shinobi_mud.players_in_rooms)
 

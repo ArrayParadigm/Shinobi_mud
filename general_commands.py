@@ -1,6 +1,6 @@
 import json
 import logging
-from locations import get_location, move_player, online_players
+from locations import LocationPersistenceError, get_location, move_player, online_players
 from shinobi_mud import UTILITIES, WORLD_OVERLAYS, players_in_rooms
 
 logging.info("general_commands imported")
@@ -43,16 +43,20 @@ def handle_movement(player, direction):
         player.sendLine(b"Error: World map is unavailable.")
         return
 
-    if move_player(player, direction, world_map, players_in_rooms):
-        map_view = UTILITIES["render_open_land"](
-            player.x,
-            player.y,
-            world_map=world_map,
-            overlays=WORLD_OVERLAYS,
-        )
-        player.sendLine(map_view.encode("utf-8"))
-    else:
-        player.sendLine(b"You can't go that way.")
+    try:
+        if move_player(player, direction, world_map, players_in_rooms):
+            map_view = UTILITIES["render_open_land"](
+                player.x,
+                player.y,
+                world_map=world_map,
+                overlays=WORLD_OVERLAYS,
+            )
+            player.sendLine(map_view.encode("utf-8"))
+        else:
+            player.sendLine(b"You can't go that way.")
+    except LocationPersistenceError:
+        logging.warning("Movement save blocked for player %s.", player.username)
+        player.sendLine(b"Movement could not be saved. Please try again.")
 
 def handle_score(player, players_in_rooms=None):
     """Display the player's current character sheet."""
