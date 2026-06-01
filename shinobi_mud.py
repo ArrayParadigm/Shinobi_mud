@@ -360,6 +360,7 @@ class NinjaMUDProtocol(basic.LineReceiver):
                 overlays=WORLD_OVERLAYS,
             )
             self.sendLine(map_view.encode("utf-8"))
+            self.list_players_in_room()
         except KeyError:
             self.sendLine(b"Error: Map rendering function is unavailable.")
         except Exception as e:

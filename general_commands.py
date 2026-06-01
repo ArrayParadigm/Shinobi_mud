@@ -52,6 +52,7 @@ def handle_movement(player, direction):
                 overlays=WORLD_OVERLAYS,
             )
             player.sendLine(map_view.encode("utf-8"))
+            player.list_players_in_room()
         else:
             player.sendLine(b"You can't go that way.")
     except LocationPersistenceError:

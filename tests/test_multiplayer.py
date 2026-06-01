@@ -101,6 +101,29 @@ class MultiplayerTests(unittest.TestCase):
         move_player(arrival_observer, "east", self.world_map, shinobi_mud.players_in_rooms)
         self.assertIn("Observer arrives.", self.array.messages)
 
+    def test_movement_lists_players_already_at_destination(self):
+        waiting_player = self.create_player("Waiting", 2, 1)
+        self.array.messages.clear()
+        original_map = general_commands.UTILITIES["WORLD_MAP"]
+        general_commands.UTILITIES["WORLD_MAP"] = self.world_map
+        try:
+            general_commands.handle_movement(self.array, "east")
+        finally:
+            general_commands.UTILITIES["WORLD_MAP"] = original_map
+
+        self.assertEqual(self.array.messages[-1], "Also here: Waiting")
+        self.assertIn("Array arrives.", waiting_player.messages)
+
+    def test_room_display_lists_players_already_present(self):
+        original_map = shinobi_mud.WORLD_MAP
+        shinobi_mud.WORLD_MAP = self.world_map
+        try:
+            shinobi_mud.NinjaMUDProtocol.display_room(self.array)
+        finally:
+            shinobi_mud.WORLD_MAP = original_map
+
+        self.assertEqual(self.array.messages[-1], "Also here: Eve")
+
     def test_movement_reports_database_lock_without_moving_player(self):
         class BlockedCursor:
             connection = self.connection
