@@ -1,6 +1,8 @@
 import logging
 
-from items import create_item_tables, seed_starter_items
+from content import create_authored_content_tables
+from items import create_item_tables, ensure_item_seed_tracking
+from npcs import create_npc_tables
 
 
 PLAYER_COLUMNS = (
@@ -69,12 +71,20 @@ def migration_001_non_admin_default(cursor):
 def migration_002_persistent_items(cursor):
     """Add persistent room objects and character inventories."""
     create_item_tables(cursor)
-    seed_starter_items(cursor)
+
+
+def migration_003_authored_content_and_npcs(cursor):
+    """Track authored imports and add persistent NPC state."""
+    create_item_tables(cursor)
+    ensure_item_seed_tracking(cursor)
+    create_authored_content_tables(cursor)
+    create_npc_tables(cursor)
 
 
 MIGRATIONS = (
     (1, migration_001_non_admin_default),
     (2, migration_002_persistent_items),
+    (3, migration_003_authored_content_and_npcs),
 )
 
 

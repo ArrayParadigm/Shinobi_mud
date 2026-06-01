@@ -3,6 +3,7 @@ import logging
 from command_system import CommandSpec
 from items import drop_item, format_item_names, inventory_items, pickup_item
 from locations import LocationPersistenceError, get_location, move_player, online_players
+from npcs import talk_to_npc
 from shinobi_mud import (
     COMMAND_REGISTRY,
     UTILITIES,
@@ -188,6 +189,19 @@ def handle_drop(player, item_name):
         player.sendLine(b"Unable to drop that item right now.")
 
 
+def handle_talk(player, npc_name):
+    """Talk to one NPC at the current grid coordinate."""
+    try:
+        npc = talk_to_npc(player.cursor, player.x, player.y, npc_name.strip())
+        if npc:
+            player.sendLine(f'{npc["name"]} says, "{npc["dialogue"]}"'.encode("utf-8"))
+        else:
+            player.sendLine(b"You do not see that character here.")
+    except Exception as exc:
+        logging.error("Unable to talk to NPC for %s: %s", player.username, exc, exc_info=True)
+        player.sendLine(b"Unable to talk to that character right now.")
+
+
 def handle_help(player, raw_args):
     """Display available commands or detailed help for one command."""
     topic = raw_args.strip().lower()
@@ -232,6 +246,7 @@ COMMANDS = {
     "inventory": CommandSpec("inventory", lambda player, rooms, raw, args: handle_inventory(player), "inventory", "List the items you carry.", aliases=("inv",), max_args=0),
     "get": CommandSpec("get", lambda player, rooms, raw, args: handle_get(player, raw), "get <item>", "Pick up an item at your location.", min_args=1),
     "drop": CommandSpec("drop", lambda player, rooms, raw, args: handle_drop(player, raw), "drop <item>", "Drop a carried item at your location.", min_args=1),
+    "talk": CommandSpec("talk", lambda player, rooms, raw, args: handle_talk(player, raw), "talk <character>", "Talk to a character at your location.", min_args=1),
     "north": CommandSpec("north", lambda player, rooms, raw, args: handle_movement(player, "north"), "north", "Move north.", max_args=0),
     "south": CommandSpec("south", lambda player, rooms, raw, args: handle_movement(player, "south"), "south", "Move south.", max_args=0),
     "east": CommandSpec("east", lambda player, rooms, raw, args: handle_movement(player, "east"), "east", "Move east.", max_args=0),

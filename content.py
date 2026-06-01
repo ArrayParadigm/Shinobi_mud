@@ -1,0 +1,174 @@
+"""Import authored JSON content into persistent live database state."""
+
+import json
+import os
+
+from items import create_item_tables
+from npcs import create_npc_tables
+
+
+def create_authored_content_tables(cursor):
+    """Track one-time authored spawns independently of mutable instances."""
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS authored_content_seeds (
+            seed_key TEXT PRIMARY KEY,
+            content_type TEXT NOT NULL,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+        """
+    )
+
+
+def sync_authored_content(connection, zones_directory, overlays):
+    """Import templates and create missing authored live instances once."""
+    cursor = connection.cursor()
+    create_item_tables(cursor)
+    create_npc_tables(cursor)
+    create_authored_content_tables(cursor)
+    coordinates_by_vnum = {
+        overlay["vnum"]: coordinates
+        for coordinates, overlay in overlays.items()
+    }
+    created = {"item_spawns": 0, "npc_spawns": 0}
+
+    for zone_file in sorted(os.listdir(zones_directory)):
+        if not zone_file.endswith(".json"):
+            continue
+        with open(os.path.join(zones_directory, zone_file), "r", encoding="utf-8") as file:
+            zone_data = json.load(file)
+        content_key = zone_data.get("content_key", os.path.splitext(zone_file)[0])
+        _sync_item_templates(cursor, zone_data.get("item_templates", []))
+        _sync_npc_templates(cursor, zone_data.get("npc_templates", []))
+        created["item_spawns"] += _sync_item_spawns(
+            cursor,
+            content_key,
+            zone_data.get("item_spawns", []),
+            coordinates_by_vnum,
+        )
+        created["npc_spawns"] += _sync_npc_spawns(
+            cursor,
+            content_key,
+            zone_data.get("npc_spawns", []),
+            coordinates_by_vnum,
+        )
+
+    connection.commit()
+    return created
+
+
+def _sync_item_templates(cursor, templates):
+    for template in templates:
+        cursor.execute(
+            """
+            INSERT INTO item_definitions (item_key, name, description)
+            VALUES (?, ?, ?)
+            ON CONFLICT(item_key) DO UPDATE SET
+                name=excluded.name,
+                description=excluded.description
+            """,
+            (template["key"], template["name"], template["description"]),
+        )
+
+
+def _sync_npc_templates(cursor, templates):
+    for template in templates:
+        cursor.execute(
+            """
+            INSERT INTO npc_templates (npc_key, name, description, dialogue, behavior)
+            VALUES (?, ?, ?, ?, ?)
+            ON CONFLICT(npc_key) DO UPDATE SET
+                name=excluded.name,
+                description=excluded.description,
+                dialogue=excluded.dialogue,
+                behavior=excluded.behavior
+            """,
+            (
+                template["key"],
+                template["name"],
+                template["description"],
+                template["dialogue"],
+                template.get("behavior", "static"),
+            ),
+        )
+
+
+def _sync_item_spawns(cursor, content_key, spawns, coordinates_by_vnum):
+    created = 0
+    for spawn in spawns:
+        seed_key = f"{content_key}:{spawn['key']}"
+        if _seed_exists(cursor, seed_key):
+            continue
+        existing = cursor.execute(
+            "SELECT 1 FROM room_items WHERE seed_key=?",
+            (seed_key,),
+        ).fetchone()
+        if not existing:
+            x, y = _spawn_coordinates(spawn, coordinates_by_vnum)
+            item_definition_id = cursor.execute(
+                "SELECT id FROM item_definitions WHERE item_key=?",
+                (spawn["item"],),
+            ).fetchone()[0]
+            cursor.execute(
+                """
+                INSERT INTO room_items (item_definition_id, x, y, seed_key)
+                VALUES (?, ?, ?, ?)
+                """,
+                (item_definition_id, x, y, seed_key),
+            )
+            created += 1
+        _record_seed(cursor, seed_key, "item")
+    return created
+
+
+def _sync_npc_spawns(cursor, content_key, spawns, coordinates_by_vnum):
+    created = 0
+    for spawn in spawns:
+        seed_key = f"{content_key}:npc:{spawn['key']}"
+        existing = cursor.execute(
+            "SELECT 1 FROM npc_instances WHERE seed_key=?",
+            (seed_key,),
+        ).fetchone()
+        if existing:
+            continue
+        x, y = _spawn_coordinates(spawn, coordinates_by_vnum)
+        npc_template_id = cursor.execute(
+            "SELECT id FROM npc_templates WHERE npc_key=?",
+            (spawn["npc"],),
+        ).fetchone()[0]
+        cursor.execute(
+            """
+            INSERT INTO npc_instances (npc_template_id, x, y, home_x, home_y, seed_key)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (npc_template_id, x, y, x, y, seed_key),
+        )
+        _record_seed(cursor, seed_key, "npc")
+        created += 1
+    return created
+
+
+def _spawn_coordinates(spawn, coordinates_by_vnum):
+    vnum = int(spawn["vnum"])
+    if vnum not in coordinates_by_vnum:
+        raise ValueError(f"Authored spawn references unavailable VNUM {vnum}.")
+    return coordinates_by_vnum[vnum]
+
+
+def _seed_exists(cursor, seed_key):
+    return bool(
+        cursor.execute(
+            "SELECT 1 FROM authored_content_seeds WHERE seed_key=?",
+            (seed_key,),
+        ).fetchone()
+    )
+
+
+def _record_seed(cursor, seed_key, content_type):
+    cursor.execute(
+        """
+        INSERT OR IGNORE INTO authored_content_seeds (seed_key, content_type)
+        VALUES (?, ?)
+        """,
+        (seed_key, content_type),
+    )

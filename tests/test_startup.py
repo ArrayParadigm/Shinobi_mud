@@ -72,6 +72,9 @@ class StartupSmokeTests(unittest.TestCase):
                     "item_definitions",
                     "room_items",
                     "character_inventory",
+                    "authored_content_seeds",
+                    "npc_templates",
+                    "npc_instances",
                 }
                 <= tables
             )

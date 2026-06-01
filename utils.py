@@ -2,6 +2,7 @@ import os
 import json
 import logging
 import items
+import npcs
 
 logging.info("utils imported")
 
@@ -191,4 +192,12 @@ def render_room(player, overlays=None):
     if visible_items:
         player.sendLine(
             f"Items here: {items.format_item_names(visible_items)}".encode("utf-8")
+        )
+
+    visible_npcs = npcs.npcs_at(player.cursor, player.x, player.y)
+    if visible_npcs:
+        player.sendLine(
+            f"Characters here: {', '.join(npc['name'] for npc in visible_npcs)}".encode(
+                "utf-8"
+            )
         )

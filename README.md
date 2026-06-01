@@ -47,7 +47,7 @@
 
 ### Disposable Development Database
 
-The SQLite database is local runtime state and is intentionally not committed to Git. Starting the server creates the configured database if it does not exist.
+The SQLite database is local runtime state and is intentionally not committed to Git. Starting the server creates the configured `shinobi_mud.db` database if it does not exist.
 
 To start again with an empty development database:
 
@@ -119,6 +119,7 @@ Eve's Haven is the first complete overlay example. Its anchor and room offsets l
 - `inventory`: list persistent carried items. `inv` remains available as an alias.
 - `get <item>`: pick up an item at your grid location.
 - `drop <item>`: drop a carried item at your grid location.
+- `talk <character>`: speak with an NPC at your grid location.
 - `who`: list connected characters.
 - `say <message>`: speak to characters at your grid location.
 - `emote <action>`: perform an action at your grid location.
@@ -135,11 +136,14 @@ Admin overlay tools:
 - `goto player <name>`: teleport to an online character.
 - `zoneinfo [vnum]`: inspect the current or requested overlay room.
 - `placezone <zone_file> <x> <y>`: persist a zone anchor and reload overlays.
+- `reloadcontent`: import authored JSON template changes and missing spawns into live state.
 - `copyover`: report that soft restarts are intentionally disabled for now.
 
 The player prompt reports health, stamina, chakra, and location after commands. Map output includes a legend. Nearby-character listings are controlled by `show_nearby_players` and `nearby_player_radius` in `config.json`.
 
-Room items and character inventories persist in SQLite. Fresh databases seed a Haven Map at Eve's Haven entrance, a Practice Kunai in its garden, and a Crystal Token in its library.
+Room items, character inventories, and NPC instances persist in SQLite. Authored templates and initial VNUM placements live in zone JSON files such as `zones/eveshaven.json`. Startup imports missing spawns once, so picked-up items are not recreated on every restart.
+
+Eve's Haven authors a Haven Map at its entrance, a Practice Kunai in its garden, a Crystal Token in its library, and a Haven Guide NPC at the entrance. `reloadcontent` lets an admin apply JSON template edits and create newly-authored spawns without restarting the server.
 
 ### Early Linux Testing
 

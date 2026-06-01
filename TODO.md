@@ -71,12 +71,11 @@ Players can see, pick up, carry, drop, disconnect with, and recover a small set 
 
 Add NPC presence before combat rules.
 
-- [ ] Define NPC templates and spawned NPC instances.
-  - How are we handling NPCs, shouldn't be hard coded, JSON or area file, in the database?, for example? Ideas? admins need to be able to make and change this sort of thing.
-- [ ] Display NPCs in `look`.
-- [ ] Add a minimal world tick or scheduler for NPC updates.
-- [ ] Add one simple Eve's Haven NPC with a basic interaction.
-- [ ] Add tests for spawning, visibility, and restart behavior.
+- [x] Define JSON-authored NPC templates and SQLite-backed spawned NPC instances.
+- [x] Display NPCs in `look`.
+- [x] Add a minimal world tick scheduler for NPC updates.
+- [x] Add one simple Eve's Haven NPC with `talk <character>`.
+- [x] Add tests for spawning, visibility, restart behavior, dialogue, and ticking.
 
 ### Done When
 
@@ -111,6 +110,7 @@ Build combat only after inventory and NPC state are reliable.
 - [x] Add `goto <vnum>` for authored overlay rooms.
 - [x] Add `zoneinfo [vnum]`.
 - [x] Add `placezone <zone_file> <x> <y>`.
+- [x] Add `reloadcontent` for applying authored JSON edits to live templates and missing spawns.
 - [ ] Replace placeholder `dig` with coordinate-aware overlay editing.
 - [ ] Add room-description editing for authored zones.
 - [ ] Create a robust live-management admin surface after command-line builder tools mature.

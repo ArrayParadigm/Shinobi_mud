@@ -1,5 +1,26 @@
 # Changelog
 
+## 2026-06-01 - JSON-Authored Content and NPC Foundation
+
+### Added
+
+- Added JSON-authored item templates and VNUM-based initial placements for Eve's Haven.
+- Added persistent NPC templates and spawned NPC instances with a recurring lightweight world tick.
+- Added the Haven Guide NPC, room visibility, and `talk <character>` dialogue.
+- Added `reloadcontent` for importing authored JSON template edits and missing spawns while the server is running.
+
+### Changed
+
+- Renamed the configured local SQLite database from `mud_game_10_rooms.db` to `shinobi_mud.db`.
+- Preserved authored item provenance so content reloads do not recreate objects after players pick them up.
+
+### Verification
+
+- Upgraded the preserved local development database through migration 3 while retaining its seven player rows.
+- Added NPC coverage for authored imports, visibility, dialogue, admin reloads, and recurring world ticks.
+- Passed `python -m unittest discover -s tests -v` with 69 tests.
+- Passed Python syntax compilation across the repository.
+
 ## 2026-06-01 - Persistent Items and Inventories
 
 ### Added

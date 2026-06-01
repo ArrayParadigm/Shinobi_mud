@@ -10,12 +10,15 @@ import sys
 from datetime import datetime
 from auth import hash_password, validate_username, verify_password
 from command_system import CommandSpec
+from content import sync_authored_content
 from locations import broadcast_at, coordinate_key, is_within_bounds, nearby_players, players_at, track_player, untrack_player
 from migrations import apply_migrations, create_players_table
+from npcs import tick_npcs
+from twisted.internet import task
 
 DEBUG_MODE = True  # True allows for debugging options; False disables them
 DEFAULT_CONFIG_FILE = "config.json"
-DEFAULT_DB_FILE = "mud_game_10_rooms.db"
+DEFAULT_DB_FILE = "shinobi_mud.db"
 DEFAULT_MOTD = "Welcome to Ninja MUD!"
 DEFAULT_PORT = 4000
 DATABASE_BUSY_TIMEOUT_SECONDS = 1
@@ -63,8 +66,11 @@ COMMAND_SHORTCUTS = {
 UTILITIES = {}
 players_in_rooms = {}
 WORLD_OVERLAYS = {}
+ACTIVE_CONFIG = {}
 SHOW_NEARBY_PLAYERS = True
 NEARBY_PLAYER_RADIUS = DEFAULT_NEARBY_PLAYER_RADIUS
+WORLD_TICK_INTERVAL_SECONDS = 30
+WORLD_TICK_LOOP = None
 
 # List of explicitly approved command modules
 COMMAND_MODULES = [
@@ -600,6 +606,8 @@ def initialize_server(config_file=DEFAULT_CONFIG_FILE):
 
     # 1. Load Configuration
     config = load_config(config_file)
+    ACTIVE_CONFIG.clear()
+    ACTIVE_CONFIG.update(config)
 
     # 2. Setup Logging
     configure_logging(config.get("log_file", DEFAULT_LOG_FILE))
@@ -628,6 +636,12 @@ def initialize_server(config_file=DEFAULT_CONFIG_FILE):
         "Zone data preloaded from %s with %s overlay rooms.",
         zone_directory,
         len(WORLD_OVERLAYS),
+    )
+    imported_content = sync_authored_content(conn, zone_directory, WORLD_OVERLAYS)
+    logging.info(
+        "Authored content synchronized: %s item spawns and %s NPC spawns created.",
+        imported_content["item_spawns"],
+        imported_content["npc_spawns"],
     )
 
 # Load utilities moved to first spot after defining due to timing issues. Lazy import wasn't working and I didn't want to get stopped by this problem with so much work to be done. Hopefully I'll come back and clean it up when I get further along.
@@ -726,6 +740,9 @@ def validate_server_state(config):
         "item_definitions",
         "room_items",
         "character_inventory",
+        "authored_content_seeds",
+        "npc_templates",
+        "npc_instances",
     }
     tables = {
         row[0]
@@ -751,11 +768,33 @@ def run_server(config_file=DEFAULT_CONFIG_FILE, reactor_instance=reactor):
         port = int(config.get("server_port", DEFAULT_PORT))
         reactor_instance.listenTCP(port, NinjaMUDFactory())
         logging.info("Ninja MUD Server running on port %s.", port)
+        if hasattr(reactor_instance, "callLater"):
+            start_world_tick(reactor_instance)
         reactor_instance.run()
         return config
     except Exception:
         logging.exception("Unexpected server failure.")
         raise
+
+
+def run_world_tick():
+    """Advance lightweight persistent NPC bookkeeping."""
+    updated_npcs = tick_npcs(conn)
+    logging.debug("World tick updated %s NPC instances.", updated_npcs)
+    return updated_npcs
+
+
+def start_world_tick(clock=reactor):
+    """Start the minimal recurring world update loop."""
+    global WORLD_TICK_LOOP
+    if WORLD_TICK_LOOP and WORLD_TICK_LOOP.running:
+        return WORLD_TICK_LOOP
+
+    WORLD_TICK_LOOP = task.LoopingCall(run_world_tick)
+    WORLD_TICK_LOOP.clock = clock
+    WORLD_TICK_LOOP.start(WORLD_TICK_INTERVAL_SECONDS, now=False)
+    logging.info("World tick scheduled every %s seconds.", WORLD_TICK_INTERVAL_SECONDS)
+    return WORLD_TICK_LOOP
 
 if __name__ == "__main__":
     run_server()

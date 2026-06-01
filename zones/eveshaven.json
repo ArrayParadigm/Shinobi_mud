@@ -274,6 +274,57 @@
             "y_offset": -12
         }
     },
+    "content_key": "eves-haven",
+    "item_templates": [
+        {
+            "key": "haven-map",
+            "name": "Haven Map",
+            "description": "A softly glowing map of Eve's Haven."
+        },
+        {
+            "key": "practice-kunai",
+            "name": "Practice Kunai",
+            "description": "A dulled kunai balanced for training drills."
+        },
+        {
+            "key": "crystal-token",
+            "name": "Crystal Token",
+            "description": "A small crystalline token pulsing with a faint inner light."
+        }
+    ],
+    "item_spawns": [
+        {
+            "key": "haven-map",
+            "item": "haven-map",
+            "vnum": 3000
+        },
+        {
+            "key": "practice-kunai",
+            "item": "practice-kunai",
+            "vnum": 3001
+        },
+        {
+            "key": "crystal-token",
+            "item": "crystal-token",
+            "vnum": 3002
+        }
+    ],
+    "npc_templates": [
+        {
+            "key": "haven-guide",
+            "name": "Haven Guide",
+            "description": "A calm attendant watches over the entrance to Eve's Haven.",
+            "dialogue": "Welcome to Eve's Haven. The path ahead is quiet, but it is yours to explore.",
+            "behavior": "static"
+        }
+    ],
+    "npc_spawns": [
+        {
+            "key": "haven-guide",
+            "npc": "haven-guide",
+            "vnum": 3000
+        }
+    ],
     "anchor": {
         "x": 500,
         "y": 500

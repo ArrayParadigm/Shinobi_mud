@@ -2,11 +2,17 @@ import json
 import os
 import logging
 from command_system import CommandSpec
+from content import sync_authored_content
 from locations import is_within_bounds, online_players, teleport_player
 from twisted.internet import reactor
-from shinobi_mud import UTILITIES, WORLD_MAP, WORLD_OVERLAYS, players_in_rooms
+from shinobi_mud import ACTIVE_CONFIG, UTILITIES, WORLD_MAP, WORLD_OVERLAYS, players_in_rooms
 
 logging.info("admin_commands imported")
+
+
+def zone_directory():
+    """Return the configured directory for authored zone JSON files."""
+    return ACTIVE_CONFIG.get("zone_directory", "zones")
 
 
 def create_zone(protocol, zone_name, start_vnum, end_vnum):
@@ -20,9 +26,9 @@ def create_zone(protocol, zone_name, start_vnum, end_vnum):
 
         start_vnum, end_vnum = int(start_vnum), int(end_vnum)
 
-        zone_directory = os.path.join("zones")
-        os.makedirs(zone_directory, exist_ok=True)
-        zone_file_path = os.path.join(zone_directory, f"{zone_name}.json")
+        authored_zone_directory = zone_directory()
+        os.makedirs(authored_zone_directory, exist_ok=True)
+        zone_file_path = os.path.join(authored_zone_directory, f"{zone_name}.json")
         logging.info(f"Creating zone file at: {zone_file_path}")
 
         if os.path.exists(zone_file_path):
@@ -140,7 +146,7 @@ def placezone(protocol, zone_file, anchor_x, anchor_y):
     safe_name = os.path.basename(zone_file)
     if not safe_name.endswith(".json"):
         safe_name += ".json"
-    zone_path = os.path.join("zones", safe_name)
+    zone_path = os.path.join(zone_directory(), safe_name)
     if not os.path.isfile(zone_path):
         protocol.sendLine(f"Zone file not found: {safe_name}".encode("utf-8"))
         return
@@ -153,7 +159,7 @@ def placezone(protocol, zone_file, anchor_x, anchor_y):
         with open(zone_path, "w") as file:
             json.dump(zone_data, file, indent=4)
             file.write("\n")
-        UTILITIES["preload_zones_with_anchors"](WORLD_OVERLAYS)
+        UTILITIES["preload_zones_with_anchors"](WORLD_OVERLAYS, zone_directory())
         if any(
             not is_within_bounds(WORLD_MAP, *coordinates)
             for coordinates in WORLD_OVERLAYS
@@ -164,13 +170,34 @@ def placezone(protocol, zone_file, anchor_x, anchor_y):
             with open(zone_path, "w") as file:
                 json.dump(original_zone_data, file, indent=4)
                 file.write("\n")
-            UTILITIES["preload_zones_with_anchors"](WORLD_OVERLAYS)
+            UTILITIES["preload_zones_with_anchors"](WORLD_OVERLAYS, zone_directory())
         protocol.sendLine(f"Unable to place zone: {exc}".encode("utf-8"))
         return
 
     protocol.sendLine(
         f"Placed {zone_data['name']} at ({anchor_x}, {anchor_y}) with {len(zone_data['rooms'])} overlay rooms.".encode("utf-8")
     )
+
+
+def reloadcontent(protocol):
+    """Reload zone JSON overlays, templates, and missing authored spawns."""
+    try:
+        UTILITIES["preload_zones_with_anchors"](WORLD_OVERLAYS, zone_directory())
+        imported = sync_authored_content(
+            protocol.cursor.connection,
+            zone_directory(),
+            WORLD_OVERLAYS,
+        )
+        protocol.sendLine(
+            (
+                "Authored content reloaded. "
+                f"Created {imported['item_spawns']} item spawns and "
+                f"{imported['npc_spawns']} NPC spawns."
+            ).encode("utf-8")
+        )
+    except Exception as exc:
+        logging.error("Unable to reload authored content: %s", exc, exc_info=True)
+        protocol.sendLine(b"Unable to reload authored content.")
 
 
 def dig(protocol, direction, room_name):
@@ -265,6 +292,7 @@ COMMANDS = {
     "goto": CommandSpec("goto", lambda protocol, rooms, raw, args: goto(protocol, *args), "goto <vnum> | goto grid <x> <y> | goto player <name>", "Travel to an authored room, grid location, or online player.", permission="admin", min_args=1, max_args=3, args_validator=lambda args: (len(args) == 1 and args[0].isdigit()) or (len(args) == 3 and args[0].lower() == "grid" and args[1].lstrip("-").isdigit() and args[2].lstrip("-").isdigit()) or (len(args) == 2 and args[0].lower() == "player")),
     "zoneinfo": CommandSpec("zoneinfo", lambda protocol, rooms, raw, args: zoneinfo(protocol, args[0] if args else None), "zoneinfo [vnum]", "Inspect an authored overlay room.", permission="admin", max_args=1, args_validator=lambda args: not args or args[0].isdigit()),
     "placezone": CommandSpec("placezone", lambda protocol, rooms, raw, args: placezone(protocol, *args), "placezone <zone_file> <x> <y>", "Anchor a zone file on the world grid.", permission="admin", min_args=3, max_args=3, args_validator=lambda args: args[1].lstrip("-").isdigit() and args[2].lstrip("-").isdigit()),
+    "reloadcontent": CommandSpec("reloadcontent", lambda protocol, rooms, raw, args: reloadcontent(protocol), "reloadcontent", "Reload authored JSON content into live state.", permission="admin", max_args=0),
     "dig": CommandSpec("dig", lambda protocol, rooms, raw, args: dig(protocol, args[0], " ".join(args[1:])), "dig <direction> <room_name>", "Create an authored room exit.", permission="admin", min_args=2),
     "shutdown": CommandSpec("shutdown", lambda protocol, rooms, raw, args: shutdown(protocol), "shutdown", "Stop the server.", permission="admin", max_args=0),
     "copyover": CommandSpec("copyover", lambda protocol, rooms, raw, args: copyover(protocol), "copyover", "Report the disabled soft-restart status.", permission="admin", max_args=0),

@@ -1,12 +1,17 @@
 import sqlite3
 import unittest
+from pathlib import Path
 
 import general_commands
 import shinobi_mud
 import utils
+from content import sync_authored_content
 from items import inventory_items, room_items
 from migrations import apply_migrations
 from tests.test_accounts import TestProtocol
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
 class ItemPersistenceTests(unittest.TestCase):
@@ -19,6 +24,15 @@ class ItemPersistenceTests(unittest.TestCase):
         apply_migrations(self.connection)
         shinobi_mud.players_in_rooms.clear()
         shinobi_mud.WORLD_OVERLAYS.clear()
+        utils.preload_zones_with_anchors(
+            shinobi_mud.WORLD_OVERLAYS,
+            str(PROJECT_ROOT / "zones"),
+        )
+        sync_authored_content(
+            self.connection,
+            str(PROJECT_ROOT / "zones"),
+            shinobi_mud.WORLD_OVERLAYS,
+        )
         self.connection.execute(
             """
             INSERT INTO players (username, password, x, y)
@@ -39,7 +53,11 @@ class ItemPersistenceTests(unittest.TestCase):
         self.connection.close()
 
     def test_migration_seeds_eves_haven_items_once(self):
-        apply_migrations(self.connection)
+        imported = sync_authored_content(
+            self.connection,
+            str(PROJECT_ROOT / "zones"),
+            shinobi_mud.WORLD_OVERLAYS,
+        )
 
         definitions = self.connection.execute(
             "SELECT name FROM item_definitions ORDER BY name"
@@ -54,13 +72,18 @@ class ItemPersistenceTests(unittest.TestCase):
         )
         self.assertEqual(len(placements), 3)
         self.assertEqual((placements[1]["x"], placements[1]["y"]), (500, 500))
+        self.assertEqual(imported["item_spawns"], 0)
 
     def test_room_rendering_lists_visible_items_on_open_land(self):
         utils.render_room(self.player, {})
 
         self.assertEqual(
             self.player.messages,
-            ["You see open land around you.", "Items here: Haven Map"],
+            [
+                "You see open land around you.",
+                "Items here: Haven Map",
+                "Characters here: Haven Guide",
+            ],
         )
 
     def test_get_inventory_and_drop_transfer_one_persistent_item(self):
@@ -92,6 +115,22 @@ class ItemPersistenceTests(unittest.TestCase):
         general_commands.handle_inventory(returning_player)
 
         self.assertEqual(returning_player.messages, ["Inventory: Haven Map"])
+
+    def test_authored_item_does_not_respawn_after_pickup_and_content_reload(self):
+        general_commands.handle_get(self.player, "Haven Map")
+
+        imported = sync_authored_content(
+            self.connection,
+            str(PROJECT_ROOT / "zones"),
+            shinobi_mud.WORLD_OVERLAYS,
+        )
+
+        self.assertEqual(imported["item_spawns"], 0)
+        self.assertEqual(room_items(self.player.cursor, 500, 500), [])
+        self.assertEqual(
+            [item["name"] for item in inventory_items(self.player.cursor, "Collector")],
+            ["Haven Map"],
+        )
 
     def test_invalid_get_and_drop_leave_storage_unchanged(self):
         general_commands.handle_get(self.player, "Missing Item")

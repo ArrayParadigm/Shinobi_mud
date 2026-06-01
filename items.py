@@ -3,31 +3,6 @@
 from collections import Counter
 
 
-STARTER_ITEMS = (
-    (
-        "haven-map",
-        "Haven Map",
-        "A softly glowing map of Eve's Haven.",
-        500,
-        500,
-    ),
-    (
-        "practice-kunai",
-        "Practice Kunai",
-        "A dulled kunai balanced for training drills.",
-        500,
-        499,
-    ),
-    (
-        "crystal-token",
-        "Crystal Token",
-        "A small crystalline token pulsing with a faint inner light.",
-        501,
-        500,
-    ),
-)
-
-
 def create_item_tables(cursor):
     """Create persistent item tables and their common lookup indexes."""
     cursor.execute(
@@ -58,6 +33,7 @@ def create_item_tables(cursor):
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             item_definition_id INTEGER NOT NULL,
             player_id INTEGER NOT NULL,
+            seed_key TEXT,
             FOREIGN KEY (item_definition_id) REFERENCES item_definitions(id),
             FOREIGN KEY (player_id) REFERENCES players(id)
         )
@@ -69,27 +45,14 @@ def create_item_tables(cursor):
     )
 
 
-def seed_starter_items(cursor):
-    """Seed a few one-time Eve's Haven objects for fresh databases."""
-    for item_key, name, description, x, y in STARTER_ITEMS:
-        cursor.execute(
-            """
-            INSERT OR IGNORE INTO item_definitions (item_key, name, description)
-            VALUES (?, ?, ?)
-            """,
-            (item_key, name, description),
-        )
-        item_definition_id = cursor.execute(
-            "SELECT id FROM item_definitions WHERE item_key=?",
-            (item_key,),
-        ).fetchone()[0]
-        cursor.execute(
-            """
-            INSERT OR IGNORE INTO room_items (item_definition_id, x, y, seed_key)
-            VALUES (?, ?, ?, ?)
-            """,
-            (item_definition_id, x, y, f"eves-haven:{item_key}"),
-        )
+def ensure_item_seed_tracking(cursor):
+    """Add seed provenance when upgrading Phase 9 inventory tables."""
+    columns = {
+        column[1]
+        for column in cursor.execute("PRAGMA table_info(character_inventory)")
+    }
+    if "seed_key" not in columns:
+        cursor.execute("ALTER TABLE character_inventory ADD COLUMN seed_key TEXT")
 
 
 def room_items(cursor, x, y):
@@ -135,7 +98,8 @@ def pickup_item(cursor, username, x, y, item_name):
     """Move one matching room item into a character inventory."""
     item = cursor.execute(
         """
-        SELECT room_items.id, room_items.item_definition_id, item_definitions.name
+        SELECT room_items.id, room_items.item_definition_id, room_items.seed_key,
+               item_definitions.name
         FROM room_items
         JOIN item_definitions ON item_definitions.id = room_items.item_definition_id
         WHERE room_items.x=? AND room_items.y=?
@@ -159,10 +123,10 @@ def pickup_item(cursor, username, x, y, item_name):
         cursor.execute("DELETE FROM room_items WHERE id=?", (item["id"],))
         cursor.execute(
             """
-            INSERT INTO character_inventory (item_definition_id, player_id)
-            VALUES (?, ?)
+            INSERT INTO character_inventory (item_definition_id, player_id, seed_key)
+            VALUES (?, ?, ?)
             """,
-            (item["item_definition_id"], player["id"]),
+            (item["item_definition_id"], player["id"], item["seed_key"]),
         )
         cursor.connection.commit()
     except Exception:
@@ -177,6 +141,7 @@ def drop_item(cursor, username, x, y, item_name):
         """
         SELECT character_inventory.id,
                character_inventory.item_definition_id,
+               character_inventory.seed_key,
                item_definitions.name
         FROM character_inventory
         JOIN item_definitions
@@ -195,10 +160,10 @@ def drop_item(cursor, username, x, y, item_name):
         cursor.execute("DELETE FROM character_inventory WHERE id=?", (item["id"],))
         cursor.execute(
             """
-            INSERT INTO room_items (item_definition_id, x, y)
-            VALUES (?, ?, ?)
+            INSERT INTO room_items (item_definition_id, x, y, seed_key)
+            VALUES (?, ?, ?, ?)
             """,
-            (item["item_definition_id"], x, y),
+            (item["item_definition_id"], x, y, item["seed_key"]),
         )
         cursor.connection.commit()
     except Exception:

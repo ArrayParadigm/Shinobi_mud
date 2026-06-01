@@ -17,7 +17,7 @@ def main():
     with config_path.open("r", encoding="utf-8") as config_file:
         config = json.load(config_file)
 
-    database_path = (PROJECT_ROOT / config.get("db_file", "mud_game_10_rooms.db")).resolve()
+    database_path = (PROJECT_ROOT / config.get("db_file", "shinobi_mud.db")).resolve()
     connection = sqlite3.connect(database_path)
     cursor = connection.execute(
         "UPDATE players SET is_admin=1 WHERE username=?",
