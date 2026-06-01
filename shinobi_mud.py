@@ -8,7 +8,7 @@ import json
 import inspect
 import sys
 from auth import hash_password, validate_username, verify_password
-from locations import coordinate_key, players_at, track_player, untrack_player
+from locations import broadcast_at, coordinate_key, players_at, track_player, untrack_player
 from migrations import apply_migrations, create_players_table
 
 DEBUG_MODE = True  # True allows for debugging options; False disables them
@@ -142,13 +142,10 @@ def process_command(player, command):
     raw_args = parts[1] if len(parts) > 1 else ""  # Extract raw argument string
     split_args = raw_args.split()  # Split arguments into a list
     
-    # Debug raw_args and split_args
-    logging.debug(f"Command: {cmd}, Raw Args: '{raw_args}', Split Args: {split_args}")
-
     # Use COMMAND_REGISTRY for all commands
     handler = COMMAND_REGISTRY.get(cmd)
     if handler:
-        logging.info(f"Executing command '{cmd}' for player {player.username} with raw args '{raw_args}' and split args {split_args}")
+        logging.info("Executing command '%s' for player %s.", cmd, player.username)
         try:
             # Pass player, players_in_rooms, raw argument string, and split arguments
             handler(player, players_in_rooms, raw_args, split_args)
@@ -360,11 +357,23 @@ class NinjaMUDProtocol(basic.LineReceiver):
             self.sendLine(b"An error occurred while rendering the map.")
         
     def track_player(self):
+        broadcast_at(
+            players_in_rooms,
+            self.location_key,
+            f"{self.username} has arrived.",
+            exclude=self,
+        )
         track_player(self, players_in_rooms)
         logging.info("Player %s is now at %s.", self.username, self.location_key)
     
     def untrack_player(self):
         room_key = self.location_key
+        broadcast_at(
+            players_in_rooms,
+            room_key,
+            f"{self.username} has left.",
+            exclude=self,
+        )
         untrack_player(self, players_in_rooms)
         logging.info("Player %s left location %s.", self.username, room_key)
 

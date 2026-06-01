@@ -103,6 +103,19 @@ The world map is persistent terrain. Player positions use `(x, y)` coordinates a
 
 Authored cities, dungeons, and other zones can be attached as optional overlays keyed by coordinates. Overlay metadata may include a zone name, VNUM, and room description without replacing or mutating the terrain underneath. This keeps open-world movement consistent while leaving room for drop-in areas later.
 
+### Player Commands
+
+- `look`: display nearby terrain and players at your location.
+- `survey`: display a compact terrain view.
+- `north`, `south`, `east`, `west`: move across the world grid.
+- `loc`: display your grid coordinates and optional overlay area.
+- `score`: display your character sheet. `status` remains available as an alias.
+- `who`: list connected characters.
+- `say <message>`: speak to characters at your grid location.
+- `emote <action>`: perform an action at your grid location.
+- `think`: perform the built-in thinking emote at your grid location.
+- `ooc <message>`: speak on the global out-of-character channel.
+
 ### Early Linux Testing
 
 The current MUD socket uses plain-text TCP. Passwords are hashed safely in the database, but they are still sent over the network as plain text during login.

@@ -100,13 +100,13 @@ Players can move, inspect their surroundings, disconnect, and return to the same
 ## Phase 4: Multiplayer Basics
 
 - [x] 4.1 Update local social commands to use coordinate-based player tracking.
-- [ ] 4.2 Fix `say`, `emote`, and `think`.
-- [ ] 4.3 Verify `ooc` as a deliberate global channel.
-- [ ] 4.4 Add arrival and departure messages.
-- [ ] 4.5 Add a `who` command.
-- [ ] 4.6 Handle clean disconnects and tracking cleanup.
-- [ ] 4.7 Add sensible command and error logging without leaking secrets.
-- [ ] 4.8 Add automated tests for local chat range, global chat, disconnect cleanup, and simultaneous players.
+- [x] 4.2 Fix `say`, `emote`, and `think`.
+- [x] 4.3 Verify `ooc` as a deliberate global channel.
+- [x] 4.4 Add arrival and departure messages.
+- [x] 4.5 Add a `who` command.
+- [x] 4.6 Handle clean disconnects and tracking cleanup.
+- [x] 4.7 Add sensible command and error logging without leaking secrets.
+- [x] 4.8 Add automated tests for local chat range, global chat, disconnect cleanup, and simultaneous players.
 
 ### Done When
 

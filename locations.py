@@ -49,10 +49,22 @@ def move_player(player, direction, world_map, players_by_location):
 
     old_key = coordinate_key(player.x, player.y)
     new_key = coordinate_key(new_x, new_y)
+    broadcast_at(
+        players_by_location,
+        old_key,
+        f"{player.username} leaves {direction}.",
+        exclude=player,
+    )
     _remove_from_bucket(player, players_by_location, old_key)
 
     player.x, player.y = new_key
     players_by_location.setdefault(new_key, []).append(player)
+    broadcast_at(
+        players_by_location,
+        new_key,
+        f"{player.username} arrives.",
+        exclude=player,
+    )
     player.cursor.execute(
         "UPDATE players SET x=?, y=? WHERE username=?",
         (player.x, player.y, player.username),
@@ -81,6 +93,23 @@ def players_at(players_by_location, x, y, exclude=None):
         for player in players_by_location.get(coordinate_key(x, y), [])
         if player is not exclude
     ]
+
+
+def online_players(players_by_location):
+    """Return each tracked player once, ordered by username."""
+    unique_players = {
+        id(player): player
+        for bucket in players_by_location.values()
+        for player in bucket
+    }
+    return sorted(unique_players.values(), key=lambda player: player.username.lower())
+
+
+def broadcast_at(players_by_location, location, message, exclude=None):
+    """Send a message to tracked players at a coordinate."""
+    for recipient in players_by_location.get(location, []):
+        if recipient is not exclude:
+            recipient.sendLine(message.encode("utf-8"))
 
 
 def _remove_from_bucket(player, players_by_location, key):

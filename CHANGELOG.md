@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-06-01 - Multiplayer Basics
+
+### Added
+
+- Added `who` to list connected characters.
+- Added `score` for a clearer character sheet while keeping `status` as an alias.
+- Added `loc` to report grid coordinates and optional overlay metadata.
+- Added arrival, departure, and movement notices for characters sharing a location.
+- Added multiplayer tests for local chat, global OOC, simultaneous players, movement notices, disconnect cleanup, `who`, `score`, and `loc`.
+
+### Changed
+
+- Fixed `say`, `emote`, and `think` as coordinate-local commands.
+- Confirmed `ooc` as a global channel delivered once to each connected character.
+- Removed command arguments and conversation text from routine server logs.
+- Centralized online-player lookup and location broadcasting.
+
+### Verification
+
+- Passed `python -m unittest discover -s tests -v` with 26 tests.
+- Passed Python syntax compilation across the repository.
+
 ## 2026-06-01 - Coordinate-First World Locations
 
 ### Added

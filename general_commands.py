@@ -1,6 +1,6 @@
 import json
 import logging
-from locations import get_location, move_player
+from locations import get_location, move_player, online_players
 from shinobi_mud import UTILITIES, WORLD_OVERLAYS, players_in_rooms
 
 logging.info("general_commands imported")
@@ -54,7 +54,8 @@ def handle_movement(player, direction):
     else:
         player.sendLine(b"You can't go that way.")
 
-def handle_status(player, players_in_rooms=None):
+def handle_score(player, players_in_rooms=None):
+    """Display the player's current character sheet."""
     try:
         player.cursor.execute(
             "SELECT health, stamina, chakra, strength, dexterity, agility, intelligence, wisdom, dojo_alignment "
@@ -63,15 +64,44 @@ def handle_status(player, players_in_rooms=None):
         )
         stats = player.cursor.fetchone()
         if stats:
-            player.sendLine(f"Stats for {player.username}:".encode('utf-8'))
-            player.sendLine(f"Health: {stats[0]}, Stamina: {stats[1]}, Chakra: {stats[2]}".encode('utf-8'))
-            player.sendLine(f"Strength: {stats[3]}, Dexterity: {stats[4]}, Agility: {stats[5]}".encode('utf-8'))
-            player.sendLine(f"Intelligence: {stats[6]}, Wisdom: {stats[7]}, Dojo Alignment: {stats[8]}".encode('utf-8'))
+            player.sendLine(f"Score for {player.username}".encode("utf-8"))
+            player.sendLine(b"--------------------")
+            player.sendLine(f"Health: {stats[0]}  Stamina: {stats[1]}  Chakra: {stats[2]}".encode("utf-8"))
+            player.sendLine(f"Strength: {stats[3]}  Dexterity: {stats[4]}  Agility: {stats[5]}".encode("utf-8"))
+            player.sendLine(f"Intelligence: {stats[6]}  Wisdom: {stats[7]}".encode("utf-8"))
+            player.sendLine(f"Dojo Alignment: {stats[8]}".encode("utf-8"))
         else:
             player.sendLine(b"No stats found for your character.")
     except Exception as e:
         logging.error(f"Error retrieving stats for {player.username}: {e}", exc_info=True)
         player.sendLine(f"Error retrieving stats: {e}".encode('utf-8'))
+
+
+def handle_loc(player):
+    """Display the player's canonical grid location and optional overlay."""
+    world_map = UTILITIES.get("WORLD_MAP")
+    if not world_map:
+        player.sendLine(b"Error: World map is unavailable.")
+        return
+
+    location = get_location(world_map, player.x, player.y, WORLD_OVERLAYS)
+    player.sendLine(f"Location: ({player.x}, {player.y})".encode("utf-8"))
+    if location["overlay"]:
+        overlay = location["overlay"]
+        player.sendLine(
+            f"Area: {overlay['zone_name']}  VNUM: {overlay['vnum']}".encode("utf-8")
+        )
+    else:
+        player.sendLine(f"Terrain: {location['terrain']}".encode("utf-8"))
+
+
+def handle_who(player, tracked_players=None):
+    """Display currently connected characters."""
+    online = online_players(players_in_rooms if tracked_players is None else tracked_players)
+    player.sendLine(f"Players online: {len(online)}".encode("utf-8"))
+    for online_player in online:
+        player.sendLine(f"  {online_player.username}".encode("utf-8"))
+
 
 def handle_survey(player):
     world_map = UTILITIES.get("WORLD_MAP")
@@ -91,7 +121,10 @@ def handle_survey(player):
 
 COMMANDS = {
     "look": lambda player, players_in_rooms, raw_args, split_args: handle_look(player, players_in_rooms),
-    "status": lambda player, players_in_rooms, raw_args, split_args: handle_status(player, players_in_rooms),
+    "score": lambda player, players_in_rooms, raw_args, split_args: handle_score(player, players_in_rooms),
+    "status": lambda player, players_in_rooms, raw_args, split_args: handle_score(player, players_in_rooms),
+    "loc": lambda player, players_in_rooms, raw_args, split_args: handle_loc(player),
+    "who": lambda player, players_in_rooms, raw_args, split_args: handle_who(player, players_in_rooms),
     "survey": lambda player, players_in_rooms, raw_args, split_args: handle_survey(player),
     "north": lambda player, players_in_rooms, raw_args, split_args: handle_movement(player, "north"),
     "south": lambda player, players_in_rooms, raw_args, split_args: handle_movement(player, "south"),
