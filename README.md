@@ -116,6 +116,9 @@ Eve's Haven is the first complete overlay example. Its anchor and room offsets l
 - `north`, `south`, `east`, `west`: move across the world grid.
 - `loc`: display your grid coordinates and optional overlay area.
 - `score`: display your character sheet. `status` remains available as an alias.
+- `inventory`: list persistent carried items. `inv` remains available as an alias.
+- `get <item>`: pick up an item at your grid location.
+- `drop <item>`: drop a carried item at your grid location.
 - `who`: list connected characters.
 - `say <message>`: speak to characters at your grid location.
 - `emote <action>`: perform an action at your grid location.
@@ -135,6 +138,8 @@ Admin overlay tools:
 - `copyover`: report that soft restarts are intentionally disabled for now.
 
 The player prompt reports health, stamina, chakra, and location after commands. Map output includes a legend. Nearby-character listings are controlled by `show_nearby_players` and `nearby_player_radius` in `config.json`.
+
+Room items and character inventories persist in SQLite. Fresh databases seed a Haven Map at Eve's Haven entrance, a Practice Kunai in its garden, and a Crystal Token in its library.
 
 ### Early Linux Testing
 

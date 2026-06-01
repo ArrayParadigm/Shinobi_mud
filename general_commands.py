@@ -1,6 +1,7 @@
 import json
 import logging
 from command_system import CommandSpec
+from items import drop_item, format_item_names, inventory_items, pickup_item
 from locations import LocationPersistenceError, get_location, move_player, online_players
 from shinobi_mud import (
     COMMAND_REGISTRY,
@@ -136,6 +137,57 @@ def handle_survey(player):
     )
 
 
+def handle_inventory(player):
+    """List persistent items carried by the player."""
+    try:
+        items = inventory_items(player.cursor, player.username)
+        if items:
+            player.sendLine(f"Inventory: {format_item_names(items)}".encode("utf-8"))
+        else:
+            player.sendLine(b"Inventory: Empty.")
+    except Exception as exc:
+        logging.error("Unable to list inventory for %s: %s", player.username, exc, exc_info=True)
+        player.sendLine(b"Unable to list your inventory right now.")
+
+
+def handle_get(player, item_name):
+    """Pick up one named item from the current grid coordinate."""
+    try:
+        picked_up = pickup_item(
+            player.cursor,
+            player.username,
+            player.x,
+            player.y,
+            item_name.strip(),
+        )
+        if picked_up:
+            player.sendLine(f"You pick up {picked_up}.".encode("utf-8"))
+        else:
+            player.sendLine(b"You do not see that item here.")
+    except Exception as exc:
+        logging.error("Unable to pick up item for %s: %s", player.username, exc, exc_info=True)
+        player.sendLine(b"Unable to pick up that item right now.")
+
+
+def handle_drop(player, item_name):
+    """Drop one named inventory item at the current grid coordinate."""
+    try:
+        dropped = drop_item(
+            player.cursor,
+            player.username,
+            player.x,
+            player.y,
+            item_name.strip(),
+        )
+        if dropped:
+            player.sendLine(f"You drop {dropped}.".encode("utf-8"))
+        else:
+            player.sendLine(b"You are not carrying that item.")
+    except Exception as exc:
+        logging.error("Unable to drop item for %s: %s", player.username, exc, exc_info=True)
+        player.sendLine(b"Unable to drop that item right now.")
+
+
 def handle_help(player, raw_args):
     """Display available commands or detailed help for one command."""
     topic = raw_args.strip().lower()
@@ -177,6 +229,9 @@ COMMANDS = {
     "loc": CommandSpec("loc", lambda player, rooms, raw, args: handle_loc(player), "loc", "Display your grid coordinates and area.", max_args=0),
     "who": CommandSpec("who", lambda player, rooms, raw, args: handle_who(player, rooms), "who", "List connected characters.", max_args=0),
     "survey": CommandSpec("survey", lambda player, rooms, raw, args: handle_survey(player), "survey", "Display a compact terrain view.", max_args=0),
+    "inventory": CommandSpec("inventory", lambda player, rooms, raw, args: handle_inventory(player), "inventory", "List the items you carry.", aliases=("inv",), max_args=0),
+    "get": CommandSpec("get", lambda player, rooms, raw, args: handle_get(player, raw), "get <item>", "Pick up an item at your location.", min_args=1),
+    "drop": CommandSpec("drop", lambda player, rooms, raw, args: handle_drop(player, raw), "drop <item>", "Drop a carried item at your location.", min_args=1),
     "north": CommandSpec("north", lambda player, rooms, raw, args: handle_movement(player, "north"), "north", "Move north.", max_args=0),
     "south": CommandSpec("south", lambda player, rooms, raw, args: handle_movement(player, "south"), "south", "Move south.", max_args=0),
     "east": CommandSpec("east", lambda player, rooms, raw, args: handle_movement(player, "east"), "east", "Move east.", max_args=0),

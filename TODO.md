@@ -55,11 +55,11 @@ Players can orient themselves quickly, and admins can move around the coordinate
 
 Introduce the first persistent gameplay state beyond character fields and locations.
 
-- [ ] Define item, room-object, and character-inventory storage.
-- [ ] Show visible objects and items in `look`.
-- [ ] Add `inventory`, `get`, and `drop`.
-- [ ] Add a few sample items in Eve's Haven.
-- [ ] Add migrations and automated tests for persistence, reconnects, and invalid item operations.
+- [x] Define item, room-object, and character-inventory storage.
+- [x] Show visible objects and items in `look`.
+- [x] Add `inventory`, `get`, and `drop`.
+- [x] Add a few sample items in Eve's Haven.
+- [x] Add migrations and automated tests for persistence, reconnects, and invalid item operations.
 
 ### Done When
 
@@ -72,6 +72,7 @@ Players can see, pick up, carry, drop, disconnect with, and recover a small set 
 Add NPC presence before combat rules.
 
 - [ ] Define NPC templates and spawned NPC instances.
+  - How are we handling NPCs, shouldn't be hard coded, JSON or area file, in the database?, for example? Ideas? admins need to be able to make and change this sort of thing.
 - [ ] Display NPCs in `look`.
 - [ ] Add a minimal world tick or scheduler for NPC updates.
 - [ ] Add one simple Eve's Haven NPC with a basic interaction.

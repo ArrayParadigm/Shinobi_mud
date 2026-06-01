@@ -719,7 +719,14 @@ def validate_server_state(config):
     except (TypeError, ValueError):
         errors.append("Configured nearby_player_radius must be a non-negative integer.")
 
-    required_tables = {"players", "rooms", "schema_migrations"}
+    required_tables = {
+        "players",
+        "rooms",
+        "schema_migrations",
+        "item_definitions",
+        "room_items",
+        "character_inventory",
+    }
     tables = {
         row[0]
         for row in cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")

@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-06-01 - Persistent Items and Inventories
+
+### Added
+
+- Added versioned SQLite storage for item definitions, coordinate-based room items, and character inventories.
+- Seeded a Haven Map, Practice Kunai, and Crystal Token into Eve's Haven on fresh database migration.
+- Added `inventory`, `get <item>`, and `drop <item>` player commands.
+- Displayed visible persistent items in room descriptions on authored overlays and open wilderness.
+
+### Verification
+
+- Added item-slice coverage for idempotent migration seeding, room visibility, pickup/drop transfers, reconnect persistence, and invalid operations.
+- Passed `python -m unittest discover -s tests -v` with 63 tests.
+- Passed Python syntax compilation across the repository.
+
 ## 2026-06-01 - Private Alpha Hardening and Player Feedback
 
 ### Added

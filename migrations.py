@@ -1,5 +1,7 @@
 import logging
 
+from items import create_item_tables, seed_starter_items
+
 
 PLAYER_COLUMNS = (
     "id",
@@ -64,8 +66,15 @@ def migration_001_non_admin_default(cursor):
     cursor.execute("DROP TABLE players_legacy")
 
 
+def migration_002_persistent_items(cursor):
+    """Add persistent room objects and character inventories."""
+    create_item_tables(cursor)
+    seed_starter_items(cursor)
+
+
 MIGRATIONS = (
     (1, migration_001_non_admin_default),
+    (2, migration_002_persistent_items),
 )
 
 

@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+import items
 
 logging.info("utils imported")
 
@@ -178,11 +179,16 @@ def render_room(player, overlays=None):
     overlay = (overlays or {}).get((player.x, player.y))
     if not overlay:
         player.sendLine(b"You see open land around you.")
-        return
+    else:
+        room = overlay["room"]
+        exits = ", ".join(room.get("exits", {}).keys()) or "None"
+        description = room.get("description", "No description.")
+        player.sendLine(
+            f"{overlay['zone_name']} [{overlay['vnum']}]\n{description}\nExits: {exits}".encode("utf-8")
+        )
 
-    room = overlay["room"]
-    exits = ", ".join(room.get("exits", {}).keys()) or "None"
-    description = room.get("description", "No description.")
-    player.sendLine(
-        f"{overlay['zone_name']} [{overlay['vnum']}]\n{description}\nExits: {exits}".encode("utf-8")
-    )
+    visible_items = items.room_items(player.cursor, player.x, player.y)
+    if visible_items:
+        player.sendLine(
+            f"Items here: {items.format_item_names(visible_items)}".encode("utf-8")
+        )
