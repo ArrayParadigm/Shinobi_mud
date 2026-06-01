@@ -152,4 +152,4 @@ Eve's Haven is a small complete example proving that authored VNUM-backed conten
 
 ## Later
 
-Combat comes after the first content slice proves the foundation. Inventory, NPCs, richer prompts, world ticks, and expanded builder tools should be prioritized after the same core loop remains reliable with zone overlays enabled.
+The foundation checkpoint is complete. Continue planning from `TODO.md`, which orders private-alpha hardening, player feedback, inventory, NPCs, and combat.

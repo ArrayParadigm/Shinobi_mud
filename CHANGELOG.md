@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-06-01 - Post-Foundation Roadmap Checkpoint
+
+### Added
+
+- Added timestamped per-launch runtime logs under `logs/`.
+- Reconciled `TODO.md` against the completed foundation and ordered the post-foundation roadmap.
+
+### Changed
+
+- Ignored local launch logs and generated copyover state in Git.
+- Updated the README to describe the implemented private-alpha feature set accurately.
+
+### Verification
+
+- Added startup coverage for nested runtime-log directory creation.
+- Passed `python -m unittest discover -s tests -v` with 51 tests.
+- Passed Python syntax compilation across the repository.
+
 ## 2026-06-01 - First Overlay Content Slice
 
 ### Added

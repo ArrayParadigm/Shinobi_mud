@@ -7,6 +7,7 @@ import importlib
 import json
 import inspect
 import sys
+from datetime import datetime
 from auth import hash_password, validate_username, verify_password
 from command_system import CommandSpec
 from locations import broadcast_at, coordinate_key, is_within_bounds, players_at, track_player, untrack_player
@@ -18,12 +19,20 @@ DEFAULT_DB_FILE = "mud_game_10_rooms.db"
 DEFAULT_MOTD = "Welcome to Ninja MUD!"
 DEFAULT_PORT = 4000
 DATABASE_BUSY_TIMEOUT_SECONDS = 1
+DEFAULT_LOG_FILE = os.path.join(
+    "logs",
+    f"mud_{datetime.now():%Y%m%d_%H%M%S}_{os.getpid()}.log",
+)
 
 # Command modules import shinobi_mud. Reuse this module when launched as a script.
 sys.modules.setdefault("shinobi_mud", sys.modules[__name__])
 
-def configure_logging(log_file="mud_debug.log"):
+def configure_logging(log_file=DEFAULT_LOG_FILE):
     """Replace root logging handlers so repeated initialization stays clean."""
+    log_directory = os.path.dirname(log_file)
+    if log_directory:
+        os.makedirs(log_directory, exist_ok=True)
+
     root_logger = logging.getLogger()
     for handler in root_logger.handlers[:]:
         root_logger.removeHandler(handler)
@@ -544,7 +553,7 @@ def initialize_server(config_file=DEFAULT_CONFIG_FILE):
     config = load_config(config_file)
 
     # 2. Setup Logging
-    configure_logging(config.get("log_file", "mud_debug.log"))
+    configure_logging(config.get("log_file", DEFAULT_LOG_FILE))
     logging.info("Logging initialized.")
 
     # 3. Initialize Database

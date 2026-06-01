@@ -1,6 +1,6 @@
 # Shinobi_mud
 
-**Shinobi_mud** is a text-based Multi-User Dungeon (MUD) game inspired by the Naruto universe. Players can interact, explore, and battle in a dynamic online world, engaging in social and combat scenarios.
+**Shinobi_mud** is a text-based Multi-User Dungeon (MUD) game inspired by the Naruto universe. The current private-alpha foundation supports accounts, multiplayer exploration, chat, and authored zones over a persistent wilderness grid.
 
 ## Features
 
@@ -96,6 +96,8 @@ python shinobi_mud.py
 ```
 
 The server reads its TCP port from `config.json`.
+
+Each launch writes a timestamped runtime log under `logs/`. These local logs are ignored by Git and include command activity, warnings, and exception tracebacks for debugging.
 
 ### World Locations
 

@@ -1,4 +1,5 @@
 import json
+import logging
 import sqlite3
 import tempfile
 import unittest
@@ -78,6 +79,18 @@ class StartupSmokeTests(unittest.TestCase):
                     "zone_directory": str(PROJECT_ROOT / "zones"),
                 }
             )
+
+    def test_configure_logging_creates_nested_log_directory(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            log_path = Path(temporary_directory) / "logs" / "smoke.log"
+
+            shinobi_mud.configure_logging(str(log_path))
+            logging.info("logging smoke test")
+
+            self.assertTrue(log_path.exists())
+            shinobi_mud.configure_logging()
+
+        self.assertEqual(Path(shinobi_mud.DEFAULT_LOG_FILE).parts[0], "logs")
 
 
 if __name__ == "__main__":

@@ -3,6 +3,8 @@
 *.db-journal
 *.log
 /.local/
+/logs/
+/copyover_state.json
 
 # Python generated files
 __pycache__/

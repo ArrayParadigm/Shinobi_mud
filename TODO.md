@@ -1,92 +1,130 @@
-# MUD Development TODO List
+# Shinobi MUD Active Roadmap
 
-## High-Level Goals
-- [ ] Stabilize core functionality (login, movement, map rendering).
-- [ ] Implement advanced features (NPCs, combat, inventory).
-- [ ] Enhance player interaction (prompts, chat, social features).
+## Current State
 
----
+The foundation checkpoint in `FOUNDATION_CHECKLIST.md` is complete.
 
-## Functionality
-
-### Map/Movement
-- [ ] Ensure proper movement functionality:
-  - [ ] Handle boundary checks.
-  - [ ] Validate player coordinates after movement.
-- [ ] Fix/Enable "goto":
-  - [ ] Add "goto grid" to allow players to jump to specific coordinates.
-  - [ ] Add "goto player" to teleport to another player’s location.
-- [ ] Ensure visibility of other players on the map.
-
-### Player Prompt
-- [ ] Add dynamic updates to the player prompt:
-  - [ ] Display current health, stamina, and chakra.
-  - [ ] Include player’s grid coordinates or room name.
-
-### Location Tracking
-- [ ] Add room name to the player prompt.
-- [ ] Include room details in the "status" command.
+- [x] Stabilize account registration, login, disconnects, and reconnects.
+- [x] Stabilize coordinate-first movement and world-map rendering.
+- [x] Add local multiplayer chat, global OOC chat, `who`, `score`, and `loc`.
+- [x] Add metadata-driven commands, automatic unique-prefix matching, and `help`.
+- [x] Drop Eve's Haven onto the wilderness grid as the first VNUM-backed overlay zone.
+- [x] Add versioned database migrations and automated tests for the core loop.
 
 ---
 
-## Features
+## Phase 7: Private Alpha Hardening
 
-### Player Commands
-- [ ] Implement a "look" command:
-  - [ ] Show surroundings based on grid position.
-  - [ ] Include visible players, objects, and items.
-- [ ] Add inventory commands:
-  - [ ] "inventory" to list items.
-  - [ ] "get" and "drop" for item management.
-- [ ] Add "whisper" and "shout" for player communication.
+Improve operational confidence before adding systems with larger state surfaces.
 
-### Combat System
-- [ ] Basic melee combat:
-  - [ ] Damage calculation based on player stats.
-  - [ ] Health reduction and defeat logic.
-- [ ] Add a turn-based combat system.
-- [ ] Include basic NPC enemies with simple AI.
+- [x] Write timestamped runtime logs under `logs/` for each server launch.
+- [ ] Add a top-level crash handler or dedicated crash log for unexpected reactor failures.
+- [ ] Add Linux deployment notes and a `systemd` service example.
+- [ ] Decide whether to repair `copyover` or disable it until reconnect-based restarts are sufficient.
+- [ ] Add a repeatable two-client soak test for login, movement, chat, disconnects, and reconnects.
+- [ ] Add encrypted transport before any open-internet password testing.
+
+### Done When
+
+Private Linux alpha sessions are easy to launch, inspect, restart, and debug without exposing plain-text passwords publicly.
 
 ---
 
-## Quality of Life Improvements
+## Phase 8: Player Feedback and Navigation
 
-### User Interface
-- [ ] Beautify the map rendering:
-  - [ ] Add borders or separators for better readability.
-  - [ ] Highlight player’s position clearly.
-- [ ] Create a help command:
-  - [ ] List all available commands and their syntax.
+Make the existing world easier to read before adding inventory or combat.
 
-### Database Integration
-- [ ] Automate schema updates (e.g., adding new fields).
-- [ ] Optimize player data queries for performance.
+- [ ] Add a player prompt with health, stamina, chakra, and current coordinates or authored room name.
+- [ ] Include current coordinates and authored room details in `score`.
+- [ ] Beautify map output with a compact border or legend while keeping the player marker clear.
+- [ ] Add optional nearby-player listings within a configurable radius, defaulting to 20 grid cells.
+- [ ] Add an admin or config toggle for nearby-player listings.
+- [ ] Add `goto grid <x> <y>` for admins.
+- [ ] Add `goto player <name>` for admins.
 
----
+### Done When
 
-## Testing and Debugging
-- [ ] Develop unit tests for core functionality:
-  - [ ] Movement and boundary checks.
-  - [ ] Command parsing and execution.
-- [ ] Set up logging for easier debugging:
-  - [ ] Log player actions (movement, commands, combat).
-  - [ ] Highlight errors and warnings.
+Players can orient themselves quickly, and admins can move around the coordinate world deliberately during live tests.
 
 ---
 
-## Long-Term Goals
-- [ ] Design NPC interaction system:
-  - [ ] Dialogue trees for player-NPC interactions.
-  - [ ] Quest system with objectives and rewards.
-- [ ] Expand the map with dynamic zones:
-  - [ ] Implement a transition system for large-scale maps.
-  - [ ] Add unique areas with special features.
-- [ ] Create a robust admin panel for live game management.
+## Phase 9: Inventory and Room Objects
+
+Introduce the first persistent gameplay state beyond character fields and locations.
+
+- [ ] Define item, room-object, and character-inventory storage.
+- [ ] Show visible objects and items in `look`.
+- [ ] Add `inventory`, `get`, and `drop`.
+- [ ] Add a few sample items in Eve's Haven.
+- [ ] Add migrations and automated tests for persistence, reconnects, and invalid item operations.
+
+### Done When
+
+Players can see, pick up, carry, drop, disconnect with, and recover a small set of persistent items safely.
+
+---
+
+## Phase 10: NPC Foundation
+
+Add NPC presence before combat rules.
+
+- [ ] Define NPC templates and spawned NPC instances.
+- [ ] Display NPCs in `look`.
+- [ ] Add a minimal world tick or scheduler for NPC updates.
+- [ ] Add one simple Eve's Haven NPC with a basic interaction.
+- [ ] Add tests for spawning, visibility, and restart behavior.
+
+### Done When
+
+One authored NPC can exist, appear in a room, survive expected restart behavior, and respond to a basic interaction.
+
+---
+
+## Phase 11: Combat Slice
+
+Build combat only after inventory and NPC state are reliable.
+
+- [ ] Add basic melee attacks against NPCs.
+- [ ] Calculate damage from player stats.
+- [ ] Apply health reduction, defeat, and recovery logic.
+- [ ] Decide whether the first combat loop is cooldown-based or turn-based.
+- [ ] Add one simple NPC enemy with minimal AI.
+- [ ] Add tests for damage, defeat, invalid targets, and disconnect behavior.
+
+---
+
+## Communication and Social Backlog
+
+- [ ] Add `whisper`.
+- [ ] Add `shout`.
+- [ ] Add a larger social-command library.
+- [ ] Design richer roleplay socials, including optional mature consequence systems.
+
+---
+
+## Builder and Admin Backlog
+
+- [x] Add `goto <vnum>` for authored overlay rooms.
+- [x] Add `zoneinfo [vnum]`.
+- [x] Add `placezone <zone_file> <x> <y>`.
+- [ ] Replace placeholder `dig` with coordinate-aware overlay editing.
+- [ ] Add room-description editing for authored zones.
+- [ ] Create a robust live-management admin surface after command-line builder tools mature.
+
+---
+
+## Later Ideas
+
+- [ ] Dialogue trees, quests, objectives, and rewards.
+- [ ] NPC followers, factions, families, and friends.
+- [ ] Pets with growth and progression.
+- [ ] Additional dynamic zones and unique areas.
+- [ ] Optimize database queries when profiling identifies a real bottleneck.
 
 ---
 
 ## Notes
-- Use this document to track progress and prioritize tasks.
-- Mark completed tasks with `[x]`.
-- Add new ideas or features under their respective categories.
 
+- Keep `(x, y)` coordinates canonical. VNUM rooms remain optional authored overlays.
+- Add migrations and automated tests alongside each persistent system.
+- Prefer one complete vertical slice over several partially connected systems.
