@@ -118,13 +118,13 @@ Two players can walk around, see one another, speak locally, use the global chan
 
 Build a consistent command layer after the core gameplay loop is reliable.
 
-- [ ] 5.1 Separate command metadata from handlers: name, usage, permission level, and aliases.
-- [ ] 5.2 Route the Phase 1 admin gate through command permission metadata.
-- [ ] 5.3 Normalize argument handling.
-- [ ] 5.4 Return useful usage messages instead of generic errors.
+- [x] 5.1 Separate command metadata from handlers: name, usage, permission level, and aliases.
+- [x] 5.2 Route the Phase 1 admin gate through command permission metadata.
+- [x] 5.3 Normalize argument handling.
+- [x] 5.4 Return useful usage messages instead of generic errors.
 - [x] 5.5 Add automatic unique-prefix command matching, with reserved `n`, `s`, `e`, `w`, and `l` shortcuts.
-- [ ] 5.6 Add a `help` command driven by command metadata.
-- [ ] 5.7 Add automated tests for prefix matching, usage errors, help output, and permissions. Prefix-matching coverage is complete.
+- [x] 5.6 Add a `help` command driven by command metadata.
+- [x] 5.7 Add automated tests for prefix matching, usage errors, help output, and permissions.
 
 ### Done When
 

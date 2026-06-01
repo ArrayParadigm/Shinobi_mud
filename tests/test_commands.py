@@ -1,5 +1,6 @@
 import unittest
 
+from command_system import CommandSpec
 import shinobi_mud
 from tests.test_accounts import TestProtocol
 
@@ -7,8 +8,10 @@ from tests.test_accounts import TestProtocol
 class CommandResolutionTests(unittest.TestCase):
     def setUp(self):
         self.original_registry = shinobi_mud.COMMAND_REGISTRY.copy()
+        self.original_aliases = shinobi_mud.COMMAND_ALIASES.copy()
         self.calls = []
         shinobi_mud.COMMAND_REGISTRY.clear()
+        shinobi_mud.COMMAND_ALIASES.clear()
         for name in (
             "look",
             "north",
@@ -30,6 +33,8 @@ class CommandResolutionTests(unittest.TestCase):
     def tearDown(self):
         shinobi_mud.COMMAND_REGISTRY.clear()
         shinobi_mud.COMMAND_REGISTRY.update(self.original_registry)
+        shinobi_mud.COMMAND_ALIASES.clear()
+        shinobi_mud.COMMAND_ALIASES.update(self.original_aliases)
 
     def handler_for(self, name):
         def handler(player, players_in_rooms, raw_args, split_args):
@@ -50,6 +55,11 @@ class CommandResolutionTests(unittest.TestCase):
             self.calls,
             [("east", "", []), ("say", "hello there", ["hello", "there"])],
         )
+
+    def test_command_parsing_accepts_general_whitespace(self):
+        shinobi_mud.process_command(self.player, "\tsa\t  hello there  ")
+
+        self.assertEqual(self.calls, [("say", "hello there", ["hello", "there"])])
 
     def test_reserved_shortcuts_win_even_when_prefix_is_ambiguous(self):
         for command in ("n", "s", "e", "w", "l"):
@@ -74,6 +84,80 @@ class CommandResolutionTests(unittest.TestCase):
 
         self.assertEqual(self.calls, [])
         self.assertEqual(self.player.messages, ["Unknown command: nope"])
+
+
+class CommandMetadataTests(unittest.TestCase):
+    def setUp(self):
+        self.original_registry = shinobi_mud.COMMAND_REGISTRY.copy()
+        self.original_aliases = shinobi_mud.COMMAND_ALIASES.copy()
+        shinobi_mud.COMMAND_REGISTRY.clear()
+        shinobi_mud.load_commands()
+        self.player = TestProtocol(None)
+        self.player.username = "MetadataUser"
+
+    def tearDown(self):
+        shinobi_mud.COMMAND_REGISTRY.clear()
+        shinobi_mud.COMMAND_REGISTRY.update(self.original_registry)
+        shinobi_mud.COMMAND_ALIASES.clear()
+        shinobi_mud.COMMAND_ALIASES.update(self.original_aliases)
+
+    def test_registered_commands_expose_metadata(self):
+        for name, command in shinobi_mud.COMMAND_REGISTRY.items():
+            with self.subTest(command=name):
+                self.assertIsInstance(command, CommandSpec)
+                self.assertTrue(command.usage)
+                self.assertTrue(command.description)
+                self.assertIn(command.permission, {"player", "admin"})
+
+    def test_semantic_alias_resolves_to_canonical_command(self):
+        self.assertEqual(shinobi_mud.resolve_command_name("status"), ("score", []))
+        self.assertEqual(shinobi_mud.resolve_command_name("stat"), ("score", []))
+
+    def test_usage_validation_happens_before_handler(self):
+        shinobi_mud.process_command(self.player, "say")
+        shinobi_mud.process_command(self.player, "goto definitely-not-a-room")
+
+        self.assertEqual(
+            self.player.messages,
+            [
+                "Usage: say <message>",
+                "You do not have permission to use that command.",
+            ],
+        )
+
+    def test_admin_argument_validation_returns_usage(self):
+        self.player.is_admin = True
+
+        shinobi_mud.process_command(self.player, "goto definitely-not-a-room")
+
+        self.assertEqual(self.player.messages, ["Usage: goto <room_id>"])
+
+    def test_help_lists_player_commands_without_admin_commands(self):
+        shinobi_mud.process_command(self.player, "help")
+
+        command_list = self.player.messages[1]
+        self.assertIn("look", command_list)
+        self.assertIn("say", command_list)
+        self.assertNotIn("shutdown", command_list)
+
+    def test_help_detail_uses_metadata_and_aliases(self):
+        shinobi_mud.process_command(self.player, "help stat")
+
+        self.assertEqual(
+            self.player.messages,
+            [
+                "score: Display your character sheet.",
+                "Usage: score",
+                "Aliases: status",
+            ],
+        )
+
+    def test_admin_help_includes_admin_commands(self):
+        self.player.is_admin = True
+
+        shinobi_mud.process_command(self.player, "help")
+
+        self.assertIn("shutdown", self.player.messages[1])
 
 
 if __name__ == "__main__":

@@ -5,6 +5,7 @@ import unittest
 
 import admin_commands
 import shinobi_mud
+from command_system import CommandSpec
 from migrations import apply_migrations
 
 
@@ -150,13 +151,17 @@ class AdminPermissionTests(unittest.TestCase):
                 command(player, {}, "", [])
                 self.assertIn("do not have permission", player.messages[-1])
 
-    def test_admin_wrapper_runs_authorized_handler(self):
+    def test_admin_metadata_runs_authorized_handler(self):
         player = TestProtocol(None)
         player.username = "AdminUser"
         player.is_admin = True
         calls = []
-        command = admin_commands.admin_only(
-            lambda protocol, rooms, raw_args, split_args: calls.append(protocol.username)
+        command = CommandSpec(
+            "admin-test",
+            lambda protocol, rooms, raw_args, split_args: calls.append(protocol.username),
+            "admin-test",
+            "Test command.",
+            permission="admin",
         )
 
         command(player, {}, "", [])

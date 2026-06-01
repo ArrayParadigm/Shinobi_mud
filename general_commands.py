@@ -1,7 +1,14 @@
 import json
 import logging
+from command_system import CommandSpec
 from locations import LocationPersistenceError, get_location, move_player, online_players
-from shinobi_mud import UTILITIES, WORLD_OVERLAYS, players_in_rooms
+from shinobi_mud import (
+    COMMAND_REGISTRY,
+    UTILITIES,
+    WORLD_OVERLAYS,
+    players_in_rooms,
+    resolve_command_name,
+)
 
 logging.info("general_commands imported")
 
@@ -124,19 +131,52 @@ def handle_survey(player):
         ).encode("utf-8")
     )
 
+
+def handle_help(player, raw_args):
+    """Display available commands or detailed help for one command."""
+    topic = raw_args.strip().lower()
+    if not topic:
+        visible_commands = [
+            name
+            for name, command in COMMAND_REGISTRY.items()
+            if command.permission == "player" or player.is_admin
+        ]
+        player.sendLine(b"Available commands:")
+        player.sendLine(", ".join(sorted(visible_commands)).encode("utf-8"))
+        player.sendLine(b"Use help <command> for details.")
+        return
+
+    command_name, matches = resolve_command_name(topic)
+    if not command_name:
+        if matches:
+            player.sendLine(
+                f"Ambiguous help topic '{topic}': {', '.join(matches)}".encode("utf-8")
+            )
+        else:
+            player.sendLine(f"No help found for: {topic}".encode("utf-8"))
+        return
+
+    command = COMMAND_REGISTRY[command_name]
+    if command.permission == "admin" and not player.is_admin:
+        player.sendLine(f"No help found for: {topic}".encode("utf-8"))
+        return
+
+    player.sendLine(f"{command.name}: {command.description}".encode("utf-8"))
+    player.sendLine(f"Usage: {command.usage}".encode("utf-8"))
+    if command.aliases:
+        player.sendLine(f"Aliases: {', '.join(command.aliases)}".encode("utf-8"))
+
+
 COMMANDS = {
-    "look": lambda player, players_in_rooms, raw_args, split_args: handle_look(player, players_in_rooms),
-    "score": lambda player, players_in_rooms, raw_args, split_args: handle_score(player, players_in_rooms),
-    "status": lambda player, players_in_rooms, raw_args, split_args: handle_score(player, players_in_rooms),
-    "loc": lambda player, players_in_rooms, raw_args, split_args: handle_loc(player),
-    "who": lambda player, players_in_rooms, raw_args, split_args: handle_who(player, players_in_rooms),
-    "survey": lambda player, players_in_rooms, raw_args, split_args: handle_survey(player),
-    "north": lambda player, players_in_rooms, raw_args, split_args: handle_movement(player, "north"),
-    "south": lambda player, players_in_rooms, raw_args, split_args: handle_movement(player, "south"),
-    "east": lambda player, players_in_rooms, raw_args, split_args: handle_movement(player, "east"),
-    "west": lambda player, players_in_rooms, raw_args, split_args: handle_movement(player, "west"),
-
-
-    
+    "look": CommandSpec("look", lambda player, rooms, raw, args: handle_look(player, rooms), "look", "Display nearby terrain and players.", max_args=0),
+    "score": CommandSpec("score", lambda player, rooms, raw, args: handle_score(player, rooms), "score", "Display your character sheet.", aliases=("status",), max_args=0),
+    "loc": CommandSpec("loc", lambda player, rooms, raw, args: handle_loc(player), "loc", "Display your grid coordinates and area.", max_args=0),
+    "who": CommandSpec("who", lambda player, rooms, raw, args: handle_who(player, rooms), "who", "List connected characters.", max_args=0),
+    "survey": CommandSpec("survey", lambda player, rooms, raw, args: handle_survey(player), "survey", "Display a compact terrain view.", max_args=0),
+    "north": CommandSpec("north", lambda player, rooms, raw, args: handle_movement(player, "north"), "north", "Move north.", max_args=0),
+    "south": CommandSpec("south", lambda player, rooms, raw, args: handle_movement(player, "south"), "south", "Move south.", max_args=0),
+    "east": CommandSpec("east", lambda player, rooms, raw, args: handle_movement(player, "east"), "east", "Move east.", max_args=0),
+    "west": CommandSpec("west", lambda player, rooms, raw, args: handle_movement(player, "west"), "west", "Move west.", max_args=0),
+    "help": CommandSpec("help", lambda player, rooms, raw, args: handle_help(player, raw), "help [command]", "List commands or explain one command.", max_args=1),
 }
 

@@ -2,25 +2,11 @@ import json
 import os
 import logging
 import sys
+from command_system import CommandSpec
 from twisted.internet import reactor
 from shinobi_mud import UTILITIES
 
 logging.info("admin_commands imported")
-
-
-def admin_only(handler):
-    """Wrap an admin command with the minimal Phase 1 authorization gate."""
-    def wrapped(protocol, players_in_rooms, raw_args, split_args):
-        if not protocol.is_admin:
-            protocol.sendLine(b"You do not have permission to use that command.")
-            logging.warning(
-                "Non-admin user %s attempted an admin command.",
-                protocol.username,
-            )
-            return
-        return handler(protocol, players_in_rooms, raw_args, split_args)
-
-    return wrapped
 
 
 def create_zone(protocol, zone_name, start_vnum, end_vnum):
@@ -178,13 +164,13 @@ def setdojo(protocol, username, dojo):
 
 # Command registry
 COMMANDS = {
-    "createzone": admin_only(lambda protocol, players_in_rooms, raw_args, split_args: create_zone(protocol, *split_args) if len(split_args) == 3 else protocol.sendLine(b"Usage: createzone <zone_name> <start_vnum> <end_vnum>")),
-    "goto": admin_only(lambda protocol, players_in_rooms, raw_args, split_args: goto(protocol, split_args[0]) if len(split_args) >= 1 and split_args[0].isdigit() else protocol.sendLine(b"Usage: goto <room_id>")),
-    "dig": admin_only(lambda protocol, players_in_rooms, raw_args, split_args: dig(protocol, *split_args) if len(split_args) >= 2 else protocol.sendLine(b"Usage: dig <direction> <room_name>")),
-    "shutdown": admin_only(lambda protocol, players_in_rooms, raw_args, split_args: shutdown(protocol)),
-    "copyover": admin_only(lambda protocol, players_in_rooms, raw_args, split_args: copyover(protocol)),
-    "setrole": admin_only(lambda protocol, players_in_rooms, raw_args, split_args: setrole(protocol, *split_args) if len(split_args) == 2 else protocol.sendLine(b"Usage: setrole <username> <role_type>")),
-    "setstat": admin_only(lambda protocol, players_in_rooms, raw_args, split_args: setstat(protocol, *split_args) if len(split_args) == 3 else protocol.sendLine(b"Usage: setstat <username> <stat> <value>")),
-    "setdojo": admin_only(lambda protocol, players_in_rooms, raw_args, split_args: setdojo(protocol, *split_args) if len(split_args) == 2 else protocol.sendLine(b"Usage: setdojo <username> <dojo>")),
+    "createzone": CommandSpec("createzone", lambda protocol, rooms, raw, args: create_zone(protocol, *args), "createzone <zone_name> <start_vnum> <end_vnum>", "Create an authored zone.", permission="admin", min_args=3, max_args=3),
+    "goto": CommandSpec("goto", lambda protocol, rooms, raw, args: goto(protocol, args[0]), "goto <room_id>", "Travel to an authored room.", permission="admin", min_args=1, max_args=1, args_validator=lambda args: args[0].isdigit()),
+    "dig": CommandSpec("dig", lambda protocol, rooms, raw, args: dig(protocol, args[0], " ".join(args[1:])), "dig <direction> <room_name>", "Create an authored room exit.", permission="admin", min_args=2),
+    "shutdown": CommandSpec("shutdown", lambda protocol, rooms, raw, args: shutdown(protocol), "shutdown", "Stop the server.", permission="admin", max_args=0),
+    "copyover": CommandSpec("copyover", lambda protocol, rooms, raw, args: copyover(protocol), "copyover", "Restart the server while retaining player state.", permission="admin", max_args=0),
+    "setrole": CommandSpec("setrole", lambda protocol, rooms, raw, args: setrole(protocol, *args), "setrole <username> <role_type>", "Set a character role.", permission="admin", min_args=2, max_args=2),
+    "setstat": CommandSpec("setstat", lambda protocol, rooms, raw, args: setstat(protocol, *args), "setstat <username> <stat> <value>", "Set a character stat.", permission="admin", min_args=3, max_args=3),
+    "setdojo": CommandSpec("setdojo", lambda protocol, rooms, raw, args: setdojo(protocol, *args), "setdojo <username> <dojo>", "Set a character dojo alignment.", permission="admin", min_args=2, max_args=2),
 }
 

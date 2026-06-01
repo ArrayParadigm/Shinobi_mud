@@ -7,11 +7,20 @@
 - Added automatic unique-prefix matching for registered commands.
 - Reserved `n`, `s`, `e`, `w`, and `l` as stable shortcuts for movement and `look`.
 - Added clear ambiguity responses when a prefix matches more than one command.
+- Added metadata-driven command registration with usage, descriptions, semantic aliases, and permission levels.
+- Added `help` and `help <command>` output generated from command metadata.
+
+### Changed
+
+- Routed admin authorization through command permission metadata.
+- Centralized argument-count validation and useful usage responses.
+- Normalized command parsing across spaces, tabs, and surrounding whitespace.
+- Kept `status` as an explicit semantic alias for `score`.
 
 ### Verification
 
-- Added command-resolution tests for exact matches, unique prefixes, stable shortcuts, ambiguous prefixes, and unknown commands.
-- Passed `python -m unittest discover -s tests -v` with 35 tests.
+- Added command-layer tests for metadata, permissions, usage errors, help visibility, semantic aliases, whitespace parsing, prefixes, stable shortcuts, ambiguity, and unknown commands.
+- Passed `python -m unittest discover -s tests -v` with 43 tests.
 - Passed Python syntax compilation across the repository.
 
 ## 2026-06-01 - Movement Lock Recovery

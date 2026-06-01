@@ -8,6 +8,7 @@ import json
 import inspect
 import sys
 from auth import hash_password, validate_username, verify_password
+from command_system import CommandSpec
 from locations import broadcast_at, coordinate_key, players_at, track_player, untrack_player
 from migrations import apply_migrations, create_players_table
 
@@ -41,6 +42,7 @@ def configure_logging(log_file="mud_debug.log"):
 configure_logging()
 
 COMMAND_REGISTRY = {}
+COMMAND_ALIASES = {}
 COMMAND_SHORTCUTS = {
     "n": "north",
     "s": "south",
@@ -81,13 +83,22 @@ UTILITIES['WORLD_MAP'] = WORLD_MAP  # Add WORLD_MAP to UTILITIES for global acce
 
 def load_commands():
     """Dynamically loads COMMANDS from explicitly listed modules."""
+    COMMAND_REGISTRY.clear()
+    COMMAND_ALIASES.clear()
     for module_name in COMMAND_MODULES:
         try:
             # Import the module
             module = importlib.import_module(module_name)
             # Check if the module defines a COMMANDS dictionary
             if hasattr(module, "COMMANDS"):
-                COMMAND_REGISTRY.update(module.COMMANDS)
+                for command_name, command in module.COMMANDS.items():
+                    if command_name in COMMAND_REGISTRY or command_name in COMMAND_ALIASES:
+                        raise RuntimeError(f"Duplicate command registration: {command_name}")
+                    COMMAND_REGISTRY[command_name] = command
+                    for alias in getattr(command, "aliases", ()):
+                        if alias in COMMAND_REGISTRY or alias in COMMAND_ALIASES:
+                            raise RuntimeError(f"Duplicate command alias registration: {alias}")
+                        COMMAND_ALIASES[alias] = command_name
                 logging.info(f"Loaded commands from {module_name}")
             else:
                 logging.warning(f"No COMMANDS dictionary in {module_name}")
@@ -159,37 +170,46 @@ def resolve_command_name(command_name):
     if command_name in COMMAND_REGISTRY:
         return command_name, []
 
+    if command_name in COMMAND_ALIASES:
+        return COMMAND_ALIASES[command_name], []
+
     shortcut = COMMAND_SHORTCUTS.get(command_name)
     if shortcut in COMMAND_REGISTRY:
         return shortcut, []
 
-    matches = sorted(
-        registered_name
-        for registered_name in COMMAND_REGISTRY
-        if registered_name.startswith(command_name)
+    matching_names = sorted(
+        candidate
+        for candidate in (*COMMAND_REGISTRY, *COMMAND_ALIASES)
+        if candidate.startswith(command_name)
     )
-    if len(matches) == 1:
-        return matches[0], []
-    return None, matches
+    matching_commands = {
+        COMMAND_ALIASES.get(candidate, candidate)
+        for candidate in matching_names
+    }
+    if len(matching_commands) == 1:
+        return matching_commands.pop(), []
+    return None, matching_names
 
 
 def process_command(player, command):
     command = command.strip()  # Strip any leading/trailing whitespace
+    if not command:
+        return
     
     # Split command into command and arguments
-    parts = command.split(' ', 1)  # Split at the first space
+    parts = command.split(maxsplit=1)  # Split at the first whitespace boundary
     cmd = parts[0].lower()  # Extract and normalize command name
     raw_args = parts[1] if len(parts) > 1 else ""  # Extract raw argument string
     split_args = raw_args.split()  # Split arguments into a list
     
     # Use COMMAND_REGISTRY for all commands
     resolved_cmd, matches = resolve_command_name(cmd)
-    handler = COMMAND_REGISTRY.get(resolved_cmd)
-    if handler:
+    command_spec = COMMAND_REGISTRY.get(resolved_cmd)
+    if command_spec:
         logging.info("Executing command '%s' for player %s.", resolved_cmd, player.username)
         try:
             # Pass player, players_in_rooms, raw argument string, and split arguments
-            handler(player, players_in_rooms, raw_args, split_args)
+            command_spec(player, players_in_rooms, raw_args, split_args)
         except Exception as e:
             logging.error(f"Error executing command '{resolved_cmd}' for {player.username}: {e}", exc_info=True)
             player.sendLine(b"An error occurred while executing your command.")
@@ -580,9 +600,15 @@ def validate_server_state(config):
     if not COMMAND_REGISTRY:
         errors.append("No commands loaded. Check command modules.")
     else:
-        for cmd, handler in COMMAND_REGISTRY.items():
-            if not callable(handler):
+        for cmd, command in COMMAND_REGISTRY.items():
+            if not isinstance(command, CommandSpec):
+                errors.append(f"Command '{cmd}' is missing metadata.")
+            elif not callable(command):
                 errors.append(f"Command '{cmd}' is not callable. Check its handler.")
+            elif command.permission not in {"player", "admin"}:
+                errors.append(f"Command '{cmd}' has an invalid permission level.")
+            elif not command.usage or not command.description:
+                errors.append(f"Command '{cmd}' has incomplete help metadata.")
     
     if not UTILITIES:
         errors.append("No utilities loaded. Check utils module.")
