@@ -64,71 +64,16 @@ def create_zone(protocol, zone_name, start_vnum, end_vnum):
 # TODO: fix "goto" to allow navigation to specific coordinations and players.
 def goto(protocol, vnum):
     """
-    Moves the player to the specified VNUM, creating the room if necessary.
+    Reserved for the future coordinate-overlay builder workflow.
     """
-    try:
-        vnum = int(vnum)
-        if "find_zone_by_vnum" not in UTILITIES or "ensure_room_exists" not in UTILITIES:
-            protocol.sendLine(b"Utilities not properly configured.")
-            return
-
-        zone_file = UTILITIES["find_zone_by_vnum"](vnum)
-        if not UTILITIES["ensure_room_exists"](vnum, protocol):
-            return
-
-        with open(zone_file, "r") as file:
-            zone_data = json.load(file)
-
-        if str(vnum) not in zone_data["rooms"]:
-            protocol.sendLine(b"Room not found. Initializing empty room.")
-            zone_data["rooms"][str(vnum)] = {"description": "Void room", "exits": {}}
-            with open(zone_file, "w") as file:
-                json.dump(zone_data, file, indent=4)
-
-        protocol.current_room = vnum
-        protocol.sendLine(f"Moved to room {vnum} in zone {zone_data['name']}".encode('utf-8'))
-
-    except ValueError:
-        protocol.sendLine(b"Invalid VNUM.")
-    except Exception as e:
-        logging.error(f"Error in goto: {e}", exc_info=True)
-        protocol.sendLine(f"Error: {e}".encode('utf-8'))
+    protocol.sendLine(b"VNUM goto is unavailable until grid overlays are enabled.")
 
 
 def dig(protocol, direction, room_name):
     """
-    Creates a new room in the specified direction and links it to the current room.
+    Reserved for the future coordinate-overlay builder workflow.
     """
-    if direction not in ["north", "south", "east", "west"]:
-        protocol.sendLine(b"Invalid direction.")
-        return
-    if "find_zone_by_vnum" not in UTILITIES:
-        protocol.sendLine(b"Utilities not properly configured.")
-        return
-
-    vnum = protocol.current_room
-    zone_file = UTILITIES["find_zone_by_vnum"](vnum)
-
-    with open(zone_file, "r") as file:
-        zone_data = json.load(file)
-
-    if str(vnum) not in zone_data["rooms"]:
-        protocol.sendLine(b"Current room not found in zone.")
-        return
-
-    new_vnum = next_free_vnum(zone_data)
-    if not new_vnum:
-        protocol.sendLine(b"No free VNUMs in this zone.")
-        return
-
-    # Create and link new room
-    zone_data["rooms"][str(new_vnum)] = {"description": room_name, "exits": {reverse_dir(direction): vnum}}
-    zone_data["rooms"][str(vnum)]["exits"][direction] = new_vnum
-
-    with open(zone_file, "w") as file:
-        json.dump(zone_data, file, indent=4)
-
-    protocol.sendLine(f"Room '{room_name}' created at {new_vnum} to the {direction}".encode('utf-8'))
+    protocol.sendLine(b"VNUM dig is unavailable until grid overlays are enabled.")
 
 
 def next_free_vnum(zone_data):
@@ -179,7 +124,8 @@ def copyover(protocol, players_in_rooms=None):
                 "players": [
                     {
                         "username": protocol.username,
-                        "room": protocol.current_room,
+                        "x": protocol.x,
+                        "y": protocol.y,
                     }
                 ]
             }

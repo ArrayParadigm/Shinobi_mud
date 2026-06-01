@@ -8,6 +8,7 @@ import json
 import inspect
 import sys
 from auth import hash_password, validate_username, verify_password
+from locations import coordinate_key, players_at, track_player, untrack_player
 from migrations import apply_migrations, create_players_table
 
 DEBUG_MODE = True  # True allows for debugging options; False disables them
@@ -41,6 +42,7 @@ configure_logging()
 COMMAND_REGISTRY = {}
 UTILITIES = {}
 players_in_rooms = {}
+WORLD_OVERLAYS = {}
 
 # List of explicitly approved command modules
 COMMAND_MODULES = [
@@ -213,7 +215,6 @@ class NinjaMUDProtocol(basic.LineReceiver):
         self.state = "GET_USERNAME"
         self.character_creation_data = {}
         self.username = None
-#        self.current_room = None
         self.is_admin = False
         self.player_class = 'newbie' # Default to a basic Class
         self.STATE_HANDLERS = get_state_handlers()
@@ -234,7 +235,6 @@ class NinjaMUDProtocol(basic.LineReceiver):
         self.sendLine(b"Please enter your username:")
         # Simplify: Initialize player to a default room if new
         self.x, self.y = 500, 500  # Default coordinates
-#        self.current_room = 3000   # Assign a default VNUM room
         
     def connectionLost(self, reason):
         logging.info(f"Connection lost for user {self.username}. Reason: {reason}")
@@ -319,9 +319,9 @@ class NinjaMUDProtocol(basic.LineReceiver):
         self.display_room()
             
     def list_players_in_room(self):
-        """Lists other players in the current room."""
-        others = [p.username for p in players_in_rooms.get(self.x, self.y, []) if p != self]
-        logging.info(f"User {self.username} checking room {self.x, self.y}. Others here: {others}")
+        """List other players at the current world coordinate."""
+        others = [player.username for player in players_at(players_in_rooms, self.x, self.y, self)]
+        logging.info("User %s checking location %s. Others here: %s", self.username, self.location_key, others)
         
         if others:
             self.sendLine(f"Also here: {', '.join(others)}".encode('utf-8'))
@@ -346,7 +346,12 @@ class NinjaMUDProtocol(basic.LineReceiver):
     def display_room(self):
         """Displays the grid map around the player."""
         try:
-            map_view = UTILITIES["render_open_land"](self.x, self.y, world_map=WORLD_MAP)
+            map_view = UTILITIES["render_open_land"](
+                self.x,
+                self.y,
+                world_map=WORLD_MAP,
+                overlays=WORLD_OVERLAYS,
+            )
             self.sendLine(map_view.encode("utf-8"))
         except KeyError:
             self.sendLine(b"Error: Map rendering function is unavailable.")
@@ -355,20 +360,17 @@ class NinjaMUDProtocol(basic.LineReceiver):
             self.sendLine(b"An error occurred while rendering the map.")
         
     def track_player(self):
-        room_key = self.x, self.y
-        if room_key not in players_in_rooms:
-            players_in_rooms[room_key] = []  # Initialize the room with an empty list
-        if self not in players_in_rooms[room_key]:  # Add the player object
-            players_in_rooms[room_key].append(self)
-        logging.info(f"Player {self.username} is now in room {self.x, self.y}.")
+        track_player(self, players_in_rooms)
+        logging.info("Player %s is now at %s.", self.username, self.location_key)
     
     def untrack_player(self):
-        room_key = self.x, self.y
-        if room_key in players_in_rooms and self in players_in_rooms[room_key]:
-            players_in_rooms[room_key].remove(self)  # Remove the player object
-            if not players_in_rooms[room_key]:  # If the room is empty, clean up
-                del players_in_rooms[room_key]
-        logging.info(f"Player {self.username} left room {room_key}.")
+        room_key = self.location_key
+        untrack_player(self, players_in_rooms)
+        logging.info("Player %s left location %s.", self.username, room_key)
+
+    @property
+    def location_key(self):
+        return coordinate_key(self.x, self.y)
 
     def confirm_password(self, password):
         if self.character_creation_data['password'] == password:

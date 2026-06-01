@@ -63,19 +63,19 @@ def ensure_room_exists(vnum, protocol):
         protocol.sendLine(b"Error processing room data.")
         return False
         
-def overlay_zone(zone_data, anchor_x, anchor_y):
-    """
-    Overlays a zone on the world map using an anchor point.
-    """
+def overlay_zone(zone_data, anchor_x, anchor_y, overlays=None):
+    """Attach optional authored room metadata to world coordinates."""
+    overlays = overlays if overlays is not None else {}
     for vnum, room_data in zone_data["rooms"].items():
-        # Get offsets for the room within the zone
         x_offset = room_data.get("x_offset", 0)
         y_offset = room_data.get("y_offset", 0)
-        # Calculate global coordinates
         x, y = anchor_x + x_offset, anchor_y + y_offset
-        # Overlay the VNUM on the world map
-        if 0 <= y < len(WORLD_MAP) and 0 <= x < len(WORLD_MAP[0]):
-            WORLD_MAP[y][x] = str(vnum)
+        overlays[(x, y)] = {
+            "zone_name": zone_data["name"],
+            "vnum": int(vnum),
+            "room": room_data,
+        }
+    return overlays
 
 def next_free_vnum(zone_data):
     """
@@ -102,9 +102,10 @@ def load_world_map(filename="world.map"):
     with open(filename, "r") as file:
         return [list(line.strip()) for line in file.readlines()]
 
-def preload_zones_with_anchors():
-    """Load zones and overlay them onto the world map."""
+def preload_zones_with_anchors(overlays=None):
+    """Load zone metadata into a coordinate overlay registry."""
     zones_directory = "zones"
+    overlays = overlays if overlays is not None else {}
     anchor_points = {
         "Eve's Haven": (500, 500),  # Anchor at 500, 500
     }
@@ -115,7 +116,8 @@ def preload_zones_with_anchors():
                 zone_data = json.load(file)
                 zone_name = zone_data["name"]
                 anchor_x, anchor_y = anchor_points.get(zone_name, (0, 0))
-                overlay_zone(zone_data, anchor_x, anchor_y)
+                overlay_zone(zone_data, anchor_x, anchor_y, overlays)
+    return overlays
 
 def reverse_dir(direction):
     """
@@ -129,15 +131,18 @@ def reverse_dir(direction):
     """
     return {"north": "south", "south": "north", "east": "west", "west": "east"}.get(direction, "")
 
-def render_open_land(player_x, player_y, world_map=None):
+def render_open_land(
+    player_x,
+    player_y,
+    world_map=None,
+    overlays=None,
+    width_radius=20,
+    height_radius=10,
+):
     """Renders a portion of the world map centered around the player's position."""
     if world_map is None:
         raise ValueError("A valid world_map must be provided.")
     
-    # Fixed dimensions: 41 wide (20 left/right of the player), 20 high (10 up/down)
-    width_radius = 20  # Half-width minus one
-    height_radius = 10  # Half-height minus one
-
     visible_map = []
 
     for y in range(player_y - height_radius, player_y + height_radius + 1):
@@ -146,6 +151,8 @@ def render_open_land(player_x, player_y, world_map=None):
             if 0 <= y < len(world_map) and 0 <= x < len(world_map[0]):
                 if x == player_x and y == player_y:
                     row += "P"  # Mark the player
+                elif overlays and (x, y) in overlays:
+                    row += "#"  # Mark authored content without mutating terrain
                 else:
                     row += world_map[y][x]
             else:
@@ -154,9 +161,14 @@ def render_open_land(player_x, player_y, world_map=None):
 
     return "\n".join(visible_map)
 
-def render_room(player):
-    zone_file = UTILITIES["find_zone_by_vnum"](player.current_room)
-    with open(zone_file, "r") as file:
-        zone_data = json.load(file)
-        room = zone_data["rooms"].get(str(player.current_room))
-        player.sendLine(f"{room['description']}\nExits: {', '.join(room['exits'].keys())}".encode("utf-8"))
+def render_room(player, overlays=None):
+    """Render optional authored content attached to a player's coordinate."""
+    overlay = (overlays or {}).get((player.x, player.y))
+    if not overlay:
+        player.sendLine(b"You see open land around you.")
+        return
+
+    room = overlay["room"]
+    exits = ", ".join(room.get("exits", {}).keys()) or "None"
+    description = room.get("description", "No description.")
+    player.sendLine(f"{description}\nExits: {exits}".encode("utf-8"))

@@ -81,15 +81,15 @@ Authentication and startup behavior can be checked quickly without manually conn
 
 Use `(x, y)` coordinates as the canonical player location. VNUM-backed zones can later be dropped onto the grid as optional content overlays.
 
-- [ ] 3.1 Define a small location API for coordinate keys, lookups, and player movement.
-- [ ] 3.2 Make `(x, y)` the only canonical player location.
-- [ ] 3.3 Remove active gameplay dependencies on `current_room`.
-- [ ] 3.4 Use the same coordinate key for player tracking and nearby-player lookups.
-- [ ] 3.5 Move players between tracking buckets when coordinates change.
-- [ ] 3.6 Save coordinates after movement.
-- [ ] 3.7 Fix movement boundary handling.
-- [ ] 3.8 Fix `look`, `survey`, and nearby-player listings.
-- [ ] 3.9 Add automated tests for boundaries, tracking, lookups, and reconnect location persistence.
+- [x] 3.1 Define a small location API for coordinate keys, lookups, and player movement.
+- [x] 3.2 Make `(x, y)` the only canonical player location.
+- [x] 3.3 Remove active gameplay dependencies on `current_room`.
+- [x] 3.4 Use the same coordinate key for player tracking and nearby-player lookups.
+- [x] 3.5 Move players between tracking buckets when coordinates change.
+- [x] 3.6 Save coordinates after movement.
+- [x] 3.7 Fix movement boundary handling.
+- [x] 3.8 Fix `look`, `survey`, and nearby-player listings.
+- [x] 3.9 Add automated tests for boundaries, tracking, lookups, and reconnect location persistence.
 
 ### Done When
 
@@ -99,7 +99,7 @@ Players can move, inspect their surroundings, disconnect, and return to the same
 
 ## Phase 4: Multiplayer Basics
 
-- [ ] 4.1 Update local social commands to use coordinate-based player tracking.
+- [x] 4.1 Update local social commands to use coordinate-based player tracking.
 - [ ] 4.2 Fix `say`, `emote`, and `think`.
 - [ ] 4.3 Verify `ooc` as a deliberate global channel.
 - [ ] 4.4 Add arrival and departure messages.

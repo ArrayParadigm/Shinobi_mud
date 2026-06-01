@@ -1,5 +1,28 @@
 # Changelog
 
+## 2026-06-01 - Coordinate-First World Locations
+
+### Added
+
+- Added a coordinate-first location API for bounds checks, cardinal destinations, player tracking, movement, persistence, and optional authored overlays.
+- Added a world-overlay registry keyed by `(x, y)` coordinates.
+- Added location tests for movement persistence, reconnects, tracking buckets, boundaries, overlay lookup, and map rendering.
+
+### Changed
+
+- Made `(x, y)` coordinates the only canonical player location.
+- Updated movement to move players between tracking buckets and save coordinates immediately.
+- Updated nearby-player lookup and local social commands to use coordinate keys.
+- Fixed `survey` rendering and made map radius configurable.
+- Changed zone overlays to attach metadata without mutating terrain cells.
+- Disabled legacy VNUM `goto` and `dig` until coordinate-aware builder tools are introduced.
+- Updated copyover state to store coordinates.
+
+### Verification
+
+- Passed `python -m unittest discover -s tests -v` with 18 tests.
+- Passed Python syntax compilation across the repository.
+
 ## 2026-06-01 - Test Harness and Runtime Baseline
 
 ### Added

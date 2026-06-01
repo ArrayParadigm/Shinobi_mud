@@ -1,4 +1,6 @@
 import logging
+from locations import coordinate_key
+
 logging.info("social_commands imported")
 
 def handle_say(player, raw_args, split_args, players_in_rooms):
@@ -6,8 +8,8 @@ def handle_say(player, raw_args, split_args, players_in_rooms):
         player.sendLine(b"You must specify a message.")
         return
     
-    room_key = player.current_room
-    logging.debug(f"Player {player.username} in room {room_key} says: {raw_args.strip()}")
+    room_key = coordinate_key(player.x, player.y)
+    logging.debug(f"Player {player.username} at {room_key} says: {raw_args.strip()}")
     if room_key in players_in_rooms:
         for recipient in players_in_rooms[room_key]:
             recipient.sendLine(f'{player.username} says, "{raw_args.strip()}"'.encode('utf-8'))
@@ -32,7 +34,7 @@ def handle_ooc(player, raw_args, split_args, players_in_rooms):
             
 def handle_think(player, raw_args, split_args, players_in_rooms):
     logging.info(f'{player.username} uses emote: think')
-    room_key = player.current_room
+    room_key = coordinate_key(player.x, player.y)
     if room_key in players_in_rooms:
         for recipient in players_in_rooms[room_key]:
             recipient.sendLine(f'{player.username} thinks deeply.'.encode('utf-8'))
@@ -42,7 +44,7 @@ def handle_emote(player, raw_args, split_args, players_in_rooms):
         player.sendLine(b"You must specify an action.")
         return
 
-    room_key = player.current_room
+    room_key = coordinate_key(player.x, player.y)
     if room_key in players_in_rooms:
         for recipient in players_in_rooms[room_key]:
             recipient.sendLine(f'{player.username} {raw_args.strip()}'.encode('utf-8'))

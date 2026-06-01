@@ -1,6 +1,7 @@
 import json
 import logging
-from shinobi_mud import UTILITIES
+from locations import get_location, move_player
+from shinobi_mud import UTILITIES, WORLD_OVERLAYS, players_in_rooms
 
 logging.info("general_commands imported")
 
@@ -15,51 +16,40 @@ def handle_look(player, players_in_rooms=None):
     # Render the map using render_open_land
     try:
         render_open_land = UTILITIES["render_open_land"]
-        map_view = render_open_land(player.x, player.y, world_map=WORLD_MAP)
+        map_view = render_open_land(
+            player.x,
+            player.y,
+            world_map=WORLD_MAP,
+            overlays=WORLD_OVERLAYS,
+        )
         player.sendLine(map_view.encode("utf-8"))  # Send the rendered map to the player
-        player.sendLine(b"You see open land around you.")
+        location = get_location(WORLD_MAP, player.x, player.y, WORLD_OVERLAYS)
+        overlay = location["overlay"]
+        if overlay:
+            player.sendLine(f"You are in {overlay['zone_name']}.".encode("utf-8"))
+        else:
+            player.sendLine(b"You see open land around you.")
+        player.list_players_in_room()
     except KeyError:
         player.sendLine(b"Error: Map rendering function is not available.")
     except Exception as e:
         logging.error(f"Error during map rendering: {e}", exc_info=True)
         player.sendLine(b"An error occurred while rendering the map.")
 
-def check_zone_entry(player):
-    """Checks if the player has entered a zone and updates their status, temporarily bypassing VNUM transitions."""
-    WORLD_MAP = UTILITIES["WORLD_MAP"]
-    current_cell = WORLD_MAP[player.y][player.x]
-    
-    # Debugging information for movement and map cells
-    logging.debug(f"Player moved to ({player.x}, {player.y}). Current cell: {current_cell}.")
-    logging.debug(f"In zone: {player.in_zone}")
-
-    # Temporarily bypass numeric VNUMs
-    if current_cell.isdigit():
-        logging.debug("Numeric VNUM detected, but bypassing room transition.")
-        player.sendLine(b"You are bypassing VNUM-based room transitions.")
-        player.in_zone = False
-        return
-
-    # Default: Show the open map view
-    player.in_zone = False
-    player.sendLine(render_open_land(player.x, player.y, world_map=WORLD_MAP).encode("utf-8"))
-
-
 def handle_movement(player, direction):
     """Handles player movement in a specified direction."""
-    directions = {"north": (0, -1), "south": (0, 1), "east": (1, 0), "west": (-1, 0)}
-    dx, dy = directions.get(direction, (0, 0))
-    new_x, new_y = player.x + dx, player.y + dy
-
     world_map = UTILITIES.get("WORLD_MAP")
     if not world_map:
         player.sendLine(b"Error: World map is unavailable.")
         return
 
-    # Check boundaries
-    if 0 <= new_x < len(world_map[0]) and 0 <= new_y < len(world_map):
-        player.x, player.y = new_x, new_y
-        map_view = UTILITIES["render_open_land"](player.x, player.y, world_map=world_map)
+    if move_player(player, direction, world_map, players_in_rooms):
+        map_view = UTILITIES["render_open_land"](
+            player.x,
+            player.y,
+            world_map=world_map,
+            overlays=WORLD_OVERLAYS,
+        )
         player.sendLine(map_view.encode("utf-8"))
     else:
         player.sendLine(b"You can't go that way.")
@@ -84,10 +74,20 @@ def handle_status(player, players_in_rooms=None):
         player.sendLine(f"Error retrieving stats: {e}".encode('utf-8'))
 
 def handle_survey(player):
-    if player.in_zone:
-        player.sendLine(b"You cannot survey while inside a zone.")
-    else:
-        player.sendLine(UTILITIES["render_open_land"](player.x, player.y, radius=5).encode("utf-8"))
+    world_map = UTILITIES.get("WORLD_MAP")
+    if not world_map:
+        player.sendLine(b"Error: World map is unavailable.")
+        return
+    player.sendLine(
+        UTILITIES["render_open_land"](
+            player.x,
+            player.y,
+            world_map=world_map,
+            overlays=WORLD_OVERLAYS,
+            width_radius=5,
+            height_radius=5,
+        ).encode("utf-8")
+    )
 
 COMMANDS = {
     "look": lambda player, players_in_rooms, raw_args, split_args: handle_look(player, players_in_rooms),

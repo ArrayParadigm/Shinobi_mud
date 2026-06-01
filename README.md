@@ -97,6 +97,12 @@ python shinobi_mud.py
 
 The server reads its TCP port from `config.json`.
 
+### World Locations
+
+The world map is persistent terrain. Player positions use `(x, y)` coordinates as the single source of truth.
+
+Authored cities, dungeons, and other zones can be attached as optional overlays keyed by coordinates. Overlay metadata may include a zone name, VNUM, and room description without replacing or mutating the terrain underneath. This keeps open-world movement consistent while leaving room for drop-in areas later.
+
 ### Early Linux Testing
 
 The current MUD socket uses plain-text TCP. Passwords are hashed safely in the database, but they are still sent over the network as plain text during login.
