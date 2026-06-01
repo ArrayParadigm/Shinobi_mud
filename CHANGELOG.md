@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-06-01 - Inventory Sprint Reprioritization
+
+### Changed
+
+- Moved inventory management and room presentation ahead of combat reliability as Sprint 12.
+- Planned authored item keywords, abbreviated item targeting, ordinal duplicate selection, examination, equipment persistence, and wielding.
+- Defined the Practice Kunai as the first authored weapon/tool while deferring thrown attacks until ranged combat rules are deliberate.
+- Added a presentation cleanup pass for compact maps and readable room sections.
+- Shifted combat reliability, character foundation, chakra abilities, builder tooling, and the private-alpha exercise to Sprints 13 through 17.
+
 ## 2026-06-01 - Post-Combat Roadmap Checkpoint
 
 ### Changed

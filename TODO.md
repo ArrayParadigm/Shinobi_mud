@@ -40,7 +40,7 @@ Improve operational confidence before adding systems with larger state surfaces.
 
 ### Deferred Until Needed
 
-- [ ] Add a repeatable two-client soak test for login, movement, chat, disconnects, and reconnects. Scheduled for Sprint 16.
+- [ ] Add a repeatable two-client soak test for login, movement, chat, disconnects, and reconnects. Scheduled for Sprint 17.
 - [ ] Add encrypted transport before any open-internet password testing.
 
 ### Private Alpha Status
@@ -116,12 +116,36 @@ One authored hostile NPC can be attacked, counterattack, recover after defeat, a
 
 ---
 
-## Sprint 12: Combat Reliability
+## Sprint 12: Inventory Management and Presentation
+
+Turn the persistent-item proof of concept into a usable interaction layer before combat begins depending on equipment.
+
+- [ ] Add authored item keywords, item types, and interaction metadata without moving mutable instances out of SQLite.
+- [ ] Resolve item targets predictably: exact names first, then authored keywords and prefixes, then the first stable matching instance.
+- [ ] Add ordinal targeting such as `2.kun` when duplicate items need an explicit selection.
+- [ ] Add `examine <item>` and `look at <item>` for items in the room or character inventory.
+- [ ] Improve `inventory` formatting so carried items and equipped items are easy to scan.
+- [ ] Add equipment storage and basic `wield <item>` and `remove <item>` commands.
+- [ ] Define the Practice Kunai as an authored weapon/tool that can be examined and wielded.
+- [ ] Defer thrown-kunai attacks until the combat reliability sprint has a deliberate ranged-targeting rule.
+- [ ] Clean up room presentation: group map, room header, description, exits, items, NPCs, and players into readable sections.
+- [ ] Decide whether normal `look` and movement should use a compact local map while `survey` provides the larger terrain view.
+- [ ] Avoid noisy empty-state lines such as `You are alone in this room.` when the rest of the room output already reads cleanly.
+- [ ] Add tests for item targeting, duplicate selection, examination, equipment persistence, and formatted room output.
+
+### Done When
+
+Players can identify, inspect, pick up, carry, drop, and wield authored items with abbreviated targeting, and room output is compact enough to read during normal play.
+
+---
+
+## Sprint 13: Combat Reliability
 
 Turn the Phase 11 proof of concept into a dependable base for later ninja abilities.
 
 - [ ] Define current and maximum health semantics for players and NPCs.
 - [ ] Add hit chance using attacker and defender stats instead of guaranteed melee hits.
+- [ ] Apply equipped-weapon metadata to basic attacks without hardcoding kunai behavior in Python.
 - [ ] Broadcast attacks, damage, and defeats to other players at the same location.
 - [ ] Add `consider <character>` or equivalent combat inspection.
 - [ ] Add a deliberate recovery rule for player defeat, including location behavior.
@@ -133,7 +157,7 @@ Two players can fight the same authored NPC without state corruption, nearby pla
 
 ---
 
-## Sprint 13: Character Foundation
+## Sprint 14: Character Foundation
 
 Repair the rough character-creation flow before adding progression systems that depend on it.
 
@@ -149,7 +173,7 @@ New players can create understandable ninja characters, and existing private-alp
 
 ---
 
-## Sprint 14: First Chakra Ability
+## Sprint 15: First Chakra Ability
 
 Add one complete ninja ability only after combat and character resource semantics are stable.
 
@@ -161,11 +185,11 @@ Add one complete ninja ability only after combat and character resource semantic
 
 ### Done When
 
-Players can use and counter one chakra-driven ability without bypassing the combat rules established in Sprint 12.
+Players can use and counter one chakra-driven ability without bypassing the combat rules established in Sprint 13.
 
 ---
 
-## Sprint 15: Builder and Training Playground
+## Sprint 16: Builder and Training Playground
 
 Make it practical to expand content without editing Python.
 
@@ -181,7 +205,7 @@ An admin can build a small training encounter through authored content tools and
 
 ---
 
-## Sprint 16: Private Alpha Exercise
+## Sprint 17: Private Alpha Exercise
 
 Exercise the playable loop before widening the feature surface.
 
@@ -211,8 +235,8 @@ The current game loop survives a real private test session and produces actionab
 - [x] Add `zoneinfo [vnum]`.
 - [x] Add `placezone <zone_file> <x> <y>`.
 - [x] Add `reloadcontent` for applying authored JSON edits to live templates and missing spawns.
-- [ ] Replace placeholder `dig` with coordinate-aware overlay editing. Scheduled for Sprint 15.
-- [ ] Add room-description editing for authored zones. Scheduled for Sprint 15.
+- [ ] Replace placeholder `dig` with coordinate-aware overlay editing. Scheduled for Sprint 16.
+- [ ] Add room-description editing for authored zones. Scheduled for Sprint 16.
 - [ ] Create a robust live-management admin surface after command-line builder tools mature.
 
 ---
