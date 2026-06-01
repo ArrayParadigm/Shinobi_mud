@@ -316,6 +316,16 @@
             "description": "A calm attendant watches over the entrance to Eve's Haven.",
             "dialogue": "Welcome to Eve's Haven. The path ahead is quiet, but it is yours to explore.",
             "behavior": "static"
+        },
+        {
+            "key": "practice-construct",
+            "name": "Practice Construct",
+            "description": "A training construct waits for a sparring partner among the luminous flora.",
+            "dialogue": "The construct settles into a guarded stance.",
+            "behavior": "hostile",
+            "max_health": 12,
+            "attack_damage": 2,
+            "respawn_seconds": 60
         }
     ],
     "npc_spawns": [
@@ -323,6 +333,11 @@
             "key": "haven-guide",
             "npc": "haven-guide",
             "vnum": 3000
+        },
+        {
+            "key": "practice-construct",
+            "npc": "practice-construct",
+            "vnum": 3001
         }
     ],
     "anchor": {

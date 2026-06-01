@@ -3,7 +3,7 @@ import logging
 from command_system import CommandSpec
 from items import drop_item, format_item_names, inventory_items, pickup_item
 from locations import LocationPersistenceError, get_location, move_player, online_players
-from npcs import talk_to_npc
+from npcs import attack_npc, talk_to_npc
 from shinobi_mud import (
     COMMAND_REGISTRY,
     UTILITIES,
@@ -202,6 +202,59 @@ def handle_talk(player, npc_name):
         player.sendLine(b"Unable to talk to that character right now.")
 
 
+def handle_attack(player, npc_name):
+    """Resolve one turn of melee combat against an NPC."""
+    try:
+        result = attack_npc(
+            player.cursor,
+            player.username,
+            player.x,
+            player.y,
+            npc_name.strip(),
+        )
+        if result["status"] == "missing_target":
+            player.sendLine(b"You do not see that character here.")
+            return
+        if result["status"] == "missing_player":
+            player.sendLine(b"Your character is unavailable right now.")
+            return
+        if result["status"] == "not_attackable":
+            player.sendLine(f'{result["npc_name"]} is not a combat target.'.encode("utf-8"))
+            return
+        if result["status"] == "npc_defeated":
+            player.sendLine(
+                (
+                    f'You strike {result["npc_name"]} for {result["player_damage"]} '
+                    "damage and defeat it."
+                ).encode("utf-8")
+            )
+            return
+
+        player.sendLine(
+            (
+                f'You strike {result["npc_name"]} for {result["player_damage"]} damage. '
+                f'{result["npc_name"]} has {result["npc_health"]} health remaining.'
+            ).encode("utf-8")
+        )
+        if result["player_defeated"]:
+            player.sendLine(
+                (
+                    f'{result["npc_name"]} strikes you for {result["npc_damage"]} damage. '
+                    f'You are defeated, then recover with {result["player_health"]} health.'
+                ).encode("utf-8")
+            )
+        else:
+            player.sendLine(
+                (
+                    f'{result["npc_name"]} strikes you for {result["npc_damage"]} damage. '
+                    f'You have {result["player_health"]} health remaining.'
+                ).encode("utf-8")
+            )
+    except Exception as exc:
+        logging.error("Unable to attack NPC for %s: %s", player.username, exc, exc_info=True)
+        player.sendLine(b"Unable to attack that character right now.")
+
+
 def handle_help(player, raw_args):
     """Display available commands or detailed help for one command."""
     topic = raw_args.strip().lower()
@@ -247,6 +300,7 @@ COMMANDS = {
     "get": CommandSpec("get", lambda player, rooms, raw, args: handle_get(player, raw), "get <item>", "Pick up an item at your location.", min_args=1),
     "drop": CommandSpec("drop", lambda player, rooms, raw, args: handle_drop(player, raw), "drop <item>", "Drop a carried item at your location.", min_args=1),
     "talk": CommandSpec("talk", lambda player, rooms, raw, args: handle_talk(player, raw), "talk <character>", "Talk to a character at your location.", min_args=1),
+    "attack": CommandSpec("attack", lambda player, rooms, raw, args: handle_attack(player, raw), "attack <character>", "Strike a hostile character at your location.", min_args=1),
     "north": CommandSpec("north", lambda player, rooms, raw, args: handle_movement(player, "north"), "north", "Move north.", max_args=0),
     "south": CommandSpec("south", lambda player, rooms, raw, args: handle_movement(player, "south"), "south", "Move south.", max_args=0),
     "east": CommandSpec("east", lambda player, rooms, raw, args: handle_movement(player, "east"), "east", "Move east.", max_args=0),

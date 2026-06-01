@@ -87,12 +87,16 @@ One authored NPC can exist, appear in a room, survive expected restart behavior,
 
 Build combat only after inventory and NPC state are reliable.
 
-- [ ] Add basic melee attacks against NPCs.
-- [ ] Calculate damage from player stats.
-- [ ] Apply health reduction, defeat, and recovery logic.
-- [ ] Decide whether the first combat loop is cooldown-based or turn-based.
-- [ ] Add one simple NPC enemy with minimal AI.
-- [ ] Add tests for damage, defeat, invalid targets, and disconnect behavior.
+- [x] Add basic melee attacks against NPCs.
+- [x] Calculate damage from player stats.
+- [x] Apply health reduction, defeat, and recovery logic.
+- [x] Use a command-driven turn model: one player strike, then one surviving hostile counterattack.
+- [x] Add one simple NPC enemy with minimal AI.
+- [x] Add tests for damage, defeat, invalid targets, and disconnect behavior.
+
+### Done When
+
+One authored hostile NPC can be attacked, counterattack, recover after defeat, and preserve combat state safely across disconnects.
 
 ---
 

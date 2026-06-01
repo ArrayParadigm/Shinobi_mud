@@ -75,13 +75,19 @@ def _sync_npc_templates(cursor, templates):
     for template in templates:
         cursor.execute(
             """
-            INSERT INTO npc_templates (npc_key, name, description, dialogue, behavior)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO npc_templates (
+                npc_key, name, description, dialogue, behavior,
+                max_health, attack_damage, respawn_seconds
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(npc_key) DO UPDATE SET
                 name=excluded.name,
                 description=excluded.description,
                 dialogue=excluded.dialogue,
-                behavior=excluded.behavior
+                behavior=excluded.behavior,
+                max_health=excluded.max_health,
+                attack_damage=excluded.attack_damage,
+                respawn_seconds=excluded.respawn_seconds
             """,
             (
                 template["key"],
@@ -89,6 +95,9 @@ def _sync_npc_templates(cursor, templates):
                 template["description"],
                 template["dialogue"],
                 template.get("behavior", "static"),
+                int(template.get("max_health", 1)),
+                int(template.get("attack_damage", 0)),
+                int(template.get("respawn_seconds", 60)),
             ),
         )
 
@@ -132,16 +141,18 @@ def _sync_npc_spawns(cursor, content_key, spawns, coordinates_by_vnum):
         if existing:
             continue
         x, y = _spawn_coordinates(spawn, coordinates_by_vnum)
-        npc_template_id = cursor.execute(
-            "SELECT id FROM npc_templates WHERE npc_key=?",
+        npc_template = cursor.execute(
+            "SELECT id, max_health FROM npc_templates WHERE npc_key=?",
             (spawn["npc"],),
-        ).fetchone()[0]
+        ).fetchone()
         cursor.execute(
             """
-            INSERT INTO npc_instances (npc_template_id, x, y, home_x, home_y, seed_key)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO npc_instances (
+                npc_template_id, x, y, home_x, home_y, seed_key, health
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
-            (npc_template_id, x, y, x, y, seed_key),
+            (npc_template["id"], x, y, x, y, seed_key, npc_template["max_health"]),
         )
         _record_seed(cursor, seed_key, "npc")
         created += 1

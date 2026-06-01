@@ -1,5 +1,26 @@
 # Changelog
 
+## 2026-06-01 - Basic NPC Combat Slice
+
+### Added
+
+- Added `attack <character>` with strength-based player damage and immediate hostile NPC counterattacks.
+- Added authored NPC combat tuning, persistent live health, defeat timestamps, and scheduler-driven respawns.
+- Added the hostile Practice Construct to Eve's Haven garden as the first combat target.
+
+### Changed
+
+- Chose a command-driven turn model for the first combat loop: one player strike followed by one surviving hostile counterattack.
+- Made defeated NPCs disappear from room listings and dialogue until recovery.
+- Recover defeated players immediately to 10 health while retaining persistent combat state.
+
+### Verification
+
+- Added combat coverage for damage, counterattacks, protected and missing targets, NPC defeat and respawn, player recovery, and reconnect persistence.
+- Upgraded the preserved local development database through migration 4 while retaining its seven player rows.
+- Passed `python -m unittest discover -s tests -v` with 74 tests.
+- Passed Python syntax compilation across the repository.
+
 ## 2026-06-01 - JSON-Authored Content and NPC Foundation
 
 ### Added

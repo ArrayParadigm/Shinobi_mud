@@ -81,10 +81,16 @@ def migration_003_authored_content_and_npcs(cursor):
     create_npc_tables(cursor)
 
 
+def migration_004_npc_combat_state(cursor):
+    """Add authored NPC combat tuning and live health state."""
+    create_npc_tables(cursor)
+
+
 MIGRATIONS = (
     (1, migration_001_non_admin_default),
     (2, migration_002_persistent_items),
     (3, migration_003_authored_content_and_npcs),
+    (4, migration_004_npc_combat_state),
 )
 
 
