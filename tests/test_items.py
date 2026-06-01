@@ -80,9 +80,7 @@ class ItemPersistenceTests(unittest.TestCase):
         self.assertEqual(
             self.player.messages,
             [
-                "You see open land around you.",
-                "Items here: Haven Map",
-                "Characters here: Haven Guide",
+                "Open Land\nYou see open land around you.\nItems: Haven Map\nCharacters: Haven Guide",
             ],
         )
 
@@ -97,7 +95,9 @@ class ItemPersistenceTests(unittest.TestCase):
             self.player.messages,
             [
                 "You pick up Haven Map.",
-                "Inventory: Haven Map",
+                "Inventory",
+                "  Carried: Haven Map",
+                "  Equipped: None",
                 "You drop Haven Map.",
             ],
         )
@@ -114,7 +114,10 @@ class ItemPersistenceTests(unittest.TestCase):
         returning_player.messages.clear()
         general_commands.handle_inventory(returning_player)
 
-        self.assertEqual(returning_player.messages, ["Inventory: Haven Map"])
+        self.assertEqual(
+            returning_player.messages,
+            ["Inventory", "  Carried: Haven Map", "  Equipped: None"],
+        )
 
     def test_authored_item_does_not_respawn_after_pickup_and_content_reload(self):
         general_commands.handle_get(self.player, "Haven Map")
@@ -148,6 +151,80 @@ class ItemPersistenceTests(unittest.TestCase):
             ["Haven Map"],
         )
         self.assertEqual(inventory_items(self.player.cursor, "Collector"), [])
+
+    def test_abbreviated_item_target_and_examination(self):
+        self.player.x = 500
+        self.player.y = 499
+
+        general_commands.handle_examine(self.player, "kun")
+        general_commands.handle_get(self.player, "kun")
+
+        self.assertEqual(
+            self.player.messages,
+            [
+                "Practice Kunai",
+                "A dulled kunai balanced for training drills.",
+                "Type: weapon",
+                "Use: Wield it for training. Throwing attacks will arrive with ranged combat rules.",
+                "You pick up Practice Kunai.",
+            ],
+        )
+
+    def test_ordinal_item_target_selects_stable_duplicate(self):
+        definition_id = self.connection.execute(
+            "SELECT id FROM item_definitions WHERE item_key=?",
+            ("practice-kunai",),
+        ).fetchone()["id"]
+        self.connection.execute(
+            "INSERT INTO room_items (item_definition_id, x, y) VALUES (?, ?, ?)",
+            (definition_id, 500, 499),
+        )
+        self.connection.commit()
+        original_ids = [
+            item["id"]
+            for item in room_items(self.player.cursor, 500, 499)
+            if item["name"] == "Practice Kunai"
+        ]
+        self.player.x = 500
+        self.player.y = 499
+
+        general_commands.handle_get(self.player, "2.kun")
+
+        remaining_ids = [
+            item["id"]
+            for item in room_items(self.player.cursor, 500, 499)
+            if item["name"] == "Practice Kunai"
+        ]
+        self.assertEqual(remaining_ids, [original_ids[0]])
+
+    def test_wield_remove_and_equipment_persistence(self):
+        self.player.x = 500
+        self.player.y = 499
+        general_commands.handle_get(self.player, "kun")
+        general_commands.handle_wield(self.player, "kun")
+
+        returning_player = TestProtocol(shinobi_mud.cursor)
+        returning_player.username = "Collector"
+        general_commands.handle_inventory(returning_player)
+        general_commands.handle_remove(returning_player, "kun")
+
+        self.assertEqual(
+            returning_player.messages,
+            [
+                "Inventory",
+                "  Carried: None",
+                "  Equipped: hand: Practice Kunai",
+                "You remove Practice Kunai.",
+            ],
+        )
+
+    def test_look_at_item_uses_examination(self):
+        self.player.x = 500
+        self.player.y = 499
+
+        general_commands.handle_look(self.player, raw_args="at kun")
+
+        self.assertEqual(self.player.messages[0], "Practice Kunai")
 
 
 if __name__ == "__main__":

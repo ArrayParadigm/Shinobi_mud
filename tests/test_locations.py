@@ -193,7 +193,7 @@ class LocationTests(unittest.TestCase):
         finally:
             general_commands.UTILITIES["WORLD_MAP"] = original_map
 
-        self.assertEqual(len(self.player.messages[-1].splitlines()), 12)
+        self.assertEqual(len(self.player.messages[-1].splitlines()), 22)
 
 
 if __name__ == "__main__":

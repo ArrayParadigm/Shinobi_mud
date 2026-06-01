@@ -61,13 +61,30 @@ def _sync_item_templates(cursor, templates):
     for template in templates:
         cursor.execute(
             """
-            INSERT INTO item_definitions (item_key, name, description)
-            VALUES (?, ?, ?)
+            INSERT INTO item_definitions (
+                item_key, name, description, keywords, item_type,
+                equipment_slot, use_text, damage_bonus
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(item_key) DO UPDATE SET
                 name=excluded.name,
-                description=excluded.description
+                description=excluded.description,
+                keywords=excluded.keywords,
+                item_type=excluded.item_type,
+                equipment_slot=excluded.equipment_slot,
+                use_text=excluded.use_text,
+                damage_bonus=excluded.damage_bonus
             """,
-            (template["key"], template["name"], template["description"]),
+            (
+                template["key"],
+                template["name"],
+                template["description"],
+                " ".join(template.get("keywords", [])),
+                template.get("item_type", "misc"),
+                template.get("equipment_slot"),
+                template.get("use_text", ""),
+                int(template.get("damage_bonus", 0)),
+            ),
         )
 
 

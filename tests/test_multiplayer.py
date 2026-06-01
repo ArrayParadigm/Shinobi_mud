@@ -167,7 +167,11 @@ class MultiplayerTests(unittest.TestCase):
         general_commands.handle_score(self.array)
 
         self.assertEqual(self.array.messages[0], "Score for Array")
-        self.assertIn("Health: 10  Stamina: 10  Chakra: 10", self.array.messages)
+        self.assertIn("Health: 10/10  Stamina: 10/10  Chakra: 10/10", self.array.messages)
+        self.assertIn(
+                "Specialty: newbie  Clan: Unaffiliated  Release: Undeclared",
+            self.array.messages,
+        )
         self.assertIn("Location: (1, 1)", self.array.messages)
         self.assertIn("Area: Test Town  VNUM: 3000", self.array.messages)
 
@@ -182,7 +186,7 @@ class MultiplayerTests(unittest.TestCase):
 
         self.assertEqual(
             self.array.messages,
-            ["[HP:10 ST:10 CH:10 | Test Town [3000] (1, 1)]"],
+            ["[HP:10/10 ST:10/10 CH:10/10 | Test Town [3000] (1, 1)]"],
         )
 
     def test_nearby_player_listing_shows_distance_but_not_roommates(self):

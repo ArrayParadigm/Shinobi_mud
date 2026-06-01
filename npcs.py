@@ -1,9 +1,6 @@
 """Persistent NPC templates, live instances, and lightweight combat."""
 
 
-PLAYER_RECOVERY_HEALTH = 10
-
-
 def create_npc_tables(cursor):
     """Create persistent NPC template and spawned-instance tables."""
     cursor.execute(
@@ -103,7 +100,7 @@ def talk_to_npc(cursor, x, y, npc_name):
 def attack_npc(cursor, username, x, y, npc_name):
     """Resolve one player attack and an immediate hostile counterattack."""
     player = cursor.execute(
-        "SELECT id, health, strength FROM players WHERE username=?",
+        "SELECT id, health, max_health, strength FROM players WHERE username=?",
         (username,),
     ).fetchone()
     if not player:
@@ -156,7 +153,7 @@ def attack_npc(cursor, username, x, y, npc_name):
         player_health = max(0, player["health"] - npc_damage)
         player_defeated = player_health == 0
         if player_defeated:
-            player_health = PLAYER_RECOVERY_HEALTH
+            player_health = player["max_health"]
         cursor.execute(
             "UPDATE players SET health=? WHERE id=?",
             (player_health, player["id"]),

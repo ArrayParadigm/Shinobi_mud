@@ -172,7 +172,7 @@ class CombatSliceTests(unittest.TestCase):
             ).fetchone()["health"],
             8,
         )
-        self.assertIn("[HP:8 ST:10 CH:10 | Eve's Haven [3001] (500, 499)]", returning_player.messages)
+        self.assertIn("[HP:8/10 ST:10/10 CH:10/10 | Eve's Haven [3001] (500, 499)]", returning_player.messages)
 
 
 if __name__ == "__main__":

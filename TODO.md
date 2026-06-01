@@ -120,18 +120,18 @@ One authored hostile NPC can be attacked, counterattack, recover after defeat, a
 
 Turn the persistent-item proof of concept into a usable interaction layer before combat begins depending on equipment.
 
-- [ ] Add authored item keywords, item types, and interaction metadata without moving mutable instances out of SQLite.
-- [ ] Resolve item targets predictably: exact names first, then authored keywords and prefixes, then the first stable matching instance.
-- [ ] Add ordinal targeting such as `2.kun` when duplicate items need an explicit selection.
-- [ ] Add `examine <item>` and `look at <item>` for items in the room or character inventory.
-- [ ] Improve `inventory` formatting so carried items and equipped items are easy to scan.
-- [ ] Add equipment storage and basic `wield <item>` and `remove <item>` commands.
-- [ ] Define the Practice Kunai as an authored weapon/tool that can be examined and wielded.
-- [ ] Defer thrown-kunai attacks until the combat reliability sprint has a deliberate ranged-targeting rule.
-- [ ] Clean up room presentation: group map, room header, description, exits, items, NPCs, and players into readable sections.
-- [ ] Decide whether normal `look` and movement should use a compact local map while `survey` provides the larger terrain view.
-- [ ] Avoid noisy empty-state lines such as `You are alone in this room.` when the rest of the room output already reads cleanly.
-- [ ] Add tests for item targeting, duplicate selection, examination, equipment persistence, and formatted room output.
+- [x] Add authored item keywords, item types, and interaction metadata without moving mutable instances out of SQLite.
+- [x] Resolve item targets predictably: exact names first, then authored keywords and prefixes, then the first stable matching instance.
+- [x] Add ordinal targeting such as `2.kun` when duplicate items need an explicit selection.
+- [x] Add `examine <item>` and `look at <item>` for items in the room or character inventory.
+- [x] Improve `inventory` formatting so carried items and equipped items are easy to scan.
+- [x] Add equipment storage and basic `wield <item>` and `remove <item>` commands.
+- [x] Define the Practice Kunai as an authored weapon/tool that can be examined and wielded.
+- [x] Defer thrown-kunai attacks until the combat reliability sprint has a deliberate ranged-targeting rule.
+- [x] Clean up room presentation: group map, room header, description, exits, items, NPCs, and players into readable sections.
+- [x] Decide whether normal `look` and movement should use a compact local map while `survey` provides the larger terrain view.
+- [x] Avoid noisy empty-state lines such as `You are alone in this room.` when the rest of the room output already reads cleanly.
+- [x] Add tests for item targeting, duplicate selection, examination, equipment persistence, and formatted room output.
 
 ### Done When
 
@@ -161,11 +161,11 @@ Two players can fight the same authored NPC without state corruption, nearby pla
 
 Repair the rough character-creation flow before adding progression systems that depend on it.
 
-- [ ] Replace the current incremental stat-allocation prompt with a clearer allocation workflow.
-- [ ] Separate current resources from maximum health, stamina, and chakra.
-- [ ] Decide the initial clan and natural-release data model.
-- [ ] Display the new character fields in `score`.
-- [ ] Add migrations and tests for new accounts and existing-account upgrades.
+- [x] Replace the current incremental stat-allocation prompt with a clearer allocation workflow.
+- [x] Separate current resources from maximum health, stamina, and chakra.
+- [x] Decide the initial clan and natural-release data model.
+- [x] Display the new character fields in `score`.
+- [x] Add migrations and tests for new accounts and existing-account upgrades.
 
 ### Done When
 

@@ -1,5 +1,29 @@
 # Changelog
 
+## 2026-06-01 - Inventory Management and Character Foundation
+
+### Added
+
+- Added authored item keywords, item types, equipment slots, usage text, and future-facing damage bonuses.
+- Added abbreviated and ordinal item targeting, including commands such as `get kun` and `get 2.kun`.
+- Added `examine`, `look at`, `wield`, and `remove`, with persistent equipped slots and clearer inventory formatting.
+- Added durable maximum health, stamina, and chakra fields alongside clan and natural release.
+
+### Changed
+
+- Replaced incremental character stats with one named allocation line whose bonuses total exactly 10.
+- Added specialty, clan, and natural-release choices to new-character creation and displayed them in `score`.
+- Made routine room views compact while keeping the larger terrain map under `survey`.
+- Grouped room details into readable blocks and removed noisy empty-room lines.
+- Recovered defeated players to their stored maximum health.
+
+### Verification
+
+- Added migration coverage for existing private-alpha characters and interaction coverage for abbreviated targets, duplicate items, examination, and persistent equipment.
+- Upgraded the preserved local development database through migration 5 while retaining its existing player rows.
+- Passed `python -m unittest discover -s tests -v` with 79 tests.
+- Passed Python syntax compilation across the repository.
+
 ## 2026-06-01 - Inventory Sprint Reprioritization
 
 ### Changed

@@ -6,7 +6,7 @@ import unittest
 import admin_commands
 import shinobi_mud
 from command_system import CommandSpec
-from migrations import apply_migrations
+from migrations import apply_migrations, migration_005_inventory_and_character_foundation
 
 
 class TestProtocol(shinobi_mud.NinjaMUDProtocol):
@@ -42,8 +42,10 @@ class AccountLifecycleTests(unittest.TestCase):
         player.handle_username(username)
         player.register_password(password)
         player.confirm_password(password)
-        player.choose_specialty("a")
-        player.allocate_stats("strength=10")
+        player.choose_specialty("1")
+        player.choose_clan("2")
+        player.choose_release("1")
+        player.allocate_stats("strength=2 dexterity=2 agility=2 intelligence=2 wisdom=2")
         return player
 
     def test_registration_creates_non_admin_scrypt_account(self):
@@ -55,6 +57,10 @@ class AccountLifecycleTests(unittest.TestCase):
 
         self.assertEqual(row["is_admin"], 0)
         self.assertTrue(row["password"].startswith("scrypt$"))
+        self.assertEqual(row["role_type"], "Ninjutsu")
+        self.assertEqual(row["clan"], "Leaf")
+        self.assertEqual(row["natural_release"], "Fire")
+        self.assertEqual(row["strength"], 7)
         self.assertEqual(player.state, "COMMAND")
 
     def test_login_restores_saved_character_fields(self):
@@ -117,16 +123,18 @@ class AccountLifecycleTests(unittest.TestCase):
         player.handle_username("StatUser")
         player.register_password("password")
         player.confirm_password("password")
-        player.choose_specialty("a")
+        player.choose_specialty("1")
+        player.choose_clan("1")
+        player.choose_release("5")
 
-        player.allocate_stats("strength=-1")
-        self.assertEqual(player.character_creation_data["remaining_points"], 10)
+        player.allocate_stats("strength=-1 dexterity=2 agility=2 intelligence=2 wisdom=5")
+        self.assertEqual(player.state, "ALLOCATE_STATS")
 
-        player.allocate_stats("strength=0")
-        self.assertEqual(player.character_creation_data["remaining_points"], 10)
+        player.allocate_stats("strength=2 dexterity=2 agility=2 intelligence=2")
+        self.assertEqual(player.state, "ALLOCATE_STATS")
 
-        player.allocate_stats("strength=11")
-        self.assertEqual(player.character_creation_data["remaining_points"], 10)
+        player.allocate_stats("strength=11 dexterity=0 agility=0 intelligence=0 wisdom=0")
+        self.assertEqual(player.state, "ALLOCATE_STATS")
 
     def test_password_input_is_redacted_in_logs(self):
         player = TestProtocol(shinobi_mud.cursor)
@@ -138,6 +146,42 @@ class AccountLifecycleTests(unittest.TestCase):
         logs = "\n".join(captured.output)
         self.assertIn("Received redacted input", logs)
         self.assertNotIn("should-not-appear", logs)
+
+    def test_character_foundation_migration_preserves_existing_resources(self):
+        connection = sqlite3.connect(":memory:")
+        connection.row_factory = sqlite3.Row
+        connection.execute(
+            """
+            CREATE TABLE players (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE,
+                password TEXT NOT NULL,
+                health INTEGER,
+                stamina INTEGER,
+                chakra INTEGER
+            )
+            """
+        )
+        connection.execute(
+            """
+            INSERT INTO players (username, password, health, stamina, chakra)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            ("LegacyStats", "hash", 17, 13, 21),
+        )
+
+        migration_005_inventory_and_character_foundation(connection.cursor())
+
+        player = connection.execute(
+            "SELECT * FROM players WHERE username=?",
+            ("LegacyStats",),
+        ).fetchone()
+        self.assertEqual(player["max_health"], 17)
+        self.assertEqual(player["max_stamina"], 13)
+        self.assertEqual(player["max_chakra"], 21)
+        self.assertEqual(player["clan"], "Unaffiliated")
+        self.assertEqual(player["natural_release"], "Undeclared")
+        connection.close()
 
 
 class AdminPermissionTests(unittest.TestCase):

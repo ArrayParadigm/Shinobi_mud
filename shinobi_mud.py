@@ -71,6 +71,32 @@ SHOW_NEARBY_PLAYERS = True
 NEARBY_PLAYER_RADIUS = DEFAULT_NEARBY_PLAYER_RADIUS
 WORLD_TICK_INTERVAL_SECONDS = 30
 WORLD_TICK_LOOP = None
+NORMAL_MAP_WIDTH_RADIUS = 5
+NORMAL_MAP_HEIGHT_RADIUS = 2
+BASE_ATTRIBUTE_SCORE = 5
+ATTRIBUTE_ALLOCATION_POINTS = 10
+ATTRIBUTE_NAMES = ("strength", "dexterity", "agility", "intelligence", "wisdom")
+SPECIALTIES = {
+    "1": "Ninjutsu",
+    "2": "Genjutsu",
+    "3": "Taijutsu",
+    "a": "Ninjutsu",
+    "b": "Genjutsu",
+    "c": "Taijutsu",
+}
+CLANS = {
+    "1": "Unaffiliated",
+    "2": "Leaf",
+    "3": "Sand",
+    "4": "Mist",
+}
+NATURAL_RELEASES = {
+    "1": "Fire",
+    "2": "Water",
+    "3": "Earth",
+    "4": "Lightning",
+    "5": "Wind",
+}
 
 # List of explicitly approved command modules
 COMMAND_MODULES = [
@@ -284,6 +310,8 @@ def get_state_handlers():
         "REGISTER_PASSWORD": "register_password",
         "CONFIRM_PASSWORD": "confirm_password",
         "CHOOSE_SPECIALTY": "choose_specialty",
+        "CHOOSE_CLAN": "choose_clan",
+        "CHOOSE_RELEASE": "choose_release",
         "ALLOCATE_STATS": "allocate_stats",
         "COMMAND": "handle_command",
     }
@@ -407,8 +435,6 @@ class NinjaMUDProtocol(basic.LineReceiver):
         
         if others:
             self.sendLine(f"Also here: {', '.join(others)}".encode('utf-8'))
-        else:
-            self.sendLine(b"You are alone in this room.")
 
     def list_nearby_players(self):
         """List characters in the configured nearby grid radius."""
@@ -449,14 +475,16 @@ class NinjaMUDProtocol(basic.LineReceiver):
     def display_room(self):
         """Displays the grid map around the player."""
         try:
+            UTILITIES["render_room"](self, WORLD_OVERLAYS)
             map_view = UTILITIES["render_open_land"](
                 self.x,
                 self.y,
                 world_map=WORLD_MAP,
                 overlays=WORLD_OVERLAYS,
+                width_radius=NORMAL_MAP_WIDTH_RADIUS,
+                height_radius=NORMAL_MAP_HEIGHT_RADIUS,
             )
             self.sendLine(map_view.encode("utf-8"))
-            UTILITIES["render_room"](self, WORLD_OVERLAYS)
             self.list_players_in_room()
             self.list_nearby_players()
         except KeyError:
@@ -494,7 +522,11 @@ class NinjaMUDProtocol(basic.LineReceiver):
         """Display a compact command prompt with current resources and location."""
         try:
             self.cursor.execute(
-                "SELECT health, stamina, chakra FROM players WHERE username=?",
+                """
+                SELECT health, max_health, stamina, max_stamina, chakra, max_chakra
+                FROM players
+                WHERE username=?
+                """,
                 (self.username,),
             )
             stats = self.cursor.fetchone()
@@ -507,7 +539,11 @@ class NinjaMUDProtocol(basic.LineReceiver):
             else:
                 location = f"({self.x}, {self.y})"
             self.sendLine(
-                f"[HP:{stats[0]} ST:{stats[1]} CH:{stats[2]} | {location}]".encode("utf-8")
+                (
+                    f"[HP:{stats['health']}/{stats['max_health']} "
+                    f"ST:{stats['stamina']}/{stats['max_stamina']} "
+                    f"CH:{stats['chakra']}/{stats['max_chakra']} | {location}]"
+                ).encode("utf-8")
             )
         except Exception as exc:
             logging.error("Unable to display prompt for %s: %s", self.username, exc, exc_info=True)
@@ -521,65 +557,116 @@ class NinjaMUDProtocol(basic.LineReceiver):
             """, (self.username, hashed_password, self.x, self.y, self.is_admin))
             self.cursor.connection.commit()
             del self.character_creation_data['password']
-            self.sendLine(b"Account created! Please choose your specialty:")
-            self.sendLine(b"a) Ninjutsu\nb) Genjutsu\nc) Taijutsu")
+            self.sendLine(b"Account created! Let's shape your shinobi.")
+            self.sendLine(b"Choose a specialty: 1) Ninjutsu  2) Genjutsu  3) Taijutsu")
             self.state = "CHOOSE_SPECIALTY"
         else:
             self.sendLine(b"Passwords do not match. Try again.")
             self.state = "REGISTER_PASSWORD"
 
     def choose_specialty(self, choice):
-        specialties = {"a": "Ninjutsu", "b": "Genjutsu", "c": "Taijutsu"}
-        if choice.lower() in specialties:
-            self.character_creation_data['specialty'] = specialties[choice.lower()]
-            self.cursor.execute("UPDATE players SET role_type=? WHERE username=?",
-                                (choice.lower(), self.username))
+        specialty = SPECIALTIES.get(choice.strip().lower())
+        if specialty:
+            self.character_creation_data["specialty"] = specialty
+            self.cursor.execute(
+                "UPDATE players SET role_type=? WHERE username=?",
+                (specialty, self.username),
+            )
             self.cursor.connection.commit()
-            self.sendLine(f"Specialty {specialties[choice.lower()]} selected! Now allocate 10 points.".encode('utf-8'))
-            self.character_creation_data['remaining_points'] = 10
-            self.state = "ALLOCATE_STATS"
+            self.sendLine(f"Specialty selected: {specialty}.".encode("utf-8"))
+            self.sendLine(b"Choose a clan: 1) Unaffiliated  2) Leaf  3) Sand  4) Mist")
+            self.state = "CHOOSE_CLAN"
         else:
-            self.sendLine(b"Invalid choice. Choose again: a) Ninjutsu, b) Genjutsu, c) Taijutsu")
+            self.sendLine(b"Choose a specialty: 1) Ninjutsu  2) Genjutsu  3) Taijutsu")
+
+    def choose_clan(self, choice):
+        """Persist the initial clan selection without attaching bonuses yet."""
+        clan = CLANS.get(choice.strip().lower())
+        if not clan:
+            self.sendLine(b"Choose a clan: 1) Unaffiliated  2) Leaf  3) Sand  4) Mist")
+            return
+        self.character_creation_data["clan"] = clan
+        self.cursor.execute(
+            "UPDATE players SET clan=? WHERE username=?",
+            (clan, self.username),
+        )
+        self.cursor.connection.commit()
+        self.sendLine(f"Clan selected: {clan}.".encode("utf-8"))
+        self.sendLine(b"Choose a natural release: 1) Fire  2) Water  3) Earth  4) Lightning  5) Wind")
+        self.state = "CHOOSE_RELEASE"
+
+    def choose_release(self, choice):
+        """Persist the character's initial chakra nature."""
+        natural_release = NATURAL_RELEASES.get(choice.strip().lower())
+        if not natural_release:
+            self.sendLine(b"Choose a natural release: 1) Fire  2) Water  3) Earth  4) Lightning  5) Wind")
+            return
+        self.character_creation_data["natural_release"] = natural_release
+        self.cursor.execute(
+            "UPDATE players SET natural_release=? WHERE username=?",
+            (natural_release, self.username),
+        )
+        self.cursor.connection.commit()
+        self.sendLine(f"Natural release selected: {natural_release}.".encode("utf-8"))
+        self.sendLine(
+            (
+                "Distribute 10 bonus points in one line. "
+                "Example: strength=2 dexterity=2 agility=2 intelligence=2 wisdom=2"
+            ).encode("utf-8")
+        )
+        self.state = "ALLOCATE_STATS"
 
     def allocate_stats(self, line):
-        """Handles stat allocation."""
+        """Apply one complete, readable allocation of attribute bonuses."""
         try:
-            parts = line.strip().split('=')
-            if len(parts) != 2:
-                self.sendLine(b"Invalid format. Use: stat_name=value (e.g., strength=3).")
+            allocations = {}
+            for assignment in line.replace(",", " ").split():
+                stat, value = assignment.split("=", 1)
+                stat = stat.strip().lower()
+                if stat not in ATTRIBUTE_NAMES or stat in allocations:
+                    raise ValueError
+                allocations[stat] = int(value)
+            if set(allocations) != set(ATTRIBUTE_NAMES):
+                raise ValueError
+            if any(value < 0 for value in allocations.values()):
+                self.sendLine(b"Allocation values cannot be negative.")
                 return
-    
-            stat, value = parts[0].strip().lower(), int(parts[1].strip())
-            if stat not in ['strength', 'dexterity', 'agility', 'intelligence', 'wisdom']:
-                self.sendLine(b"Invalid stat name.")
+            if sum(allocations.values()) != ATTRIBUTE_ALLOCATION_POINTS:
+                self.sendLine(b"Your five bonus allocations must total exactly 10 points.")
                 return
-    
-            remaining = self.character_creation_data.get('remaining_points', 0)
-            if value <= 0:
-                self.sendLine(b"Allocation values must be greater than zero.")
-                return
-            if remaining < value:
-                self.sendLine(f"Not enough points. You have {remaining} left.".encode('utf-8'))
-                return
-    
-            self.character_creation_data[stat] = self.character_creation_data.get(stat, 0) + value
-            self.character_creation_data['remaining_points'] -= value
-    
-            self.cursor.execute(f"UPDATE players SET {stat}=? WHERE username=?",
-                                (self.character_creation_data[stat], self.username))
+
+            final_stats = {
+                stat: BASE_ATTRIBUTE_SCORE + allocations[stat]
+                for stat in ATTRIBUTE_NAMES
+            }
+            self.cursor.execute(
+                """
+                UPDATE players
+                SET strength=?, dexterity=?, agility=?, intelligence=?, wisdom=?
+                WHERE username=?
+                """,
+                (*[final_stats[stat] for stat in ATTRIBUTE_NAMES], self.username),
+            )
             self.cursor.connection.commit()
-    
-            if self.character_creation_data['remaining_points'] <= 0:
-                self.sendLine(b"Character is ready! Entering the game...")
-                self.state = "COMMAND"
-                self.track_player()
-                self.display_room()
-                self.display_prompt()
-            else:
-                self.sendLine(f"{stat.capitalize()} set to {self.character_creation_data[stat]}. Remaining points: {self.character_creation_data['remaining_points']}".encode('utf-8'))
-    
-        except ValueError:
-            self.sendLine(b"Invalid value. Please enter a number.")
+            self.sendLine(
+                (
+                    "Attributes set: "
+                    + ", ".join(f"{stat}={final_stats[stat]}" for stat in ATTRIBUTE_NAMES)
+                    + "."
+                ).encode("utf-8")
+            )
+            self.sendLine(b"Character is ready! Entering the game...")
+            self.state = "COMMAND"
+            self.track_player()
+            self.display_room()
+            self.display_prompt()
+        except (ValueError, TypeError):
+            self.sendLine(
+                (
+                    "Use all five stats in one line, totaling 10 bonus points: "
+                    "strength=2 dexterity=2 agility=2 intelligence=2 wisdom=2"
+                ).encode("utf-8")
+            )
 
 class NinjaMUDFactory(protocol.Factory):
     def buildProtocol(self, addr):

@@ -22,6 +22,11 @@ PLAYER_COLUMNS = (
     "intelligence",
     "wisdom",
     "dojo_alignment",
+    "max_health",
+    "max_stamina",
+    "max_chakra",
+    "clan",
+    "natural_release",
 )
 
 
@@ -35,7 +40,7 @@ def create_players_table(cursor, table_name="players"):
             x INTEGER DEFAULT 500,
             y INTEGER DEFAULT 500,
             is_admin BOOLEAN DEFAULT 0,
-            role_type INTEGER DEFAULT 0,
+            role_type TEXT DEFAULT 'newbie',
             health INTEGER DEFAULT 10,
             stamina INTEGER DEFAULT 10,
             chakra INTEGER DEFAULT 10,
@@ -44,7 +49,12 @@ def create_players_table(cursor, table_name="players"):
             agility INTEGER DEFAULT 5,
             intelligence INTEGER DEFAULT 5,
             wisdom INTEGER DEFAULT 5,
-            dojo_alignment TEXT DEFAULT 'None'
+            dojo_alignment TEXT DEFAULT 'None',
+            max_health INTEGER DEFAULT 10,
+            max_stamina INTEGER DEFAULT 10,
+            max_chakra INTEGER DEFAULT 10,
+            clan TEXT DEFAULT 'Unaffiliated',
+            natural_release TEXT DEFAULT 'Undeclared'
         )
         """
     )
@@ -86,11 +96,47 @@ def migration_004_npc_combat_state(cursor):
     create_npc_tables(cursor)
 
 
+def ensure_player_foundation_columns(cursor):
+    """Add durable character identity and maximum resource fields."""
+    columns = {
+        column[1]
+        for column in cursor.execute("PRAGMA table_info(players)")
+    }
+    for column_name, definition in (
+        ("max_health", "INTEGER DEFAULT 10"),
+        ("max_stamina", "INTEGER DEFAULT 10"),
+        ("max_chakra", "INTEGER DEFAULT 10"),
+        ("clan", "TEXT DEFAULT 'Unaffiliated'"),
+        ("natural_release", "TEXT DEFAULT 'Undeclared'"),
+    ):
+        if column_name not in columns:
+            cursor.execute(f"ALTER TABLE players ADD COLUMN {column_name} {definition}")
+    cursor.execute("UPDATE players SET max_health=health WHERE max_health IS NULL OR max_health < health")
+    cursor.execute("UPDATE players SET max_stamina=stamina WHERE max_stamina IS NULL OR max_stamina < stamina")
+    cursor.execute("UPDATE players SET max_chakra=chakra WHERE max_chakra IS NULL OR max_chakra < chakra")
+    if "role_type" in columns:
+        cursor.execute(
+            "UPDATE players SET role_type='newbie' "
+            "WHERE role_type IS NULL OR role_type=0 OR role_type='0'"
+        )
+        cursor.execute("UPDATE players SET role_type='Ninjutsu' WHERE role_type='a'")
+        cursor.execute("UPDATE players SET role_type='Genjutsu' WHERE role_type='b'")
+        cursor.execute("UPDATE players SET role_type='Taijutsu' WHERE role_type='c'")
+
+
+def migration_005_inventory_and_character_foundation(cursor):
+    """Add item interaction metadata, equipment, and character identity."""
+    create_item_tables(cursor)
+    ensure_item_seed_tracking(cursor)
+    ensure_player_foundation_columns(cursor)
+
+
 MIGRATIONS = (
     (1, migration_001_non_admin_default),
     (2, migration_002_persistent_items),
     (3, migration_003_authored_content_and_npcs),
     (4, migration_004_npc_combat_state),
+    (5, migration_005_inventory_and_character_foundation),
 )
 
 

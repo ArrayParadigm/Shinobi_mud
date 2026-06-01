@@ -176,28 +176,27 @@ def render_open_land(
     return "\n".join(visible_map)
 
 def render_room(player, overlays=None):
-    """Render optional authored content attached to a player's coordinate."""
+    """Render location details as one compact, readable room block."""
     overlay = (overlays or {}).get((player.x, player.y))
     if not overlay:
-        player.sendLine(b"You see open land around you.")
+        lines = ["Open Land", "You see open land around you."]
     else:
         room = overlay["room"]
         exits = ", ".join(room.get("exits", {}).keys()) or "None"
         description = room.get("description", "No description.")
-        player.sendLine(
-            f"{overlay['zone_name']} [{overlay['vnum']}]\n{description}\nExits: {exits}".encode("utf-8")
-        )
+        lines = [
+            f"{overlay['zone_name']} [{overlay['vnum']}]",
+            description,
+            "",
+            f"Exits: {exits}",
+        ]
 
     visible_items = items.room_items(player.cursor, player.x, player.y)
     if visible_items:
-        player.sendLine(
-            f"Items here: {items.format_item_names(visible_items)}".encode("utf-8")
-        )
+        lines.append(f"Items: {items.format_item_names(visible_items)}")
 
     visible_npcs = npcs.npcs_at(player.cursor, player.x, player.y)
     if visible_npcs:
-        player.sendLine(
-            f"Characters here: {', '.join(npc['name'] for npc in visible_npcs)}".encode(
-                "utf-8"
-            )
-        )
+        lines.append(f"Characters: {', '.join(npc['name'] for npc in visible_npcs)}")
+
+    player.sendLine("\n".join(lines).encode("utf-8"))

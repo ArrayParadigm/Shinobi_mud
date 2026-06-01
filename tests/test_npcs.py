@@ -72,7 +72,9 @@ class NPCFoundationTests(unittest.TestCase):
     def test_room_rendering_lists_npc(self):
         utils.render_room(self.player, shinobi_mud.WORLD_OVERLAYS)
 
-        self.assertIn("Characters here: Haven Guide", self.player.messages)
+        self.assertTrue(
+            any("Characters: Haven Guide" in message for message in self.player.messages)
+        )
 
     def test_talk_returns_authored_dialogue_and_rejects_missing_npc(self):
         general_commands.handle_talk(self.player, "haven guide")

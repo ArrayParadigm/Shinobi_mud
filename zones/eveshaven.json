@@ -279,17 +279,28 @@
         {
             "key": "haven-map",
             "name": "Haven Map",
-            "description": "A softly glowing map of Eve's Haven."
+            "description": "A softly glowing map of Eve's Haven.",
+            "keywords": ["map", "haven"],
+            "item_type": "reference",
+            "use_text": "Examine it to study the shape of Eve's Haven."
         },
         {
             "key": "practice-kunai",
             "name": "Practice Kunai",
-            "description": "A dulled kunai balanced for training drills."
+            "description": "A dulled kunai balanced for training drills.",
+            "keywords": ["kunai", "kun", "knife", "weapon", "practice"],
+            "item_type": "weapon",
+            "equipment_slot": "hand",
+            "use_text": "Wield it for training. Throwing attacks will arrive with ranged combat rules.",
+            "damage_bonus": 1
         },
         {
             "key": "crystal-token",
             "name": "Crystal Token",
-            "description": "A small crystalline token pulsing with a faint inner light."
+            "description": "A small crystalline token pulsing with a faint inner light.",
+            "keywords": ["token", "crystal"],
+            "item_type": "curio",
+            "use_text": "It has no active use yet."
         }
     ],
     "item_spawns": [

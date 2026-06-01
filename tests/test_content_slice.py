@@ -84,9 +84,9 @@ class ContentSliceTests(unittest.TestCase):
         )
         general_commands.handle_movement(self.player, "west")
 
-        self.assertIn("Test Town [3000]\nA compact town square.\nExits: west", self.player.messages)
+        self.assertIn("Test Town [3000]\nA compact town square.\n\nExits: west", self.player.messages)
         self.assertIn('Explorer says, "hello"', resident.messages)
-        self.assertIn("You see open land around you.", self.player.messages)
+        self.assertIn("Open Land\nYou see open land around you.", self.player.messages)
         self.assertEqual((self.player.x, self.player.y), (1, 1))
         saved = self.connection.execute(
             "SELECT x, y FROM players WHERE username=?",

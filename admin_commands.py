@@ -253,7 +253,7 @@ def setrole(protocol, username, role_type):
     Sets the role of a player.
     """
     try:
-        protocol.cursor.execute("UPDATE players SET role_type=? WHERE username=?", (int(role_type), username))
+        protocol.cursor.execute("UPDATE players SET role_type=? WHERE username=?", (role_type, username))
         protocol.cursor.connection.commit()
         protocol.sendLine(f"Set role of {username} to {role_type}".encode('utf-8'))
     except Exception as e:
@@ -265,7 +265,7 @@ def setstat(protocol, username, stat, value):
     Sets a player's stat to a given value.
     """
     try:
-        if stat not in ('health', 'stamina', 'chakra', 'strength', 'dexterity', 'agility', 'intelligence', 'wisdom'):
+        if stat not in ('health', 'max_health', 'stamina', 'max_stamina', 'chakra', 'max_chakra', 'strength', 'dexterity', 'agility', 'intelligence', 'wisdom'):
             protocol.sendLine(b"Invalid stat.")
             return
         protocol.cursor.execute(f"UPDATE players SET {stat}=? WHERE username=?", (int(value), username))

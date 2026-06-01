@@ -77,6 +77,16 @@ python promote_admin.py YourUsername
 
 Restart the MUD or reconnect that character after promotion.
 
+### Creating a Character
+
+New characters choose a specialty, clan, and natural release after setting a password. Stat allocation is entered once as five named bonuses totaling exactly 10:
+
+```text
+strength=2 dexterity=2 agility=2 intelligence=2 wisdom=2
+```
+
+Every attribute starts at 5 before those bonuses are applied.
+
 ### Testing
 
 Run the automated test suite from the project root:
@@ -113,14 +123,17 @@ Eve's Haven is the first complete overlay example. Its anchor and room offsets l
 
 ### Player Commands
 
-- `look`: display nearby terrain and players at your location.
-- `survey`: display a compact terrain view.
+- `look [at <item>]`: display a compact local terrain view or inspect an item.
+- `survey`: display the larger terrain view.
 - `north`, `south`, `east`, `west`: move across the world grid.
 - `loc`: display your grid coordinates and optional overlay area.
 - `score`: display your character sheet. `status` remains available as an alias.
-- `inventory`: list persistent carried items. `inv` remains available as an alias.
+- `inventory`: list persistent carried and equipped items. `inv` remains available as an alias.
 - `get <item>`: pick up an item at your grid location.
 - `drop <item>`: drop a carried item at your grid location.
+- `examine <item>`: inspect an item in the room or your inventory.
+- `wield <item>`: equip a carried item in its authored slot.
+- `remove <item>`: unequip a carried item.
 - `talk <character>`: speak with an NPC at your grid location.
 - `attack <character>`: resolve one melee turn against a hostile NPC at your grid location.
 - `who`: list connected characters.
@@ -132,6 +145,8 @@ Eve's Haven is the first complete overlay example. Its anchor and room offsets l
 
 Commands accept unique prefixes. The stable shortcuts `n`, `s`, `e`, `w`, and `l` always mean `north`, `south`, `east`, `west`, and `look`. Ambiguous prefixes list their possible matches instead of guessing.
 
+Item targets accept authored keywords and abbreviations. Exact names win first; otherwise the first stable matching instance is used. Use an ordinal such as `get 2.kun` when duplicate items need an explicit selection.
+
 Admin overlay tools:
 
 - `goto <vnum>`: teleport to an authored overlay room while retaining canonical coordinates.
@@ -142,13 +157,13 @@ Admin overlay tools:
 - `reloadcontent`: import authored JSON template changes and missing spawns into live state.
 - `copyover`: report that soft restarts are intentionally disabled for now.
 
-The player prompt reports health, stamina, chakra, and location after commands. Map output includes a legend. Nearby-character listings are controlled by `show_nearby_players` and `nearby_player_radius` in `config.json`.
+The player prompt reports current and maximum health, stamina, chakra, and location after commands. Map output includes a legend. Nearby-character listings are controlled by `show_nearby_players` and `nearby_player_radius` in `config.json`.
 
-Room items, character inventories, and NPC instances persist in SQLite. Authored templates and initial VNUM placements live in zone JSON files such as `zones/eveshaven.json`. Startup imports missing spawns once, so picked-up items are not recreated on every restart.
+Room items, character inventories, equipped slots, and NPC instances persist in SQLite. Authored templates, item keywords, equipment metadata, and initial VNUM placements live in zone JSON files such as `zones/eveshaven.json`. Startup imports missing spawns once, so picked-up items are not recreated on every restart.
 
 Eve's Haven authors a Haven Map at its entrance, a Practice Kunai in its garden, a Crystal Token in its library, a Haven Guide NPC at the entrance, and a hostile Practice Construct in the garden. `reloadcontent` lets an admin apply JSON template edits and create newly-authored spawns without restarting the server.
 
-The first combat loop is command-driven and turn-based. `attack <character>` applies strength-based player damage, then a surviving hostile NPC immediately counterattacks. Defeated NPCs disappear until their authored respawn delay elapses; player defeat recovers the character to 10 health.
+The first combat loop is command-driven and turn-based. `attack <character>` applies strength-based player damage, then a surviving hostile NPC immediately counterattacks. Defeated NPCs disappear until their authored respawn delay elapses; player defeat recovers the character to maximum health.
 
 ### Early Linux Testing
 
