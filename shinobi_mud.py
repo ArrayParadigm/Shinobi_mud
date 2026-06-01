@@ -2,11 +2,12 @@ import os
 import sqlite3
 from twisted.internet import protocol, reactor
 from twisted.protocols import basic
-import hashlib
 import logging
 import importlib
 import json
 import inspect
+from auth import hash_password, validate_username, verify_password
+from migrations import apply_migrations, create_players_table
 
 DEBUG_MODE = True  # True allows for debugging options; False disables them
 
@@ -88,6 +89,7 @@ logging.basicConfig(
 
 # Database setup
 conn = sqlite3.connect('mud_game_10_rooms.db')
+conn.row_factory = sqlite3.Row
 cursor = conn.cursor()
 
 def debug_log(message):
@@ -147,29 +149,19 @@ def process_command(player, command):
         logging.warning(f"Unknown command '{cmd}' issued by player {player.username}")
 
 
+def is_username_active(username, exclude=None):
+    """Return True when a username is already attached to an active protocol."""
+    return any(
+        player is not exclude and player.username == username
+        for room_players in players_in_rooms.values()
+        for player in room_players
+    )
+
+
 def ensure_tables_exist():
     try:
         # Create players table if it doesn't exist
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS players (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                username TEXT UNIQUE,
-                password TEXT NOT NULL,
-                x INTEGER DEFAULT 500,
-                y INTEGER DEFAULT 500,
-                is_admin BOOLEAN DEFAULT 1,
-                role_type INTEGER DEFAULT 0,
-                health INTEGER DEFAULT 10,
-                stamina INTEGER DEFAULT 10,
-                chakra INTEGER DEFAULT 10,
-                strength INTEGER DEFAULT 5,
-                dexterity INTEGER DEFAULT 5,
-                agility INTEGER DEFAULT 5,
-                intelligence INTEGER DEFAULT 5,
-                wisdom INTEGER DEFAULT 5,
-                dojo_alignment TEXT DEFAULT 'None'
-            )
-        ''')
+        create_players_table(cursor)
 
         debug_log("Creating player due to lack of existence.")
 
@@ -211,7 +203,7 @@ class NinjaMUDProtocol(basic.LineReceiver):
         self.character_creation_data = {}
         self.username = None
 #        self.current_room = None
-        self.is_admin = True
+        self.is_admin = False
         self.player_class = 'newbie' # Default to a basic Class
         self.STATE_HANDLERS = get_state_handlers()
         
@@ -240,7 +232,10 @@ class NinjaMUDProtocol(basic.LineReceiver):
     def lineReceived(self, line):
         try:
             command = line.decode('utf-8').strip()  # Decode input and remove leading/trailing whitespace
-            logging.info(f"Received command: {command} in state: {self.state}")
+            if self.state in {"GET_PASSWORD", "REGISTER_PASSWORD", "CONFIRM_PASSWORD"}:
+                logging.info("Received redacted input in state: %s", self.state)
+            else:
+                logging.info("Received command: %s in state: %s", command, self.state)
         except UnicodeDecodeError:
             self.sendLine(b"Error: Invalid input encoding. Please use UTF-8.")
             logging.error("Received non-UTF-8 encoded input.", exc_info=True)
@@ -260,15 +255,18 @@ class NinjaMUDProtocol(basic.LineReceiver):
             logging.warning(f"Unknown state: {self.state}")
 
     def handle_username(self, username):
+        username = username.strip()
+        validation_error = validate_username(username)
+        if validation_error:
+            self.sendLine(validation_error.encode("utf-8"))
+            self.sendLine(b"Please enter your username:")
+            return
+
         self.username = username
-        cursor.execute("SELECT * FROM players WHERE username=?", (username,))
-        player = cursor.fetchone()
+        self.cursor.execute("SELECT * FROM players WHERE username=?", (username,))
+        player = self.cursor.fetchone()
 
         if player:
-#            self.current_room = player[3]
-            self.x = player[3]  # Assuming x is the 4th column
-            self.y = player[4]  # Assuming x is the 5th column
-            self.is_admin = bool(player[4])
             self.sendLine(b"Welcome back! Please enter your password:")
             self.state = "GET_PASSWORD"
         else:
@@ -277,22 +275,37 @@ class NinjaMUDProtocol(basic.LineReceiver):
             self.state = "REGISTER_PASSWORD"
 
     def handle_password(self, password):
-        hashed_password = hashlib.sha256(password.encode()).hexdigest()
-        cursor.execute("SELECT * FROM players WHERE username=? AND password=?", (self.username, hashed_password))
-        player = cursor.fetchone()
-
-        if player:
-#            self.current_room = player[3]  # Load the last saved room from the database
-            self.x = 1 
-            self.y = 1
-            self.is_admin = bool(player[3])
-            self.player_class = player[5]
-            self.sendLine(b"Login successful!")
-            self.state = "COMMAND"
-            self.track_player()
-            self.display_room()
-        else:
+        self.cursor.execute("SELECT * FROM players WHERE username=?", (self.username,))
+        player = self.cursor.fetchone()
+        if not player:
             self.sendLine(b"Incorrect password. Try again.")
+            return
+
+        password_matches, needs_upgrade = verify_password(password, player["password"])
+        if not password_matches:
+            self.sendLine(b"Incorrect password. Try again.")
+            return
+
+        if is_username_active(self.username, exclude=self):
+            self.sendLine(b"That character is already logged in.")
+            return
+
+        if needs_upgrade:
+            self.cursor.execute(
+                "UPDATE players SET password=? WHERE username=?",
+                (hash_password(password), self.username),
+            )
+            self.cursor.connection.commit()
+            logging.info("Upgraded legacy password hash for %s.", self.username)
+
+        self.x = player["x"]
+        self.y = player["y"]
+        self.is_admin = bool(player["is_admin"])
+        self.player_class = player["role_type"]
+        self.sendLine(b"Login successful!")
+        self.state = "COMMAND"
+        self.track_player()
+        self.display_room()
             
     def list_players_in_room(self):
         """Lists other players in the current room."""
@@ -348,12 +361,13 @@ class NinjaMUDProtocol(basic.LineReceiver):
 
     def confirm_password(self, password):
         if self.character_creation_data['password'] == password:
-            hashed_password = hashlib.sha256(password.encode()).hexdigest()
-            cursor.execute("""
+            hashed_password = hash_password(password)
+            self.cursor.execute("""
                 INSERT INTO players (username, password, x, y, is_admin) 
                 VALUES (?, ?, ?, ?, ?)
             """, (self.username, hashed_password, self.x, self.y, self.is_admin))
-            conn.commit()
+            self.cursor.connection.commit()
+            del self.character_creation_data['password']
             self.sendLine(b"Account created! Please choose your specialty:")
             self.sendLine(b"a) Ninjutsu\nb) Genjutsu\nc) Taijutsu")
             self.state = "CHOOSE_SPECIALTY"
@@ -365,9 +379,9 @@ class NinjaMUDProtocol(basic.LineReceiver):
         specialties = {"a": "Ninjutsu", "b": "Genjutsu", "c": "Taijutsu"}
         if choice.lower() in specialties:
             self.character_creation_data['specialty'] = specialties[choice.lower()]
-            cursor.execute("UPDATE players SET role_type=? WHERE username=?", 
-                           (choice.lower(), self.username))
-            conn.commit()
+            self.cursor.execute("UPDATE players SET role_type=? WHERE username=?",
+                                (choice.lower(), self.username))
+            self.cursor.connection.commit()
             self.sendLine(f"Specialty {specialties[choice.lower()]} selected! Now allocate 10 points.".encode('utf-8'))
             self.character_creation_data['remaining_points'] = 10
             self.state = "ALLOCATE_STATS"
@@ -388,6 +402,9 @@ class NinjaMUDProtocol(basic.LineReceiver):
                 return
     
             remaining = self.character_creation_data.get('remaining_points', 0)
+            if value <= 0:
+                self.sendLine(b"Allocation values must be greater than zero.")
+                return
             if remaining < value:
                 self.sendLine(f"Not enough points. You have {remaining} left.".encode('utf-8'))
                 return
@@ -395,9 +412,9 @@ class NinjaMUDProtocol(basic.LineReceiver):
             self.character_creation_data[stat] = self.character_creation_data.get(stat, 0) + value
             self.character_creation_data['remaining_points'] -= value
     
-            cursor.execute(f"UPDATE players SET {stat}=? WHERE username=?", 
-                           (self.character_creation_data[stat], self.username))
-            conn.commit()
+            self.cursor.execute(f"UPDATE players SET {stat}=? WHERE username=?",
+                                (self.character_creation_data[stat], self.username))
+            self.cursor.connection.commit()
     
             if self.character_creation_data['remaining_points'] <= 0:
                 self.sendLine(b"Character is ready! Entering the game...")
@@ -451,8 +468,10 @@ def initialize_server():
     global conn, cursor
     db_file = config.get("db_file", "mud_game_10_rooms.db")
     conn = sqlite3.connect(db_file)
+    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     ensure_tables_exist()
+    apply_migrations(conn)
     logging.info(f"Database connection established using {db_file}.")
     
     # 4. Preload Map

@@ -1,13 +1,13 @@
-import os
-import json
-import logging
-from twisted.internet import reactor
+"""Minimal example for adding a command module."""
 
-def create_zone(protocol, zone_name, start_vnum, end_vnum):
-    # Implementation...
-    
+
+def handle_example(player, raw_args):
+    message = raw_args.strip() or "No arguments supplied."
+    player.sendLine(f"Example command: {message}".encode("utf-8"))
+
+
 COMMANDS = {
-    "createzone": lambda protocol, players_in_rooms, *args: create_zone(protocol, *args[0].split()),
-    "shutdown": shutdown,
-    # Additional admin commands...
+    "example": lambda player, players_in_rooms, raw_args, split_args: handle_example(
+        player, raw_args
+    ),
 }

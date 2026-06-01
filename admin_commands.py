@@ -8,6 +8,21 @@ from shinobi_mud import UTILITIES
 logging.info("admin_commands imported")
 
 
+def admin_only(handler):
+    """Wrap an admin command with the minimal Phase 1 authorization gate."""
+    def wrapped(protocol, players_in_rooms, raw_args, split_args):
+        if not protocol.is_admin:
+            protocol.sendLine(b"You do not have permission to use that command.")
+            logging.warning(
+                "Non-admin user %s attempted an admin command.",
+                protocol.username,
+            )
+            return
+        return handler(protocol, players_in_rooms, raw_args, split_args)
+
+    return wrapped
+
+
 def create_zone(protocol, zone_name, start_vnum, end_vnum):
     """
     Creates a new zone with a specified range of VNUMs.
@@ -182,8 +197,8 @@ def setrole(protocol, username, role_type):
     Sets the role of a player.
     """
     try:
-        cursor.execute("UPDATE players SET role_type=? WHERE username=?", (int(role_type), username))
-        conn.commit()
+        protocol.cursor.execute("UPDATE players SET role_type=? WHERE username=?", (int(role_type), username))
+        protocol.cursor.connection.commit()
         protocol.sendLine(f"Set role of {username} to {role_type}".encode('utf-8'))
     except Exception as e:
         protocol.sendLine(f"Failed to set role: {e}".encode('utf-8'))
@@ -197,8 +212,8 @@ def setstat(protocol, username, stat, value):
         if stat not in ('health', 'stamina', 'chakra', 'strength', 'dexterity', 'agility', 'intelligence', 'wisdom'):
             protocol.sendLine(b"Invalid stat.")
             return
-        cursor.execute(f"UPDATE players SET {stat}=? WHERE username=?", (int(value), username))
-        conn.commit()
+        protocol.cursor.execute(f"UPDATE players SET {stat}=? WHERE username=?", (int(value), username))
+        protocol.cursor.connection.commit()
         protocol.sendLine(f"Set {stat} of {username} to {value}".encode('utf-8'))
     except Exception as e:
         protocol.sendLine(f"Failed to set stat: {e}".encode('utf-8'))
@@ -209,21 +224,21 @@ def setdojo(protocol, username, dojo):
     Sets a player's dojo alignment.
     """
     try:
-        cursor.execute("UPDATE players SET dojo_alignment=? WHERE username=?", (dojo, username))
-        conn.commit()
+        protocol.cursor.execute("UPDATE players SET dojo_alignment=? WHERE username=?", (dojo, username))
+        protocol.cursor.connection.commit()
         protocol.sendLine(f"Set dojo of {username} to {dojo}".encode('utf-8'))
     except Exception as e:
         protocol.sendLine(f"Failed to set dojo: {e}".encode('utf-8'))
 
 # Command registry
 COMMANDS = {
-    "createzone": lambda protocol, players_in_rooms, raw_args, split_args: create_zone(protocol, *split_args) if len(split_args) == 3 else protocol.sendLine(b"Usage: createzone <zone_name> <start_vnum> <end_vnum>"),
-    "goto": lambda protocol, players_in_rooms, raw_args, split_args: goto(protocol, split_args[0]) if len(split_args) >= 1 and split_args[0].isdigit() else protocol.sendLine(b"Usage: goto <room_id>"),
-    "dig": lambda protocol, players_in_rooms, raw_args, split_args: dig(protocol, *split_args) if len(split_args) >= 2 else protocol.sendLine(b"Usage: dig <direction> <room_name>"),
-    "shutdown": lambda protocol, players_in_rooms, raw_args, split_args: shutdown(protocol),
-    "copyover": lambda protocol, players_in_rooms, raw_args, split_args: copyover(protocol),
-    "setrole": lambda protocol, players_in_rooms, raw_args, split_args: setrole(protocol, *split_args) if len(split_args) == 2 else protocol.sendLine(b"Usage: setrole <username> <role_type>"),
-    "setstat": lambda protocol, players_in_rooms, raw_args, split_args: setstat(protocol, *split_args) if len(split_args) == 3 else protocol.sendLine(b"Usage: setstat <username> <stat> <value>"),
-    "setdojo": lambda protocol, players_in_rooms, raw_args, split_args: setdojo(protocol, *split_args) if len(split_args) == 2 else protocol.sendLine(b"Usage: setdojo <username> <dojo>"),
+    "createzone": admin_only(lambda protocol, players_in_rooms, raw_args, split_args: create_zone(protocol, *split_args) if len(split_args) == 3 else protocol.sendLine(b"Usage: createzone <zone_name> <start_vnum> <end_vnum>")),
+    "goto": admin_only(lambda protocol, players_in_rooms, raw_args, split_args: goto(protocol, split_args[0]) if len(split_args) >= 1 and split_args[0].isdigit() else protocol.sendLine(b"Usage: goto <room_id>")),
+    "dig": admin_only(lambda protocol, players_in_rooms, raw_args, split_args: dig(protocol, *split_args) if len(split_args) >= 2 else protocol.sendLine(b"Usage: dig <direction> <room_name>")),
+    "shutdown": admin_only(lambda protocol, players_in_rooms, raw_args, split_args: shutdown(protocol)),
+    "copyover": admin_only(lambda protocol, players_in_rooms, raw_args, split_args: copyover(protocol)),
+    "setrole": admin_only(lambda protocol, players_in_rooms, raw_args, split_args: setrole(protocol, *split_args) if len(split_args) == 2 else protocol.sendLine(b"Usage: setrole <username> <role_type>")),
+    "setstat": admin_only(lambda protocol, players_in_rooms, raw_args, split_args: setstat(protocol, *split_args) if len(split_args) == 3 else protocol.sendLine(b"Usage: setstat <username> <stat> <value>")),
+    "setdojo": admin_only(lambda protocol, players_in_rooms, raw_args, split_args: setdojo(protocol, *split_args) if len(split_args) == 2 else protocol.sendLine(b"Usage: setdojo <username> <dojo>")),
 }
 

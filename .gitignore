@@ -1,1 +1,17 @@
+# Local runtime state
+*.db
+*.db-journal
+*.log
+/.local/
+
+# Python generated files
+__pycache__/
+*.py[cod]
+/.venv/
+
+# IDE metadata
 /.metadata/
+/Shinobi_Mud/
+
+# Local Windows shortcuts
+*.lnk
