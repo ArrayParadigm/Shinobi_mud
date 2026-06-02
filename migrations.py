@@ -4,7 +4,11 @@ from content import create_authored_content_tables
 from body import ensure_body_columns
 from items import create_item_tables, ensure_item_seed_tracking
 from npcs import create_npc_tables
-from techniques import create_technique_tables, ensure_usage_progress_columns
+from techniques import (
+    create_technique_tables,
+    ensure_catalog_availability_columns,
+    ensure_usage_progress_columns,
+)
 
 
 PLAYER_COLUMNS = (
@@ -167,6 +171,12 @@ def migration_010_usage_based_techniques(cursor):
     ensure_usage_progress_columns(cursor)
 
 
+def migration_011_technique_catalog_placeholders(cursor):
+    """Separate available techniques from catalog-only placeholders."""
+    create_technique_tables(cursor)
+    ensure_catalog_availability_columns(cursor)
+
+
 MIGRATIONS = (
     (1, migration_001_non_admin_default),
     (2, migration_002_persistent_items),
@@ -178,6 +188,7 @@ MIGRATIONS = (
     (8, migration_008_consumable_items),
     (9, migration_009_skill_and_jutsu_framework),
     (10, migration_010_usage_based_techniques),
+    (11, migration_011_technique_catalog_placeholders),
 )
 
 

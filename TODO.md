@@ -16,7 +16,7 @@ The foundation checkpoint in `FOUNDATION_CHECKLIST.md` is complete.
 
 ### Current Checkpoint
 
-The private-alpha gameplay loop is covered by 118 automated tests. Runtime database ownership is explicit: the server keeps a maintenance connection for startup and ticks, while each connected player session owns and closes its own connection. Skills and jutsus now have separate authored definitions, persistent usage-based proficiency, and inspection commands. The next recommended step is Sprint 16: First Technique Vertical Slice.
+The private-alpha gameplay loop is covered by 121 automated tests. Runtime database ownership is explicit: the server keeps a maintenance connection for startup and ticks, while each connected player session owns and closes its own connection. Skills and jutsus now have separate authored definitions, persistent usage-based proficiency, inspection commands, and catalog-only placeholders. The next recommended step is Sprint 16: First Technique Vertical Slice.
 
 ---
 
@@ -255,6 +255,8 @@ Establish persistent progression scaffolding before implementing technique effec
 - [x] Add `prac [skill]` for listing ordinary skills or inspecting one skill's proficiency.
 - [x] Define authored jutsu data and persistent character jutsu progress separately from ordinary skills.
 - [x] Add `train [jutsu]` for listing jutsus or inspecting one jutsu's proficiency.
+- [x] Add `skill [all|skill]` and `jutsu [all|jutsu]` for available-record discovery and full-catalog inspection.
+- [x] Seed catalog-only placeholders without allowing unimplemented records to gain proficiency.
 - [x] Add usage-based advancement with authored gains and a `100%` proficiency cap.
 - [x] Display proficiency tiers: `Novice`, `Adept`, `Skilled`, `Master`, and `Grandmaster`.
 - [x] Seed `Throw` as the first ordinary skill for future kunai, shuriken, and similar ranged weapons.
@@ -268,6 +270,7 @@ Establish persistent progression scaffolding before implementing technique effec
 - Valid use adds the authored gain; `Throw` and `Substitution Technique` currently default to `+1%`.
 - Proficiency tiers are `Novice` (`0-24%`), `Adept` (`25-49%`), `Skilled` (`50-74%`), `Master` (`75-99%`), and `Grandmaster` (`100%`).
 - `prac` and `train` are inspection commands. Sprint 16 gameplay commands call the progression helpers after valid use.
+- `skill all` and `jutsu all` include future catalog records marked `[unimplemented]`; the ordinary list commands show available records only.
 
 ### Done When
 

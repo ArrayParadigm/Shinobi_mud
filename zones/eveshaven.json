@@ -387,6 +387,36 @@
             "name": "Throw",
             "description": "Training for thrown kunai, shuriken, and similar ranged weapons.",
             "usage_gain": 1
+        },
+        {
+            "key": "chakra-control",
+            "name": "Chakra Control",
+            "description": "Precision training for shaping and maintaining chakra.",
+            "available": false
+        },
+        {
+            "key": "evasion",
+            "name": "Evasion",
+            "description": "Defensive movement training for avoiding incoming attacks.",
+            "available": false
+        },
+        {
+            "key": "stealth",
+            "name": "Stealth",
+            "description": "Fieldcraft training for moving and acting without drawing attention.",
+            "available": false
+        },
+        {
+            "key": "taijutsu",
+            "name": "Taijutsu",
+            "description": "Close-combat training for unarmed strikes and defensive exchanges.",
+            "available": false
+        },
+        {
+            "key": "weapon-handling",
+            "name": "Weapon Handling",
+            "description": "General training for wielding and maintaining ninja tools.",
+            "available": false
         }
     ],
     "jutsu_templates": [
@@ -395,6 +425,36 @@
             "name": "Substitution Technique",
             "description": "Defensive-response training for escaping a strike through substitution.",
             "usage_gain": 1
+        },
+        {
+            "key": "body-flicker-technique",
+            "name": "Body Flicker Technique",
+            "description": "High-speed movement technique for rapid repositioning.",
+            "available": false
+        },
+        {
+            "key": "clone-technique",
+            "name": "Clone Technique",
+            "description": "Basic illusion technique for creating a non-physical duplicate.",
+            "available": false
+        },
+        {
+            "key": "transformation-technique",
+            "name": "Transformation Technique",
+            "description": "Basic technique for assuming another visible form.",
+            "available": false
+        },
+        {
+            "key": "tree-climbing-practice",
+            "name": "Tree Climbing Practice",
+            "description": "Chakra-control exercise for maintaining footing on vertical surfaces.",
+            "available": false
+        },
+        {
+            "key": "water-surface-walking-practice",
+            "name": "Water Surface Walking Practice",
+            "description": "Chakra-control exercise for maintaining footing on unstable water.",
+            "available": false
         }
     ],
     "anchor": {

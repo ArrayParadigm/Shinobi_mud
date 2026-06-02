@@ -367,19 +367,20 @@ def handle_consume(player, item_name, expected_type, resource_name, verb):
         player.sendLine(f"Unable to {verb} that item right now.".encode("utf-8"))
 
 
-def handle_progression(player, target, kind):
+def handle_progression(player, target, kind, allow_all=False):
     """List or inspect usage-based ordinary skill or jutsu progress."""
     try:
+        show_all = allow_all and target.strip().casefold() == "all"
         if kind == "skill":
-            rows = list_skills(player.cursor, player.username)
+            rows = list_skills(player.cursor, player.username, include_unavailable=show_all)
             detail = skill_detail
-            heading = "Skills"
+            heading = "All Skills" if show_all else "Skills"
         else:
-            rows = list_jutsus(player.cursor, player.username)
+            rows = list_jutsus(player.cursor, player.username, include_unavailable=show_all)
             detail = jutsu_detail
-            heading = "Jutsus"
+            heading = "All Jutsus" if show_all else "Jutsus"
 
-        if not target.strip():
+        if not target.strip() or show_all:
             player.sendLine(heading.encode("utf-8"))
             if not rows:
                 player.sendLine(b"  None")
@@ -389,6 +390,7 @@ def handle_progression(player, target, kind):
                     (
                         f"  {row['name']}: {proficiency_label(row['progress_percent'])} "
                         f"({row['progress_percent']}%)"
+                        f"{' [unimplemented]' if not row['is_available'] else ''}"
                     ).encode("utf-8")
                 )
             return
@@ -604,6 +606,8 @@ COMMANDS = {
     "drink": CommandSpec("drink", lambda player, rooms, raw, args: handle_consume(player, raw, "drink", "hydration", "drink"), "drink <item>", "Drink a carried beverage to restore hydration.", min_args=1),
     "prac": CommandSpec("prac", lambda player, rooms, raw, args: handle_progression(player, raw, "skill"), "prac [skill]", "List skills or inspect usage-based proficiency.", max_args=2),
     "train": CommandSpec("train", lambda player, rooms, raw, args: handle_progression(player, raw, "jutsu"), "train [jutsu]", "List jutsus or inspect usage-based proficiency.", max_args=3),
+    "skill": CommandSpec("skill", lambda player, rooms, raw, args: handle_progression(player, raw, "skill", allow_all=True), "skill [all|skill]", "List available skills, inspect one, or show the full catalog.", max_args=2),
+    "jutsu": CommandSpec("jutsu", lambda player, rooms, raw, args: handle_progression(player, raw, "jutsu", allow_all=True), "jutsu [all|jutsu]", "List available jutsus, inspect one, or show the full catalog.", max_args=3),
     "talk": CommandSpec("talk", lambda player, rooms, raw, args: handle_talk(player, raw), "talk <character>", "Talk to a character at your location.", min_args=1),
     "consider": CommandSpec("consider", lambda player, rooms, raw, args: handle_consider(player, raw), "consider <character>", "Inspect a character's combat details.", min_args=1),
     "attack": CommandSpec("attack", lambda player, rooms, raw, args: handle_attack(player, raw), "attack <character>", "Strike a hostile character at your location.", min_args=1),

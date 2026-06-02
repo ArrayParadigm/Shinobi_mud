@@ -19,7 +19,8 @@ def create_technique_tables(cursor):
             skill_key TEXT NOT NULL UNIQUE,
             name TEXT NOT NULL UNIQUE COLLATE NOCASE,
             description TEXT NOT NULL,
-            usage_gain INTEGER NOT NULL DEFAULT 1
+            usage_gain INTEGER NOT NULL DEFAULT 1,
+            is_available INTEGER NOT NULL DEFAULT 1
         )
         """
     )
@@ -30,7 +31,8 @@ def create_technique_tables(cursor):
             jutsu_key TEXT NOT NULL UNIQUE,
             name TEXT NOT NULL UNIQUE COLLATE NOCASE,
             description TEXT NOT NULL,
-            usage_gain INTEGER NOT NULL DEFAULT 1
+            usage_gain INTEGER NOT NULL DEFAULT 1,
+            is_available INTEGER NOT NULL DEFAULT 1
         )
         """
     )
@@ -59,6 +61,7 @@ def create_technique_tables(cursor):
         """
     )
     ensure_usage_progress_columns(cursor)
+    ensure_catalog_availability_columns(cursor)
 
 
 def ensure_usage_progress_columns(cursor):
@@ -88,23 +91,40 @@ def ensure_usage_progress_columns(cursor):
                 )
 
 
+def ensure_catalog_availability_columns(cursor):
+    """Mark catalog-only placeholders without making them trainable."""
+    for table_name in ("skill_definitions", "jutsu_definitions"):
+        columns = {
+            column[1]
+            for column in cursor.execute(f"PRAGMA table_info({table_name})")
+        }
+        if "is_available" not in columns:
+            cursor.execute(
+                f"ALTER TABLE {table_name} ADD COLUMN is_available INTEGER NOT NULL DEFAULT 1"
+            )
+
+
 def sync_skill_templates(cursor, templates):
     """Import authored ordinary-skill definitions."""
     for template in templates:
         cursor.execute(
             """
-            INSERT INTO skill_definitions (skill_key, name, description, usage_gain)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO skill_definitions (
+                skill_key, name, description, usage_gain, is_available
+            )
+            VALUES (?, ?, ?, ?, ?)
             ON CONFLICT(skill_key) DO UPDATE SET
                 name=excluded.name,
                 description=excluded.description,
-                usage_gain=excluded.usage_gain
+                usage_gain=excluded.usage_gain,
+                is_available=excluded.is_available
             """,
             (
                 template["key"],
                 template["name"],
                 template["description"],
                 int(template.get("usage_gain", 1)),
+                int(template.get("available", True)),
             ),
         )
 
@@ -114,23 +134,27 @@ def sync_jutsu_templates(cursor, templates):
     for template in templates:
         cursor.execute(
             """
-            INSERT INTO jutsu_definitions (jutsu_key, name, description, usage_gain)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO jutsu_definitions (
+                jutsu_key, name, description, usage_gain, is_available
+            )
+            VALUES (?, ?, ?, ?, ?)
             ON CONFLICT(jutsu_key) DO UPDATE SET
                 name=excluded.name,
                 description=excluded.description,
-                usage_gain=excluded.usage_gain
+                usage_gain=excluded.usage_gain,
+                is_available=excluded.is_available
             """,
             (
                 template["key"],
                 template["name"],
                 template["description"],
                 int(template.get("usage_gain", 1)),
+                int(template.get("available", True)),
             ),
         )
 
 
-def list_skills(cursor, username):
+def list_skills(cursor, username, include_unavailable=False):
     """Return all authored ordinary skills and one character's progress."""
     return _list_progress(
         cursor,
@@ -138,10 +162,11 @@ def list_skills(cursor, username):
         definitions_table="skill_definitions",
         definition_id="skill_definition_id",
         progress_table="character_skills",
+        include_unavailable=include_unavailable,
     )
 
 
-def list_jutsus(cursor, username):
+def list_jutsus(cursor, username, include_unavailable=False):
     """Return all authored jutsus and one character's progress."""
     return _list_progress(
         cursor,
@@ -149,6 +174,7 @@ def list_jutsus(cursor, username):
         definitions_table="jutsu_definitions",
         definition_id="jutsu_definition_id",
         progress_table="character_jutsus",
+        include_unavailable=include_unavailable,
     )
 
 
@@ -196,20 +222,28 @@ def proficiency_label(progress_percent):
             return label
 
 
-def _list_progress(cursor, username, definitions_table, definition_id, progress_table):
+def _list_progress(
+    cursor,
+    username,
+    definitions_table,
+    definition_id,
+    progress_table,
+    include_unavailable,
+):
     return cursor.execute(
         f"""
         SELECT definitions.id, definitions.name, definitions.description,
+               definitions.is_available,
                COALESCE(progress.progress_percent, 0) AS progress_percent
         FROM players
         CROSS JOIN {definitions_table} AS definitions
         LEFT JOIN {progress_table} AS progress
           ON progress.player_id = players.id
          AND progress.{definition_id} = definitions.id
-        WHERE players.username=?
+        WHERE players.username=? AND (? OR definitions.is_available=1)
         ORDER BY definitions.name COLLATE NOCASE
         """,
-        (username,),
+        (username, include_unavailable),
     ).fetchall()
 
 
@@ -241,7 +275,11 @@ def _record_use(
     if not player:
         return {"status": "missing_player"}
     definition = cursor.execute(
-        f"SELECT id, name, usage_gain FROM {definitions_table} WHERE {key_column}=?",
+        f"""
+        SELECT id, name, usage_gain
+        FROM {definitions_table}
+        WHERE {key_column}=? AND is_available=1
+        """,
         (technique_key,),
     ).fetchone()
     if not definition:

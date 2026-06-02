@@ -8,6 +8,8 @@
 - Added `prac [skill]` and `train [jutsu]` for listing ordinary skills and jutsus or inspecting proficiency.
 - Seeded `Throw` and `Substitution Technique` as the first framework records.
 - Added reusable valid-use progression helpers with authored gains, a `100%` cap, and `Novice` through `Grandmaster` display tiers.
+- Added `skill [all|skill]` and `jutsu [all|jutsu]` discovery commands.
+- Added catalog-only placeholder skills and jutsus through migration 11; placeholders are marked `[unimplemented]` and cannot gain proficiency.
 
 ### Changed
 
@@ -17,7 +19,7 @@
 ### Verification
 
 - Added authored-sync, valid-use advancement, cap, invalid-target, tier-boundary, migration, and reconnect-persistence coverage.
-- Passed `python -m unittest discover -s tests -v` with 118 tests.
+- Passed `python -m unittest discover -s tests -v` with 121 tests.
 - Passed Python syntax compilation and `git diff --check`.
 
 ## 2026-06-02 - Body Resource Integration

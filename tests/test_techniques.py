@@ -6,7 +6,11 @@ import general_commands
 import shinobi_mud
 import utils
 from content import sync_authored_content
-from migrations import apply_migrations, migration_010_usage_based_techniques
+from migrations import (
+    apply_migrations,
+    migration_010_usage_based_techniques,
+    migration_011_technique_catalog_placeholders,
+)
 from techniques import (
     list_jutsus,
     list_skills,
@@ -79,6 +83,31 @@ class TechniqueFrameworkTests(unittest.TestCase):
                 "Training for thrown kunai, shuriken, and similar ranged weapons.",
                 "Proficiency: Novice (0%)",
             ],
+        )
+
+    def test_skill_and_jutsu_all_include_unimplemented_catalog_placeholders(self):
+        general_commands.handle_progression(self.player, "", "skill", allow_all=True)
+        general_commands.handle_progression(self.player, "all", "skill", allow_all=True)
+        general_commands.handle_progression(self.player, "", "jutsu", allow_all=True)
+        general_commands.handle_progression(self.player, "all", "jutsu", allow_all=True)
+
+        self.assertEqual(self.player.messages[0:2], ["Skills", "  Throw: Novice (0%)"])
+        self.assertIn("All Skills", self.player.messages)
+        self.assertIn("  Chakra Control: Novice (0%) [unimplemented]", self.player.messages)
+        self.assertIn("  Stealth: Novice (0%) [unimplemented]", self.player.messages)
+        self.assertIn("Jutsus", self.player.messages)
+        self.assertIn("  Substitution Technique: Novice (0%)", self.player.messages)
+        self.assertIn("All Jutsus", self.player.messages)
+        self.assertIn("  Clone Technique: Novice (0%) [unimplemented]", self.player.messages)
+
+    def test_unimplemented_catalog_placeholders_cannot_record_use(self):
+        self.assertEqual(
+            record_skill_use(self.player.cursor, "Student", "stealth")["status"],
+            "missing",
+        )
+        self.assertEqual(
+            record_jutsu_use(self.player.cursor, "Student", "clone-technique")["status"],
+            "missing",
         )
 
     def test_valid_use_records_separate_persistent_progress(self):
@@ -160,6 +189,40 @@ class TechniqueFrameworkTests(unittest.TestCase):
         skill = connection.execute("SELECT progress_percent FROM character_skills").fetchone()
         jutsu = connection.execute("SELECT progress_percent FROM character_jutsus").fetchone()
         self.assertEqual((skill["progress_percent"], jutsu["progress_percent"]), (42, 17))
+        connection.close()
+
+    def test_catalog_migration_preserves_existing_definitions_as_available(self):
+        connection = sqlite3.connect(":memory:")
+        connection.row_factory = sqlite3.Row
+        connection.executescript(
+            """
+            CREATE TABLE players (id INTEGER PRIMARY KEY, username TEXT, password TEXT);
+            CREATE TABLE skill_definitions (
+                id INTEGER PRIMARY KEY, skill_key TEXT, name TEXT, description TEXT,
+                usage_gain INTEGER
+            );
+            CREATE TABLE jutsu_definitions (
+                id INTEGER PRIMARY KEY, jutsu_key TEXT, name TEXT, description TEXT,
+                usage_gain INTEGER
+            );
+            CREATE TABLE character_skills (
+                player_id INTEGER, skill_definition_id INTEGER, progress_percent INTEGER,
+                PRIMARY KEY (player_id, skill_definition_id)
+            );
+            CREATE TABLE character_jutsus (
+                player_id INTEGER, jutsu_definition_id INTEGER, progress_percent INTEGER,
+                PRIMARY KEY (player_id, jutsu_definition_id)
+            );
+            INSERT INTO skill_definitions VALUES (1, 'throw', 'Throw', 'Legacy throw.', 1);
+            INSERT INTO jutsu_definitions VALUES (1, 'substitution-technique', 'Substitution Technique', 'Legacy substitution.', 1);
+            """
+        )
+
+        migration_011_technique_catalog_placeholders(connection.cursor())
+
+        skill = connection.execute("SELECT is_available FROM skill_definitions").fetchone()
+        jutsu = connection.execute("SELECT is_available FROM jutsu_definitions").fetchone()
+        self.assertEqual((skill["is_available"], jutsu["is_available"]), (1, 1))
         connection.close()
 
 
