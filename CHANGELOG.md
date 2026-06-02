@@ -1,5 +1,24 @@
 # Changelog
 
+## 2026-06-02 15:21 -0500 - Player Administration and Builder Roadmap
+
+### Added
+
+- Added `pstat <username>` for password-safe inspection of persistent player identity, access, resources, body state, and saved location.
+- Added `pset <username> <field> <value>` for validated player administration across access, identity, resources, attributes, nutrition, hydration, and fatigue.
+- Added a prioritized builder-suite roadmap covering search, validation, cloning, spawn management, guarded deletion, undo, richer templates, and audit history.
+
+### Changed
+
+- Kept `setrole`, `setstat`, and `setdojo` as compatibility wrappers around the validated `pset` path.
+- Refresh connected protocol metadata immediately when `pset` changes admin access or specialty.
+- Clamp current health, stamina, or chakra when an administrator lowers the corresponding maximum.
+
+### Verification
+
+- Passed `python -m unittest discover -s tests -v` with 151 tests.
+- Passed Python syntax compilation and `git diff --check`.
+
 ## 2026-06-02 15:08 -0500 - Sprint 18 Builder Editing Suite
 
 ### Added

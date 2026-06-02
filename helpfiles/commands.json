@@ -123,6 +123,14 @@
         "summary": "List skills or inspect usage-based proficiency.",
         "details": ["Ordinary skill proficiency increases through valid gameplay use."]
     },
+    "pset": {
+        "summary": "Set a validated persistent player field.",
+        "details": ["Admin command. Supports admin access, specialty, dojo, clan, release, resources, attributes, nutrition, hydration, and fatigue. Passwords, usernames, and locations require separate workflows."]
+    },
+    "pstat": {
+        "summary": "Inspect persistent player state.",
+        "details": ["Admin command. Displays identity, access, resources, attributes, body state, and saved location without exposing password data."]
+    },
     "reloadcontent": {
         "summary": "Reload authored JSON content into live state.",
         "details": ["Admin builder command. Imports template edits and missing one-time spawns without restarting."]

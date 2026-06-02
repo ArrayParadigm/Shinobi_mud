@@ -834,43 +834,205 @@ def copyover(protocol, players_in_rooms=None):
         b"Copyover is disabled for now. Restart the server normally; players can reconnect safely."
     )
 
-def setrole(protocol, username, role_type):
-    """
-    Sets the role of a player.
-    """
+
+PLAYER_RESOURCE_FIELDS = {
+    "health": ("health", None),
+    "max_health": ("max_health", None),
+    "maxhealth": ("max_health", None),
+    "stamina": ("stamina", None),
+    "max_stamina": ("max_stamina", None),
+    "maxstamina": ("max_stamina", None),
+    "chakra": ("chakra", None),
+    "max_chakra": ("max_chakra", None),
+    "maxchakra": ("max_chakra", None),
+}
+PLAYER_ATTRIBUTE_FIELDS = {
+    field: (field, None)
+    for field in ("strength", "dexterity", "agility", "intelligence", "wisdom")
+}
+PLAYER_BODY_FIELDS = {
+    "nutrition": ("nutrition", 100),
+    "hydration": ("hydration", 100),
+    "fatigue": ("fatigue", 100),
+}
+PLAYER_TEXT_FIELDS = {
+    "role": "role_type",
+    "specialty": "role_type",
+    "dojo": "dojo_alignment",
+    "clan": "clan",
+    "release": "natural_release",
+}
+
+
+def _online_player(username):
+    """Return a connected protocol for a username when one exists."""
+    return next(
+        (
+            player
+            for player in online_players(players_in_rooms)
+            if player.username.lower() == username.lower()
+        ),
+        None,
+    )
+
+
+def _player_row(protocol, username):
+    return protocol.cursor.execute(
+        """
+        SELECT username, is_admin, role_type, clan, natural_release, dojo_alignment,
+               health, max_health, stamina, max_stamina, chakra, max_chakra,
+               strength, dexterity, agility, intelligence, wisdom,
+               nutrition, hydration, fatigue, recovery_state, x, y
+        FROM players
+        WHERE username=? COLLATE NOCASE
+        """,
+        (username,),
+    ).fetchone()
+
+
+def pstat(protocol, username):
+    """Display builder-facing persistent player state without sensitive fields."""
+    player = _player_row(protocol, username)
+    if not player:
+        protocol.sendLine(f"Player not found: {username}".encode("utf-8"))
+        return
+    protocol.sendLine(f"Player {player['username']}".encode("utf-8"))
+    protocol.sendLine(
+        (
+            f"  Admin: {'yes' if player['is_admin'] else 'no'}  "
+            f"Specialty: {player['role_type']}  Clan: {player['clan']}  "
+            f"Release: {player['natural_release']}"
+        ).encode("utf-8")
+    )
+    protocol.sendLine(f"  Dojo: {player['dojo_alignment']}".encode("utf-8"))
+    protocol.sendLine(
+        (
+            f"  Health: {player['health']}/{player['max_health']}  "
+            f"Stamina: {player['stamina']}/{player['max_stamina']}  "
+            f"Chakra: {player['chakra']}/{player['max_chakra']}"
+        ).encode("utf-8")
+    )
+    protocol.sendLine(
+        (
+            f"  Attributes: strength={player['strength']} dexterity={player['dexterity']} "
+            f"agility={player['agility']} intelligence={player['intelligence']} wisdom={player['wisdom']}"
+        ).encode("utf-8")
+    )
+    protocol.sendLine(
+        (
+            f"  Body: nutrition={player['nutrition']} hydration={player['hydration']} "
+            f"fatigue={player['fatigue']} recovery={player['recovery_state']}"
+        ).encode("utf-8")
+    )
+    protocol.sendLine(f"  Location: ({player['x']}, {player['y']})".encode("utf-8"))
+
+
+def _parse_boolean(value):
+    normalized = value.strip().lower()
+    if normalized in {"on", "yes", "true", "1"}:
+        return 1
+    if normalized in {"off", "no", "false", "0"}:
+        return 0
+    raise ValueError("Admin must be on or off.")
+
+
+def _parse_bounded_integer(value, label, maximum=None):
+    numeric_value = int(value)
+    if numeric_value < 0 or (maximum is not None and numeric_value > maximum):
+        limit = f" between 0 and {maximum}" if maximum is not None else " zero or greater"
+        raise ValueError(f"{label} must be{limit}.")
+    return numeric_value
+
+
+def pset(protocol, username, field, value):
+    """Set one curated persistent player field and refresh online protocol metadata."""
+    player = _player_row(protocol, username)
+    if not player:
+        protocol.sendLine(f"Player not found: {username}".encode("utf-8"))
+        return
+
+    requested_field = field.lower()
     try:
-        protocol.cursor.execute("UPDATE players SET role_type=? WHERE username=?", (role_type, username))
+        if requested_field == "admin":
+            column = "is_admin"
+            parsed_value = _parse_boolean(value)
+        elif requested_field in PLAYER_TEXT_FIELDS:
+            column = PLAYER_TEXT_FIELDS[requested_field]
+            parsed_value = _required_text(value, requested_field.title())
+        else:
+            numeric_fields = {
+                **PLAYER_RESOURCE_FIELDS,
+                **PLAYER_ATTRIBUTE_FIELDS,
+                **PLAYER_BODY_FIELDS,
+            }
+            if requested_field not in numeric_fields:
+                raise ValueError(
+                    "Player field must be admin, specialty, dojo, clan, release, "
+                    "health, max_health, stamina, max_stamina, chakra, max_chakra, "
+                    "strength, dexterity, agility, intelligence, wisdom, nutrition, hydration, or fatigue."
+                )
+            column, maximum = numeric_fields[requested_field]
+            parsed_value = _parse_bounded_integer(value, column, maximum)
+            resource_maximum = {
+                "health": "max_health",
+                "stamina": "max_stamina",
+                "chakra": "max_chakra",
+            }.get(column)
+            if resource_maximum and parsed_value > player[resource_maximum]:
+                raise ValueError(f"{column} cannot exceed {resource_maximum} ({player[resource_maximum]}).")
+
+        protocol.cursor.execute(
+            f"UPDATE players SET {column}=? WHERE username=? COLLATE NOCASE",
+            (parsed_value, player["username"]),
+        )
+        if column == "max_health":
+            protocol.cursor.execute(
+                "UPDATE players SET health=MIN(health, max_health) WHERE username=? COLLATE NOCASE",
+                (player["username"],),
+            )
+        elif column == "max_stamina":
+            protocol.cursor.execute(
+                "UPDATE players SET stamina=MIN(stamina, max_stamina) WHERE username=? COLLATE NOCASE",
+                (player["username"],),
+            )
+        elif column == "max_chakra":
+            protocol.cursor.execute(
+                "UPDATE players SET chakra=MIN(chakra, max_chakra) WHERE username=? COLLATE NOCASE",
+                (player["username"],),
+            )
         protocol.cursor.connection.commit()
-        protocol.sendLine(f"Set role of {username} to {role_type}".encode('utf-8'))
-    except Exception as e:
-        protocol.sendLine(f"Failed to set role: {e}".encode('utf-8'))
+    except (TypeError, ValueError) as exc:
+        protocol.cursor.connection.rollback()
+        protocol.sendLine(f"Unable to set player: {exc}".encode("utf-8"))
+        return
+    except Exception as exc:
+        protocol.cursor.connection.rollback()
+        logging.error("Unable to set player field: %s", exc, exc_info=True)
+        protocol.sendLine(b"Unable to set player field.")
+        return
+
+    online = _online_player(player["username"])
+    if online:
+        if column == "is_admin":
+            online.is_admin = bool(parsed_value)
+        elif column == "role_type":
+            online.player_class = parsed_value
+    protocol.sendLine(f"Set {column} of {player['username']} to {parsed_value}.".encode("utf-8"))
+
+
+def setrole(protocol, username, role_type):
+    """Backward-compatible wrapper for pset specialty."""
+    pset(protocol, username, "specialty", role_type)
 
 
 def setstat(protocol, username, stat, value):
-    """
-    Sets a player's stat to a given value.
-    """
-    try:
-        if stat not in ('health', 'max_health', 'stamina', 'max_stamina', 'chakra', 'max_chakra', 'strength', 'dexterity', 'agility', 'intelligence', 'wisdom'):
-            protocol.sendLine(b"Invalid stat.")
-            return
-        protocol.cursor.execute(f"UPDATE players SET {stat}=? WHERE username=?", (int(value), username))
-        protocol.cursor.connection.commit()
-        protocol.sendLine(f"Set {stat} of {username} to {value}".encode('utf-8'))
-    except Exception as e:
-        protocol.sendLine(f"Failed to set stat: {e}".encode('utf-8'))
+    """Backward-compatible wrapper for pset numeric fields."""
+    pset(protocol, username, stat, value)
 
 
 def setdojo(protocol, username, dojo):
-    """
-    Sets a player's dojo alignment.
-    """
-    try:
-        protocol.cursor.execute("UPDATE players SET dojo_alignment=? WHERE username=?", (dojo, username))
-        protocol.cursor.connection.commit()
-        protocol.sendLine(f"Set dojo of {username} to {dojo}".encode('utf-8'))
-    except Exception as e:
-        protocol.sendLine(f"Failed to set dojo: {e}".encode('utf-8'))
+    """Backward-compatible wrapper for pset dojo."""
+    pset(protocol, username, "dojo", dojo)
 
 # Command registry
 COMMANDS = {
@@ -894,6 +1056,8 @@ COMMANDS = {
     "spawnitem": CommandSpec("spawnitem", lambda protocol, rooms, raw, args: spawnitem(protocol, args[0]), "spawnitem <item_key>", "Persist a finite authored item seed.", permission="admin", min_args=1, max_args=1),
     "shutdown": CommandSpec("shutdown", lambda protocol, rooms, raw, args: shutdown(protocol), "shutdown", "Stop the server.", permission="admin", max_args=0),
     "copyover": CommandSpec("copyover", lambda protocol, rooms, raw, args: copyover(protocol), "copyover", "Report the disabled soft-restart status.", permission="admin", max_args=0),
+    "pstat": CommandSpec("pstat", lambda protocol, rooms, raw, args: pstat(protocol, args[0]), "pstat <username>", "Inspect persistent player state.", permission="admin", min_args=1, max_args=1),
+    "pset": CommandSpec("pset", lambda protocol, rooms, raw, args: pset(protocol, args[0], args[1], " ".join(args[2:])), "pset <username> <field> <value>", "Set a validated persistent player field.", permission="admin", min_args=3),
     "setrole": CommandSpec("setrole", lambda protocol, rooms, raw, args: setrole(protocol, *args), "setrole <username> <role_type>", "Set a character role.", permission="admin", min_args=2, max_args=2),
     "setstat": CommandSpec("setstat", lambda protocol, rooms, raw, args: setstat(protocol, *args), "setstat <username> <stat> <value>", "Set a character stat.", permission="admin", min_args=3, max_args=3),
     "setdojo": CommandSpec("setdojo", lambda protocol, rooms, raw, args: setdojo(protocol, *args), "setdojo <username> <dojo>", "Set a character dojo alignment.", permission="admin", min_args=2, max_args=2),

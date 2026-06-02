@@ -192,9 +192,13 @@ Admin overlay tools:
 - `spawnnpc <npc_key>`: persist and import an authored NPC spawn in the current room.
 - `iedit create <item_key> <name>`, `iedit <item_key> <field> <value>`, and `istat <item_key>`: create, edit, and inspect authored item templates.
 - `spawnitem <item_key>`: persist and import a finite authored item seed in the current room.
+- `pstat <username>`: inspect a player's persistent identity, access, resources, body state, and saved location without exposing password data.
+- `pset <username> <field> <value>`: set a validated player field such as `admin`, `specialty`, `clan`, `release`, `dojo`, resources, attributes, nutrition, hydration, or fatigue.
 - `copyover`: report that soft restarts are intentionally disabled for now.
 
 For a fresh zone, start with `buildzone`, use `dig` to expand its coordinate layout, use `redit` and `rstat` to refine rooms, then create templates with `createnpc` or `iedit` and place finite instances with `spawnnpc` or `spawnitem`. JSON remains the authored source of truth, while successful edits synchronize live SQLite template metadata immediately.
+
+`pset` deliberately excludes usernames, passwords, and saved coordinates. Those need separate audited workflows; ordinary player movement and `goto` remain the safe ways to change location. The older `setrole`, `setstat`, and `setdojo` commands remain available as compatibility wrappers.
 
 The player prompt reports current and maximum health, stamina, chakra, and location after commands. Map output includes a legend. Nearby-character listings are controlled by `show_nearby_players` and `nearby_player_radius` in `config.json`.
 

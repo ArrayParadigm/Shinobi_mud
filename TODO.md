@@ -2,7 +2,7 @@
 
 ## Current Checkpoint
 
-The private-alpha gameplay loop is covered by `147` automated tests. The current build includes:
+The private-alpha gameplay loop is covered by `151` automated tests. The current build includes:
 
 - Coordinate-first wilderness movement with Eve's Haven as a VNUM-backed overlay zone.
 - Persistent accounts, items, inventories, equipment, NPC instances, combat state, and body resources.
@@ -14,6 +14,7 @@ The private-alpha gameplay loop is covered by `147` automated tests. The current
 - A real `usejutsu substitution` action. It spends `3` chakra, prepares a `30` second defensive window, avoids the next eligible hostile NPC strike, raises Substitution proficiency on resolution, and persists a `60` second cooldown.
 - Coordinate-aware builder commands for digging rooms, editing descriptions, creating basic NPC templates, and seeding persistent NPC spawns.
 - Engaged in-game builder editing for anchored zones, rooms, NPC templates, item templates, and finite authored spawns.
+- Consolidated `pstat` and validated `pset` player administration with compatibility wrappers for older setters.
 - A complete `commands` catalog generated from registered help metadata.
 - Builder-editable command summaries and detailed help prose loaded from `helpfiles/commands.json`.
 - Builder-editable command-catalog sections with clean ANSI-colored headings loaded from `helpfiles/command_categories.json`.
@@ -47,6 +48,7 @@ Only keep one sprint active at a time. Reassess the order after each committed s
 - [x] Coordinate-overlay builder and compact training playground.
 - [x] Builder-editable help prose and categorized command discovery.
 - [x] Sprint 18 builder editing suite.
+- [x] Player inspection and validated player-setting administration.
 
 ## Sprint 16: Substitution Technique
 
@@ -110,6 +112,34 @@ Exercise the playable loop before widening the feature surface.
 ### Done When
 
 The current loop survives a real private test session and produces actionable logs when something goes wrong.
+
+## Builder Suite Recommendations
+
+These are the next builder-focused slices after the private-alpha exercise. Favor the workflow and safety layer first; richer authored fields are much easier to add once builders can search, validate, and undo their work.
+
+### Priority 1: Daily Authoring Workflow
+
+- [ ] Add `zstat <zone>`, `rlist [zone]`, `mlist [zone]`, and `ilist [zone]` for compact zone inventories.
+- [ ] Add `bfind <text>` to search rooms, NPCs, and items by key, title, name, keyword, or VNUM.
+- [ ] Add `contentcheck [zone]` to report broken exits, overlapping coordinates, missing spawn templates, invalid VNUM references, duplicate keys, and out-of-bounds overlays before reload.
+- [ ] Add `cloneitem`, `clonenpc`, and `cloneroom` for fast variations without repetitive field entry.
+- [ ] Add `spawnlist`, `despawnitem`, and `despawnnpc` so authored seeds can be inspected and intentionally removed.
+
+### Priority 2: Safer World Editing
+
+- [ ] Add `redit link <direction> <vnum>` and `redit unlink <direction>` with optional reciprocal updates.
+- [ ] Add guarded `rdelete` and `zdelete` commands that refuse removal while exits or spawns still reference the target.
+- [ ] Add per-zone JSON backups and `bundo` for the most recent successful builder mutation.
+- [ ] Add draft validation and explicit publish behavior before a zone edit reaches live overlays.
+- [ ] Define room-flag behavior for indoor, outdoor, safe, no-combat, and recovery-friendly rooms.
+
+### Priority 3: Richer Items and NPCs
+
+- [ ] Add item values, weights, stack behavior, container support, and flags such as takeable, consumable, throwable, and unique.
+- [ ] Add NPC loot tables, dialogue lines, room emotes, movement policy, leash radius, and aggression policy.
+- [ ] Add reusable spawn groups with count, respawn timing, and room-distribution rules.
+- [ ] Add template validation so unsupported item types, slots, NPC behaviors, and flags are rejected before persistence.
+- [ ] Add builder audit records for who changed authored content, what changed, and when.
 
 ## Backlog
 

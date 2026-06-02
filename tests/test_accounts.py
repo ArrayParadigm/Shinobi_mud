@@ -214,5 +214,97 @@ class AdminPermissionTests(unittest.TestCase):
         self.assertEqual(calls, ["AdminUser"])
 
 
+class PlayerAdminTests(unittest.TestCase):
+    def setUp(self):
+        self.connection = sqlite3.connect(":memory:")
+        self.connection.row_factory = sqlite3.Row
+        shinobi_mud.conn = self.connection
+        shinobi_mud.cursor = self.connection.cursor()
+        shinobi_mud.ensure_tables_exist(self.connection)
+        apply_migrations(self.connection)
+        shinobi_mud.players_in_rooms.clear()
+        self.connection.execute(
+            """
+            INSERT INTO players (
+                username, password, is_admin, role_type, clan, natural_release,
+                dojo_alignment, health, max_health, stamina, max_stamina,
+                chakra, max_chakra, nutrition, hydration, fatigue
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                "Target",
+                "secret-hash",
+                0,
+                "Ninjutsu",
+                "Leaf",
+                "Fire",
+                "None",
+                10,
+                10,
+                10,
+                10,
+                10,
+                10,
+                100,
+                100,
+                0,
+            ),
+        )
+        self.connection.commit()
+        self.admin = TestProtocol(self.connection.cursor())
+        self.admin.username = "Admin"
+        self.admin.is_admin = True
+
+    def tearDown(self):
+        shinobi_mud.players_in_rooms.clear()
+        self.connection.close()
+
+    def test_pstat_displays_player_state_without_password(self):
+        admin_commands.pstat(self.admin, "Target")
+
+        rendered = "\n".join(self.admin.messages)
+        self.assertIn("Player Target", rendered)
+        self.assertIn("Specialty: Ninjutsu  Clan: Leaf  Release: Fire", rendered)
+        self.assertIn("Body: nutrition=100 hydration=100 fatigue=0", rendered)
+        self.assertNotIn("secret-hash", rendered)
+
+    def test_pset_updates_validated_fields_and_clamps_current_resource(self):
+        admin_commands.pset(self.admin, "Target", "health", "9")
+        admin_commands.pset(self.admin, "Target", "maxhealth", "5")
+        admin_commands.pset(self.admin, "Target", "nutrition", "75")
+
+        player = self.connection.execute(
+            "SELECT health, max_health, nutrition FROM players WHERE username='Target'"
+        ).fetchone()
+        self.assertEqual(tuple(player), (5, 5, 75))
+
+    def test_pset_rejects_missing_players_unknown_fields_and_body_overflow(self):
+        admin_commands.pset(self.admin, "Missing", "health", "9")
+        admin_commands.pset(self.admin, "Target", "password", "visible")
+        admin_commands.pset(self.admin, "Target", "fatigue", "101")
+        admin_commands.pset(self.admin, "Target", "chakra", "11")
+
+        self.assertIn("Player not found: Missing", self.admin.messages)
+        self.assertIn("Unable to set player: Player field must be", self.admin.messages[-3])
+        self.assertEqual(self.admin.messages[-2], "Unable to set player: fatigue must be between 0 and 100.")
+        self.assertEqual(self.admin.messages[-1], "Unable to set player: chakra cannot exceed max_chakra (10).")
+
+    def test_pset_refreshes_connected_admin_and_specialty_metadata(self):
+        target = TestProtocol(self.connection.cursor())
+        target.username = "Target"
+        target.x = 500
+        target.y = 500
+        target.is_admin = False
+        target.player_class = "Ninjutsu"
+        target.track_player()
+
+        admin_commands.pset(self.admin, "Target", "admin", "on")
+        admin_commands.pset(self.admin, "Target", "specialty", "Taijutsu")
+
+        self.assertTrue(target.is_admin)
+        self.assertEqual(target.player_class, "Taijutsu")
+
+
 if __name__ == "__main__":
     unittest.main()

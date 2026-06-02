@@ -75,6 +75,8 @@
     "Admin": [
         "shutdown",
         "copyover",
+        "pstat",
+        "pset",
         "setrole",
         "setstat",
         "setdojo"
