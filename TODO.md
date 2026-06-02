@@ -2,7 +2,7 @@
 
 ## Current Checkpoint
 
-The private-alpha gameplay loop is covered by `140` automated tests. The current build includes:
+The private-alpha gameplay loop is covered by `143` automated tests. The current build includes:
 
 - Coordinate-first wilderness movement with Eve's Haven as a VNUM-backed overlay zone.
 - Persistent accounts, items, inventories, equipment, NPC instances, combat state, and body resources.
@@ -15,8 +15,9 @@ The private-alpha gameplay loop is covered by `140` automated tests. The current
 - Coordinate-aware builder commands for digging rooms, editing descriptions, creating basic NPC templates, and seeding persistent NPC spawns.
 - A complete `commands` catalog generated from registered help metadata.
 - Builder-editable command summaries and detailed help prose loaded from `helpfiles/commands.json`.
+- Builder-editable command-catalog sections with clean ANSI-colored headings loaded from `helpfiles/command_categories.json`.
 
-The next step is exercising the current loop through a private-alpha soak pass.
+The next step is expanding the in-game builder suite before the private-alpha soak pass.
 
 ## Working Rules
 
@@ -43,6 +44,7 @@ Only keep one sprint active at a time. Reassess the order after each committed s
 - [x] First real skill action: `Throw`.
 - [x] First real jutsu action: `Substitution Technique`.
 - [x] Coordinate-overlay builder and compact training playground.
+- [x] Builder-editable help prose and categorized command discovery.
 
 ## Sprint 16: Substitution Technique
 
@@ -76,7 +78,24 @@ Make authored content expansion practical without editing Python.
 
 An admin can build and reload a small training encounter through authored content tools without restarting the server.
 
-## Sprint 18: Private Alpha Exercise
+## Sprint 18: Builder Editing Suite
+
+Expand the current compact builder tools into an engaged in-game authoring workflow.
+
+- [ ] Clean up zone creation and anchoring so they form one clear in-game workflow.
+- [ ] Add `redit` for room titles, descriptions, exits, and room flags such as indoor, outdoor, and vacuum.
+- [ ] Retain `dig` as the brief coordinate-aware room-creation command.
+- [ ] Add `rstat` for inspecting room identity, coordinates, exits, and flags.
+- [ ] Add `medit` for NPC name, description, health, stats, flags, and read-only VNUM.
+- [ ] Add `mstat` for NPC inspection.
+- [ ] Add `iedit` for item creation and modification.
+- [ ] Add `istat` for item inspection.
+
+### Done When
+
+An admin can create, inspect, and revise a small zone with rooms, NPCs, and items without editing Python or JSON directly.
+
+## Sprint 19: Private Alpha Exercise
 
 Exercise the playable loop before widening the feature surface.
 
@@ -91,6 +110,23 @@ The current loop survives a real private test session and produces actionable lo
 
 ## Backlog
 
+### Presentation and Navigation
+
+- [ ] Add subcardinal directions and aliases: `sw`, `se`, `ne`, `nw`, `southwest`, `southeast`, `northeast`, and `northwest`.
+- [ ] Make `survey` a wider map view, approximately `65x65`.
+- [ ] Increase the regular view beyond the current `5x11` map.
+- [ ] Add a clearer divider before the nearby-room contents display.
+- [ ] Add map symbols for other players and NPCs.
+
+### Skills and Jutsus
+
+- [ ] Add a broader skill list with basic, advanced, ninjutsu, genjutsu, taijutsu, and kenjutsu placeholders. `skill` should show trained skills and `skill all` should show the full catalog with `[unimplemented]` markers.
+- [ ] Expand the jutsu placeholder catalog to mirror skill discovery.
+
+### World and Operations
+
+- [ ] Add dimensions with independent grid sizes for planets, continents, and planes. Support dimension-aware `goto`, including `prime`.
+- [ ] Create a batch script to copy runtime files to `D:\shared\Shinobi` for Linux-server transfer.
 - [ ] Add a larger social-command library.
 - [ ] Expand dialogue trees, quests, objectives, and rewards.
 - [ ] Add NPC followers, factions, families, and friends.

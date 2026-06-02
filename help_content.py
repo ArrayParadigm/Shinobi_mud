@@ -5,6 +5,7 @@ import logging
 
 
 DEFAULT_HELP_FILE = "helpfiles/commands.json"
+DEFAULT_CATEGORY_FILE = "helpfiles/command_categories.json"
 
 
 def load_help_catalog(help_file=DEFAULT_HELP_FILE):
@@ -42,3 +43,24 @@ def command_help(command, help_file=DEFAULT_HELP_FILE, catalog=None):
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         logging.warning("Unable to use editable help for %s: %s", command.name, exc)
         return fallback
+
+
+def load_command_categories(category_file=DEFAULT_CATEGORY_FILE):
+    """Load builder-editable command groups, falling back to one uncategorized group."""
+    try:
+        with open(category_file, "r", encoding="utf-8") as file:
+            categories = json.load(file)
+        if not isinstance(categories, dict):
+            raise ValueError("Command categories must be an object.")
+        if not all(
+            isinstance(label, str)
+            and label.strip()
+            and isinstance(commands, list)
+            and all(isinstance(command, str) and command.strip() for command in commands)
+            for label, commands in categories.items()
+        ):
+            raise ValueError("Command categories must contain named command lists.")
+        return categories
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        logging.warning("Unable to load editable command categories: %s", exc)
+        return {}

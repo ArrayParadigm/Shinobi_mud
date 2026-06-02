@@ -1,0 +1,45 @@
+{
+    "name": "aexpanse",
+    "range": {
+        "start": 1000,
+        "end": 1999
+    },
+    "rooms": {
+        "1000": {
+            "description": "The Start of a great Expanse of nothingness.",
+            "exits": {
+                "south": 1001
+            },
+            "x_offset": 0,
+            "y_offset": 0
+        },
+        "1001": {
+            "description": "The First Step into nothingness. \\nThis room is black, not dark. It is the absence of existence. Your form is the only matter presence. There's no void, hunger, thirst, breath. You exist alone.",
+            "exits": {
+                "north": 1000
+            },
+            "x_offset": 0,
+            "y_offset": 1
+        }
+    },
+    "anchor": {
+        "x": 1,
+        "y": 1
+    },
+    "npc_templates": [
+        {
+            "key": "1001",
+            "name": "Living Void",
+            "description": "Living Void waits here.",
+            "dialogue": "Living Void has nothing to say yet.",
+            "behavior": "static"
+        }
+    ],
+    "npc_spawns": [
+        {
+            "key": "builder-1001-1001",
+            "npc": "1001",
+            "vnum": 1001
+        }
+    ]
+}

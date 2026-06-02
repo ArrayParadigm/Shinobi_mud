@@ -1,0 +1,73 @@
+{
+    "Movement": [
+        "north",
+        "south",
+        "east",
+        "west"
+    ],
+    "Exploration": [
+        "look",
+        "survey",
+        "loc",
+        "who"
+    ],
+    "Character": [
+        "score",
+        "body",
+        "rest",
+        "color"
+    ],
+    "Items": [
+        "inventory",
+        "get",
+        "drop",
+        "examine",
+        "wield",
+        "remove",
+        "eat",
+        "drink"
+    ],
+    "Skills and Jutsus": [
+        "prac",
+        "train",
+        "skill",
+        "jutsu",
+        "usejutsu"
+    ],
+    "Combat": [
+        "consider",
+        "attack",
+        "throw"
+    ],
+    "Social": [
+        "talk",
+        "say",
+        "whisper",
+        "shout",
+        "emote",
+        "think",
+        "ooc"
+    ],
+    "Help": [
+        "help",
+        "commands"
+    ],
+    "Builder": [
+        "createzone",
+        "goto",
+        "zoneinfo",
+        "placezone",
+        "reloadcontent",
+        "dig",
+        "roomdesc",
+        "createnpc",
+        "spawnnpc"
+    ],
+    "Admin": [
+        "shutdown",
+        "copyover",
+        "setrole",
+        "setstat",
+        "setdojo"
+    ]
+}

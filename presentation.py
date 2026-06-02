@@ -40,6 +40,11 @@ def section(label, value, enabled=False):
     return f"{style(label, BOLD, CYAN, enabled=enabled)}: {value}"
 
 
+def command_header(label, enabled=False):
+    """Style a command-catalog section without affecting plain-text clients."""
+    return style(f"== {label} ==", BOLD, BRIGHT_CYAN, enabled=enabled)
+
+
 def prompt(health, max_health, stamina, max_stamina, chakra, max_chakra, location, enabled=False):
     """Render a compact resource prompt."""
     health_text = style(f"HP:{health}/{max_health}", BRIGHT_RED, enabled=enabled)

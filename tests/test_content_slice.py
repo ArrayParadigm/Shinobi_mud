@@ -76,9 +76,10 @@ class ContentSliceTests(unittest.TestCase):
             str(PROJECT_ROOT / "zones"),
         )
 
-        self.assertEqual(len(overlays), 30)
+        self.assertGreaterEqual(len(overlays), 30)
         self.assertEqual(overlays[(500, 500)]["vnum"], 3000)
         self.assertEqual(overlays[(500, 499)]["vnum"], 3001)
+        self.assertEqual(overlays[(1, 1)]["vnum"], 1000)
         self.assertEqual(
             utils.find_overlay_by_vnum(overlays, 3029)[1]["zone_name"],
             "Eve's Haven",

@@ -123,6 +123,8 @@ Authored cities, dungeons, and other zones can be attached as optional overlays 
 
 Eve's Haven is the first complete overlay example. Its anchor and room offsets live in `zones/eveshaven.json`; startup loads its 30 authored rooms over the wilderness around `(500, 500)`.
 
+The authored `aexpanse` overlay is anchored at `(1, 1)` with two rooms and a seeded Living Void NPC.
+
 ### Player Commands
 
 - `look [at <item>]`: display a compact local terrain view or inspect an item.
@@ -168,7 +170,9 @@ Item targets accept authored keywords and abbreviations. Exact names win first; 
 
 Command summaries and longer help prose live in `helpfiles/commands.json`. Builders and helpers can update each command's `summary` and `details` without editing Python or restarting the server. Both `commands` and `help <command>` read the file when requested.
 
-Keep executable command syntax, aliases, permissions, and validation rules in Python. Missing entries or temporarily invalid JSON fall back to the built-in command summaries so command discovery remains available while a help-file edit is repaired.
+Command-catalog sections live in `helpfiles/command_categories.json`. Builders can reorder commands or move them between headings such as `Movement`, `Builder`, and `Admin`. Section headings receive ANSI color when the player's color setting is enabled.
+
+Keep executable command syntax, aliases, permissions, and validation rules in Python. Missing entries or temporarily invalid JSON fall back to the built-in command summaries and an `Other` section so command discovery remains available while a help-file edit is repaired.
 
 Admin overlay tools:
 

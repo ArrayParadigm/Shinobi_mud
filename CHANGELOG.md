@@ -1,5 +1,24 @@
 # Changelog
 
+## 2026-06-02 14:57 -0500 - Categorized Command Catalog
+
+### Added
+
+- Added `helpfiles/command_categories.json` so builders and helpers can reorganize command-catalog sections without editing Python.
+- Added clean catalog headings such as `Movement`, `Builder`, and `Admin`, with ANSI color when the player's color setting is enabled.
+- Tracked the authored `aexpanse` overlay with its two rooms and seeded Living Void NPC.
+
+### Changed
+
+- Added an `Other` fallback section so missing or temporarily invalid category JSON never hides registered commands.
+- Updated startup and authored-content coverage to support multiple anchored overlay zones while restoring global runtime configuration between tests.
+- Reorganized the active roadmap so the expanded builder editing suite is Sprint 18 and the private-alpha soak pass follows as Sprint 19.
+
+### Verification
+
+- Passed `python -m unittest discover -s tests -v` with 143 tests.
+- Passed Python syntax compilation and `git diff --check`.
+
 ## 2026-06-02 11:14 -0500 - Builder-Editable Help Files
 
 ### Added

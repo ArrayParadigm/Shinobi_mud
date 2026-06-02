@@ -1,8 +1,15 @@
 import json
 import logging
+import presentation
 from body import body_state, body_warnings, chakra_recovery_amount, rest_character
 from command_system import CommandSpec
-from help_content import DEFAULT_HELP_FILE, command_help, load_help_catalog
+from help_content import (
+    DEFAULT_CATEGORY_FILE,
+    DEFAULT_HELP_FILE,
+    command_help,
+    load_command_categories,
+    load_help_catalog,
+)
 from items import (
     drop_item,
     examine_item,
@@ -692,14 +699,37 @@ def handle_commands(player):
     """Display the complete command catalog from registered metadata."""
     help_file = ACTIVE_CONFIG.get("help_file", DEFAULT_HELP_FILE)
     catalog = load_help_catalog(help_file)
+    categories = load_command_categories(
+        ACTIVE_CONFIG.get("command_categories_file", DEFAULT_CATEGORY_FILE)
+    )
+    grouped_commands = []
+    listed_commands = set()
+    for label, command_names in categories.items():
+        visible_names = [
+            name
+            for name in command_names
+            if name in COMMAND_REGISTRY and name not in listed_commands
+        ]
+        if visible_names:
+            grouped_commands.append((label, visible_names))
+            listed_commands.update(visible_names)
+    remaining_commands = sorted(set(COMMAND_REGISTRY) - listed_commands)
+    if remaining_commands:
+        grouped_commands.append(("Other", remaining_commands))
+
     player.sendLine(b"Command Catalog")
-    for name, command in sorted(COMMAND_REGISTRY.items()):
-        help_entry = command_help(command, help_file, catalog)
-        permission = " [admin]" if command.permission == "admin" else ""
-        aliases = f" (aliases: {', '.join(command.aliases)})" if command.aliases else ""
+    for label, command_names in grouped_commands:
         player.sendLine(
-            f"  {command.usage}{permission} - {help_entry['summary']}{aliases}".encode("utf-8")
+            presentation.command_header(label, getattr(player, "color_enabled", False)).encode("utf-8")
         )
+        for name in command_names:
+            command = COMMAND_REGISTRY[name]
+            help_entry = command_help(command, help_file, catalog)
+            permission = " [admin]" if command.permission == "admin" else ""
+            aliases = f" (aliases: {', '.join(command.aliases)})" if command.aliases else ""
+            player.sendLine(
+                f"  {command.usage}{permission} - {help_entry['summary']}{aliases}".encode("utf-8")
+            )
     player.sendLine(b"Use help <command> for detailed usage.")
 
 

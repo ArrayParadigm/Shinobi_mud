@@ -29,9 +29,19 @@ class FailingReactor(FakeReactor):
 
 
 class StartupSmokeTests(unittest.TestCase):
+    def setUp(self):
+        self.original_config = shinobi_mud.ACTIVE_CONFIG.copy()
+        self.original_overlays = shinobi_mud.WORLD_OVERLAYS.copy()
+
     def tearDown(self):
         if shinobi_mud.conn:
             shinobi_mud.conn.close()
+            shinobi_mud.conn = None
+            shinobi_mud.cursor = None
+        shinobi_mud.ACTIVE_CONFIG.clear()
+        shinobi_mud.ACTIVE_CONFIG.update(self.original_config)
+        shinobi_mud.WORLD_OVERLAYS.clear()
+        shinobi_mud.WORLD_OVERLAYS.update(self.original_overlays)
 
     def test_run_server_initializes_and_uses_configured_port(self):
         with tempfile.TemporaryDirectory() as temporary_directory:
@@ -83,9 +93,12 @@ class StartupSmokeTests(unittest.TestCase):
                 }
                 <= tables
             )
-            self.assertEqual(len(shinobi_mud.WORLD_OVERLAYS), 30)
+            self.assertGreaterEqual(len(shinobi_mud.WORLD_OVERLAYS), 30)
             self.assertEqual(shinobi_mud.WORLD_OVERLAYS[(500, 500)]["vnum"], 3000)
+            self.assertEqual(shinobi_mud.WORLD_OVERLAYS[(1, 1)]["vnum"], 1000)
             shinobi_mud.conn.close()
+            shinobi_mud.conn = None
+            shinobi_mud.cursor = None
 
     def test_validation_rejects_invalid_port(self):
         shinobi_mud.conn = sqlite3.connect(":memory:")

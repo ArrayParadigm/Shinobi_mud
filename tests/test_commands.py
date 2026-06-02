@@ -1,10 +1,11 @@
 import json
+import re
 import tempfile
 import unittest
 from pathlib import Path
 
 from command_system import CommandSpec
-from help_content import DEFAULT_HELP_FILE
+from help_content import DEFAULT_CATEGORY_FILE, DEFAULT_HELP_FILE
 import shinobi_mud
 from tests.test_accounts import TestProtocol
 
@@ -175,6 +176,9 @@ class CommandMetadataTests(unittest.TestCase):
 
         catalog = "\n".join(self.player.messages)
         self.assertEqual(self.player.messages[0], "Command Catalog")
+        self.assertIn("== Movement ==", catalog)
+        self.assertIn("== Builder ==", catalog)
+        self.assertIn("== Admin ==", catalog)
         self.assertIn("  attack <character> - Strike a hostile character at your location.", catalog)
         self.assertIn("  commands - List every command with a brief description.", catalog)
         self.assertIn("  inventory - List the items you carry. (aliases: inv)", catalog)
@@ -193,6 +197,37 @@ class CommandMetadataTests(unittest.TestCase):
         catalog = json.loads(Path(DEFAULT_HELP_FILE).read_text(encoding="utf-8"))
 
         self.assertEqual(set(catalog), set(shinobi_mud.COMMAND_REGISTRY))
+
+    def test_editable_categories_list_every_registered_command_once(self):
+        categories = json.loads(Path(DEFAULT_CATEGORY_FILE).read_text(encoding="utf-8"))
+        categorized_commands = [
+            command
+            for commands in categories.values()
+            for command in commands
+        ]
+
+        self.assertEqual(set(categorized_commands), set(shinobi_mud.COMMAND_REGISTRY))
+        self.assertEqual(len(categorized_commands), len(set(categorized_commands)))
+
+    def test_commands_catalog_colors_section_headers_without_changing_text(self):
+        self.player.color_enabled = True
+
+        shinobi_mud.process_command(self.player, "commands")
+
+        rendered = "\n".join(self.player.messages)
+        self.assertIn("\x1b[", rendered)
+        self.assertIn("== Movement ==", re.sub(r"\x1b\[[0-9;]*m", "", rendered))
+
+    def test_invalid_editable_categories_fall_back_to_other_section(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            category_file = Path(temporary_directory) / "categories.json"
+            category_file.write_text("{ invalid json", encoding="utf-8")
+            shinobi_mud.ACTIVE_CONFIG["command_categories_file"] = str(category_file)
+
+            shinobi_mud.process_command(self.player, "commands")
+
+        self.assertEqual(self.player.messages[1], "== Other ==")
+        self.assertIn("  commands - List every command with a brief description.", self.player.messages)
 
     def test_help_prose_refreshes_from_disk_without_reloading_commands(self):
         with tempfile.TemporaryDirectory() as temporary_directory:

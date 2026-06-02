@@ -135,12 +135,14 @@ class RuntimeOwnershipTests(unittest.TestCase):
             session = shinobi_mud.NinjaMUDFactory(str(database_path)).buildProtocol(None)
             session.connectionLost("test disconnect")
 
+            expected_updates = shinobi_mud.conn.execute(
+                "SELECT COUNT(*) FROM npc_instances"
+            ).fetchone()[0]
             updated = shinobi_mud.run_world_tick()
-
-            self.assertEqual(updated, 2)
             shinobi_mud.conn.close()
             shinobi_mud.conn = None
             shinobi_mud.cursor = None
+            self.assertEqual(updated, expected_updates)
 
 
 if __name__ == "__main__":
