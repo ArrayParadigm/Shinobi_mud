@@ -148,6 +148,7 @@ Eve's Haven is the first complete overlay example. Its anchor and room offsets l
 - `talk <character>`: speak with an NPC at your grid location.
 - `consider <character>`: inspect a visible character's combat details.
 - `attack <character>`: resolve one melee turn against a hostile NPC at your grid location.
+- `throw <item> at <character>`: throw a carried ranged item at a hostile NPC in your room or one cardinal step away.
 - `who`: list connected characters.
 - `say <message>`: speak to characters at your grid location.
 - `whisper <character> <message>`: privately message an online character.
@@ -183,7 +184,9 @@ The combat loop is command-driven and turn-based. `attack <character>` resolves 
 
 Characters also have abstract body resources: nutrition, hydration, and fatigue. Ordinary movement and hostile combat increase fatigue. `rest` reduces fatigue, consumes a small amount of nutrition and hydration, restores stamina, and restores chakra based on wisdom and current body condition. Rest is blocked at zero nutrition or hydration. `eat` and `drink` consume finite authored supplies to restore body resources.
 
-Skills and jutsus have separate authored definitions and persistent `0-100%` proficiency. `prac`, `train`, `skill`, and `jutsu` list available records. `skill all` and `jutsu all` expose the wider authored catalog, with future records marked `[unimplemented]`. Valid gameplay use raises proficiency through an authored usage gain; the visible tiers are `Novice`, `Adept`, `Skilled`, `Master`, and `Grandmaster`. The starter records are `Throw` and `Substitution Technique`. They establish progression storage only: ranged attacks, chakra costs, cooldowns, and defensive effects arrive in the next technique slice.
+Skills and jutsus have separate authored definitions and persistent `0-100%` proficiency. `prac`, `train`, `skill`, and `jutsu` list available records. `skill all` and `jutsu all` expose the wider authored catalog, with future records marked `[unimplemented]`. Valid gameplay use raises proficiency through an authored usage gain; the visible tiers are `Novice`, `Adept`, `Skilled`, `Master`, and `Grandmaster`.
+
+`throw <item> at <character>` is the first real skill action. A valid throw accepts a carried authored item with ranged damage, targets a hostile NPC in the current room or one cardinal step away, adds `2` fatigue, lands the item at the target location, and raises `Throw` proficiency even when the attack misses. The Practice Kunai deals `3` thrown damage. Substitution Technique remains the next technique slice.
 
 ### Early Linux Testing
 

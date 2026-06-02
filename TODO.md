@@ -16,7 +16,7 @@ The foundation checkpoint in `FOUNDATION_CHECKLIST.md` is complete.
 
 ### Current Checkpoint
 
-The private-alpha gameplay loop is covered by 121 automated tests. Runtime database ownership is explicit: the server keeps a maintenance connection for startup and ticks, while each connected player session owns and closes its own connection. Skills and jutsus now have separate authored definitions, persistent usage-based proficiency, inspection commands, and catalog-only placeholders. The next recommended step is Sprint 16: First Technique Vertical Slice.
+The private-alpha gameplay loop is covered by 127 automated tests. Runtime database ownership is explicit: the server keeps a maintenance connection for startup and ticks, while each connected player session owns and closes its own connection. Skills and jutsus now have separate authored definitions, persistent usage-based proficiency, inspection commands, catalog-only placeholders, and the first real `Throw` action. The next recommended step is completing the Substitution Technique half of Sprint 16.
 
 ---
 
@@ -282,15 +282,16 @@ Players can inspect one persisted skill and one persisted jutsu through separate
 
 Turn the framework records into one narrow combat extension after progression storage is stable.
 
-- [ ] Add a deliberate ranged-targeting rule for `Throw`.
-- [ ] Allow an appropriate carried kunai, shuriken, or similar authored item to use the `Throw` skill.
-- [ ] Record successful `Throw` use through the skill-progression helper.
+- [x] Add a deliberate ranged-targeting rule for `Throw`.
+- [x] Allow an appropriate carried kunai, shuriken, or similar authored item to use the `Throw` skill.
+- [x] Record valid `Throw` use through the skill-progression helper, including misses.
 - [ ] Define authored jutsu execution data for chakra cost, range, cast time, cooldown, and effect.
 - [ ] Implement `Substitution Technique` as the first defensive response.
 - [ ] Record successful `Substitution Technique` activation through the jutsu-progression helper.
 - [ ] Consume chakra and restore it through the existing deliberate recovery loop.
 - [ ] Integrate ability timing with the world scheduler.
-- [ ] Add tests for ranged targeting, item handling, casting, cooldowns, insufficient chakra, and defensive timing.
+- [ ] Add tests for casting, cooldowns, insufficient chakra, and defensive timing.
+- [x] Add tests for ranged targeting, item handling, valid-use progression, and transactional rollback.
 
 ### Done When
 

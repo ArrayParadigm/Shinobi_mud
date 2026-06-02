@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-06-02 - Throw Skill Vertical Slice
+
+### Added
+
+- Added `throw <item> at <character>` for hostile NPCs in the current room or one cardinal step away.
+- Added authored `throw_damage` through migration 12; Practice Kunai deals 3 ranged damage.
+- Added transactional ranged item handling: valid throws add 2 fatigue, land the item at the target location, and raise `Throw` proficiency on hits or misses.
+
+### Verification
+
+- Added ranged hit, miss, adjacency, non-throwable rejection, migration, and rollback coverage.
+- Passed `python -m unittest discover -s tests -v` with 127 tests.
+- Passed Python syntax compilation and `git diff --check`.
+
 ## 2026-06-02 - Usage-Based Skill and Jutsu Framework
 
 ### Added

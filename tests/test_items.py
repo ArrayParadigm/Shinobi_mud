@@ -7,7 +7,7 @@ import shinobi_mud
 import utils
 from content import sync_authored_content
 from items import inventory_items, room_items
-from migrations import apply_migrations, migration_008_consumable_items
+from migrations import apply_migrations, migration_008_consumable_items, migration_012_throwable_items
 from tests.test_accounts import TestProtocol
 
 
@@ -168,7 +168,7 @@ class ItemPersistenceTests(unittest.TestCase):
                 "Practice Kunai",
                 "A dulled kunai balanced for training drills.",
                 "Type: weapon",
-                "Use: Wield it for training. Throwing attacks will arrive with ranged combat rules.",
+                "Use: Wield it for melee training, or throw it at a nearby target.",
                 "You pick up Practice Kunai.",
             ],
         )
@@ -347,6 +347,32 @@ class ItemPersistenceTests(unittest.TestCase):
             "SELECT name, nutrition_restore, hydration_restore FROM item_definitions"
         ).fetchone()
         self.assertEqual(tuple(item), ("Legacy Item", 0, 0))
+        connection.close()
+
+    def test_throwable_item_migration_preserves_existing_item_definitions(self):
+        connection = sqlite3.connect(":memory:")
+        connection.row_factory = sqlite3.Row
+        connection.execute(
+            """
+            CREATE TABLE item_definitions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                item_key TEXT NOT NULL UNIQUE,
+                name TEXT NOT NULL UNIQUE COLLATE NOCASE,
+                description TEXT NOT NULL
+            )
+            """
+        )
+        connection.execute(
+            "INSERT INTO item_definitions (item_key, name, description) VALUES (?, ?, ?)",
+            ("legacy-item", "Legacy Item", "Still present."),
+        )
+
+        migration_012_throwable_items(connection.cursor())
+
+        item = connection.execute(
+            "SELECT name, throw_damage FROM item_definitions"
+        ).fetchone()
+        self.assertEqual(tuple(item), ("Legacy Item", 0))
         connection.close()
 
 

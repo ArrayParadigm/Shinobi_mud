@@ -188,7 +188,7 @@ def jutsu_detail(cursor, username, target):
     return _progress_detail(list_jutsus(cursor, username), target)
 
 
-def record_skill_use(cursor, username, skill_key):
+def record_skill_use(cursor, username, skill_key, commit=True):
     """Increase one ordinary skill after valid gameplay use."""
     return _record_use(
         cursor,
@@ -198,10 +198,11 @@ def record_skill_use(cursor, username, skill_key):
         key_column="skill_key",
         definition_id="skill_definition_id",
         progress_table="character_skills",
+        commit=commit,
     )
 
 
-def record_jutsu_use(cursor, username, jutsu_key):
+def record_jutsu_use(cursor, username, jutsu_key, commit=True):
     """Increase one jutsu after valid gameplay use."""
     return _record_use(
         cursor,
@@ -211,6 +212,7 @@ def record_jutsu_use(cursor, username, jutsu_key):
         key_column="jutsu_key",
         definition_id="jutsu_definition_id",
         progress_table="character_jutsus",
+        commit=commit,
     )
 
 
@@ -267,6 +269,7 @@ def _record_use(
     key_column,
     definition_id,
     progress_table,
+    commit,
 ):
     player = cursor.execute(
         "SELECT id FROM players WHERE username=?",
@@ -300,7 +303,8 @@ def _record_use(
             """,
             (player["id"], definition["id"], updated),
         )
-        cursor.connection.commit()
+        if commit:
+            cursor.connection.commit()
     except Exception:
         cursor.connection.rollback()
         raise

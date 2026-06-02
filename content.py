@@ -68,9 +68,9 @@ def _sync_item_templates(cursor, templates):
             INSERT INTO item_definitions (
                 item_key, name, description, keywords, item_type,
                 equipment_slot, use_text, damage_bonus,
-                nutrition_restore, hydration_restore
+                throw_damage, nutrition_restore, hydration_restore
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(item_key) DO UPDATE SET
                 name=excluded.name,
                 description=excluded.description,
@@ -79,6 +79,7 @@ def _sync_item_templates(cursor, templates):
                 equipment_slot=excluded.equipment_slot,
                 use_text=excluded.use_text,
                 damage_bonus=excluded.damage_bonus,
+                throw_damage=excluded.throw_damage,
                 nutrition_restore=excluded.nutrition_restore,
                 hydration_restore=excluded.hydration_restore
             """,
@@ -91,6 +92,7 @@ def _sync_item_templates(cursor, templates):
                 template.get("equipment_slot"),
                 template.get("use_text", ""),
                 int(template.get("damage_bonus", 0)),
+                int(template.get("throw_damage", 0)),
                 int(template.get("nutrition_restore", 0)),
                 int(template.get("hydration_restore", 0)),
             ),

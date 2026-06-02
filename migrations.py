@@ -177,6 +177,11 @@ def migration_011_technique_catalog_placeholders(cursor):
     ensure_catalog_availability_columns(cursor)
 
 
+def migration_012_throwable_items(cursor):
+    """Add authored ranged damage for throwable inventory items."""
+    create_item_tables(cursor)
+
+
 MIGRATIONS = (
     (1, migration_001_non_admin_default),
     (2, migration_002_persistent_items),
@@ -189,6 +194,7 @@ MIGRATIONS = (
     (9, migration_009_skill_and_jutsu_framework),
     (10, migration_010_usage_based_techniques),
     (11, migration_011_technique_catalog_placeholders),
+    (12, migration_012_throwable_items),
 )
 
 

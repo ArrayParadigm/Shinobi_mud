@@ -18,6 +18,7 @@ def create_item_tables(cursor):
             equipment_slot TEXT,
             use_text TEXT NOT NULL DEFAULT '',
             damage_bonus INTEGER NOT NULL DEFAULT 0,
+            throw_damage INTEGER NOT NULL DEFAULT 0,
             nutrition_restore INTEGER NOT NULL DEFAULT 0,
             hydration_restore INTEGER NOT NULL DEFAULT 0
         )
@@ -77,6 +78,7 @@ def ensure_item_metadata(cursor):
         ("equipment_slot", "TEXT"),
         ("use_text", "TEXT NOT NULL DEFAULT ''"),
         ("damage_bonus", "INTEGER NOT NULL DEFAULT 0"),
+        ("throw_damage", "INTEGER NOT NULL DEFAULT 0"),
         ("nutrition_restore", "INTEGER NOT NULL DEFAULT 0"),
         ("hydration_restore", "INTEGER NOT NULL DEFAULT 0"),
     ):
@@ -98,7 +100,8 @@ def room_items(cursor, x, y):
         SELECT room_items.id, item_definitions.name, item_definitions.description,
                item_definitions.keywords, item_definitions.item_type,
                item_definitions.equipment_slot, item_definitions.use_text,
-               item_definitions.damage_bonus, item_definitions.nutrition_restore,
+               item_definitions.damage_bonus, item_definitions.throw_damage,
+               item_definitions.nutrition_restore,
                item_definitions.hydration_restore
         FROM room_items
         JOIN item_definitions ON item_definitions.id = room_items.item_definition_id
@@ -113,10 +116,13 @@ def inventory_items(cursor, username):
     """Return item instances carried by a character."""
     return cursor.execute(
         """
-        SELECT character_inventory.id, item_definitions.name, item_definitions.description,
+        SELECT character_inventory.id, character_inventory.item_definition_id,
+               character_inventory.seed_key,
+               item_definitions.name, item_definitions.description,
                item_definitions.keywords, item_definitions.item_type,
                item_definitions.equipment_slot, item_definitions.use_text,
-               item_definitions.damage_bonus, item_definitions.nutrition_restore,
+               item_definitions.damage_bonus, item_definitions.throw_damage,
+               item_definitions.nutrition_restore,
                item_definitions.hydration_restore, character_inventory.equipped_slot
         FROM character_inventory
         JOIN item_definitions

@@ -291,8 +291,9 @@
             "keywords": ["kunai", "kun", "knife", "weapon", "practice"],
             "item_type": "weapon",
             "equipment_slot": "hand",
-            "use_text": "Wield it for training. Throwing attacks will arrive with ranged combat rules.",
-            "damage_bonus": 1
+            "use_text": "Wield it for melee training, or throw it at a nearby target.",
+            "damage_bonus": 1,
+            "throw_damage": 3
         },
         {
             "key": "crystal-token",

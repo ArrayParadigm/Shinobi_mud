@@ -3,6 +3,8 @@
 import random
 
 from body import add_fatigue
+from items import inventory_items, resolve_item
+from techniques import record_skill_use
 
 
 BASE_HIT_CHANCE = 50
@@ -257,6 +259,110 @@ def attack_npc(cursor, username, x, y, npc_name):
         "player_health": player_health,
         "player_defeated": player_defeated,
     }
+
+
+def throw_item_at_npc(cursor, username, x, y, item_name, npc_name):
+    """Throw one carried authored item at a hostile NPC within one grid step."""
+    connection = cursor.connection
+    try:
+        cursor.execute("BEGIN IMMEDIATE")
+        player = cursor.execute(
+            "SELECT id, dexterity FROM players WHERE username=?",
+            (username,),
+        ).fetchone()
+        if not player:
+            connection.rollback()
+            return {"status": "missing_player"}
+
+        item = resolve_item(inventory_items(cursor, username), item_name)
+        if not item:
+            connection.rollback()
+            return {"status": "missing_item"}
+        if item["throw_damage"] <= 0:
+            connection.rollback()
+            return {"status": "not_throwable", "item_name": item["name"]}
+
+        nearby_npcs = cursor.execute(
+            """
+            SELECT npc_instances.id, npc_instances.x, npc_instances.y,
+                   npc_instances.health, npc_templates.name,
+                   npc_templates.behavior, npc_templates.evasion
+            FROM npc_instances
+            JOIN npc_templates ON npc_templates.id=npc_instances.npc_template_id
+            WHERE npc_instances.health > 0
+              AND ABS(npc_instances.x - ?) + ABS(npc_instances.y - ?) <= 1
+            ORDER BY npc_instances.id
+            """,
+            (x, y),
+        ).fetchall()
+        npc = _resolve_named_npc(nearby_npcs, npc_name)
+        if not npc:
+            connection.rollback()
+            return {"status": "missing_target"}
+        if npc["behavior"] != "hostile":
+            connection.rollback()
+            return {"status": "not_attackable", "npc_name": npc["name"]}
+
+        add_fatigue(cursor, username, 2)
+        player_hit_chance = hit_chance(player["dexterity"], npc["evasion"])
+        player_hit = random.randint(1, 100) <= player_hit_chance
+        npc_health = npc["health"]
+        if player_hit:
+            npc_health = max(0, npc_health - item["throw_damage"])
+
+        cursor.execute("DELETE FROM character_inventory WHERE id=?", (item["id"],))
+        cursor.execute(
+            """
+            INSERT INTO room_items (item_definition_id, x, y, seed_key)
+            VALUES (?, ?, ?, ?)
+            """,
+            (item["item_definition_id"], npc["x"], npc["y"], item["seed_key"]),
+        )
+        if npc_health == 0:
+            cursor.execute(
+                """
+                UPDATE npc_instances
+                SET health=0, defeated_at=CURRENT_TIMESTAMP
+                WHERE id=?
+                """,
+                (npc["id"],),
+            )
+        elif player_hit:
+            cursor.execute(
+                "UPDATE npc_instances SET health=? WHERE id=?",
+                (npc_health, npc["id"]),
+            )
+        progress = record_skill_use(cursor, username, "throw", commit=False)
+        if progress["status"] != "recorded":
+            raise RuntimeError("Throw skill progression is unavailable.")
+        connection.commit()
+    except Exception:
+        connection.rollback()
+        raise
+    return {
+        "status": "npc_defeated" if npc_health == 0 else "thrown",
+        "item_name": item["name"],
+        "npc_name": npc["name"],
+        "player_hit": player_hit,
+        "player_hit_chance": player_hit_chance,
+        "player_damage": item["throw_damage"],
+        "npc_health": npc_health,
+        "progress_percent": progress["progress_percent"],
+        "proficiency": progress["proficiency"],
+    }
+
+
+def _resolve_named_npc(npcs, target):
+    query = target.strip().casefold()
+    if not query:
+        return None
+    exact = [npc for npc in npcs if npc["name"].casefold() == query]
+    matches = exact or [
+        npc
+        for npc in npcs
+        if npc["name"].casefold().startswith(query)
+    ]
+    return matches[0] if len(matches) == 1 else None
 
 
 def tick_npcs(connection):

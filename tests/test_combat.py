@@ -8,7 +8,8 @@ import shinobi_mud
 import utils
 from content import sync_authored_content
 from migrations import apply_migrations, migration_006_combat_reliability
-from npcs import attack_npc, npcs_at, tick_npcs
+from npcs import attack_npc, npcs_at, throw_item_at_npc, tick_npcs
+from items import inventory_items, room_items
 from tests.test_accounts import TestProtocol
 
 
@@ -218,6 +219,136 @@ class CombatSliceTests(unittest.TestCase):
         self.assertEqual(
             self.player.messages[0],
             "You strike Practice Construct for 6 damage. Practice Construct has 6 health remaining.",
+        )
+
+    def test_throw_hits_adjacent_target_lands_item_and_records_proficiency(self):
+        general_commands.handle_get(self.player, "kun")
+        self.player.x = 500
+        self.player.y = 500
+        self.player.messages.clear()
+
+        with patch("npcs.random.randint", return_value=1):
+            general_commands.handle_throw(self.player, "Practice Kunai at Practice Construct")
+
+        npc_health = self.connection.execute(
+            """
+            SELECT health
+            FROM npc_instances
+            JOIN npc_templates ON npc_templates.id=npc_instances.npc_template_id
+            WHERE npc_templates.name='Practice Construct'
+            """
+        ).fetchone()["health"]
+        progress = self.connection.execute(
+            """
+            SELECT progress_percent
+            FROM character_skills
+            JOIN players ON players.id=character_skills.player_id
+            JOIN skill_definitions ON skill_definitions.id=character_skills.skill_definition_id
+            WHERE players.username='Fighter' AND skill_definitions.skill_key='throw'
+            """
+        ).fetchone()["progress_percent"]
+        fatigue = self.connection.execute(
+            "SELECT fatigue FROM players WHERE username='Fighter'"
+        ).fetchone()["fatigue"]
+
+        self.assertEqual(npc_health, 9)
+        self.assertEqual(progress, 1)
+        self.assertEqual(fatigue, 2)
+        self.assertEqual(inventory_items(self.player.cursor, "Fighter"), [])
+        self.assertEqual(
+            [item["name"] for item in room_items(self.player.cursor, 500, 499)],
+            ["Practice Kunai"],
+        )
+        self.assertEqual(
+            self.player.messages,
+            [
+                "You throw Practice Kunai at Practice Construct for 3 damage. "
+                "Practice Construct has 9 health remaining. Throw: Novice (1%)."
+            ],
+        )
+
+    def test_throw_miss_still_lands_item_and_records_valid_use(self):
+        general_commands.handle_get(self.player, "kun")
+        self.player.messages.clear()
+
+        with patch("npcs.random.randint", return_value=100):
+            general_commands.handle_throw(self.player, "kun AT practice")
+
+        self.assertEqual(
+            self.player.messages,
+            ["You throw Practice Kunai at Practice Construct, but miss. Throw: Novice (1%)."],
+        )
+        self.assertEqual(inventory_items(self.player.cursor, "Fighter"), [])
+
+    def test_throw_rejects_target_outside_cardinal_range_without_losing_item(self):
+        general_commands.handle_get(self.player, "kun")
+        self.player.x = 500
+        self.player.y = 501
+        self.player.messages.clear()
+
+        general_commands.handle_throw(self.player, "kun at practice")
+
+        self.assertEqual(
+            self.player.messages,
+            ["You do not see that character within throwing range."],
+        )
+        self.assertEqual(
+            [item["name"] for item in inventory_items(self.player.cursor, "Fighter")],
+            ["Practice Kunai"],
+        )
+
+    def test_throw_rejects_non_throwable_carried_item_without_losing_it(self):
+        self.player.x = 500
+        self.player.y = 500
+        general_commands.handle_get(self.player, "map")
+        self.player.x = 500
+        self.player.y = 499
+        self.player.messages.clear()
+
+        general_commands.handle_throw(self.player, "map at practice")
+
+        self.assertEqual(self.player.messages, ["Haven Map is not throwable."])
+        self.assertEqual(
+            [item["name"] for item in inventory_items(self.player.cursor, "Fighter")],
+            ["Haven Map"],
+        )
+
+    def test_throw_progression_failure_rolls_back_item_and_npc_damage(self):
+        general_commands.handle_get(self.player, "kun")
+        self.connection.execute(
+            """
+            CREATE TRIGGER reject_throw_progress
+            BEFORE INSERT ON character_skills
+            BEGIN
+                SELECT RAISE(ABORT, 'blocked throw progress');
+            END
+            """
+        )
+        self.connection.commit()
+
+        with patch("npcs.random.randint", return_value=1):
+            with self.assertRaises(sqlite3.IntegrityError):
+                throw_item_at_npc(
+                    self.player.cursor,
+                    "Fighter",
+                    500,
+                    499,
+                    "kun",
+                    "practice",
+                )
+
+        npc_health = self.connection.execute(
+            """
+            SELECT health
+            FROM npc_instances
+            JOIN npc_templates ON npc_templates.id=npc_instances.npc_template_id
+            WHERE npc_templates.name='Practice Construct'
+            """
+        ).fetchone()["health"]
+        self.assertEqual(npc_health, 12)
+        self.assertEqual(
+            [item["name"] for item in inventory_items(self.player.cursor, "Fighter")],
+            ["Practice Kunai"],
         )
 
     def test_consider_displays_current_and_maximum_npc_health(self):

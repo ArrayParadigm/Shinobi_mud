@@ -20,7 +20,7 @@ from locations import (
     move_player,
     online_players,
 )
-from npcs import attack_npc, consider_npc, talk_to_npc
+from npcs import attack_npc, consider_npc, talk_to_npc, throw_item_at_npc
 from techniques import jutsu_detail, list_jutsus, list_skills, proficiency_label, skill_detail
 from shinobi_mud import (
     COMMAND_REGISTRY,
@@ -552,6 +552,62 @@ def handle_attack(player, npc_name):
         player.sendLine(b"Unable to attack that character right now.")
 
 
+def handle_throw(player, raw_args):
+    """Throw one carried authored item at a nearby hostile NPC."""
+    separator_index = raw_args.casefold().find(" at ")
+    if separator_index < 0:
+        player.sendLine(b"Usage: throw <item> at <character>")
+        return
+    item_name = raw_args[:separator_index]
+    npc_name = raw_args[separator_index + 4:]
+    try:
+        result = throw_item_at_npc(
+            player.cursor,
+            player.username,
+            player.x,
+            player.y,
+            item_name.strip(),
+            npc_name.strip(),
+        )
+        if result["status"] == "missing_item":
+            player.sendLine(b"You are not carrying that item.")
+        elif result["status"] == "not_throwable":
+            player.sendLine(f'{result["item_name"]} is not throwable.'.encode("utf-8"))
+        elif result["status"] == "missing_target":
+            player.sendLine(b"You do not see that character within throwing range.")
+        elif result["status"] == "not_attackable":
+            player.sendLine(f'{result["npc_name"]} is not a combat target.'.encode("utf-8"))
+        elif result["status"] == "missing_player":
+            player.sendLine(b"Your character is unavailable right now.")
+        elif result["status"] == "npc_defeated":
+            player.sendLine(
+                (
+                    f'You throw {result["item_name"]} at {result["npc_name"]} for '
+                    f'{result["player_damage"]} damage and defeat it. '
+                    f'Throw: {result["proficiency"]} ({result["progress_percent"]}%).'
+                ).encode("utf-8")
+            )
+        elif result["player_hit"]:
+            player.sendLine(
+                (
+                    f'You throw {result["item_name"]} at {result["npc_name"]} for '
+                    f'{result["player_damage"]} damage. '
+                    f'{result["npc_name"]} has {result["npc_health"]} health remaining. '
+                    f'Throw: {result["proficiency"]} ({result["progress_percent"]}%).'
+                ).encode("utf-8")
+            )
+        else:
+            player.sendLine(
+                (
+                    f'You throw {result["item_name"]} at {result["npc_name"]}, but miss. '
+                    f'Throw: {result["proficiency"]} ({result["progress_percent"]}%).'
+                ).encode("utf-8")
+            )
+    except Exception as exc:
+        logging.error("Unable to throw item for %s: %s", player.username, exc, exc_info=True)
+        player.sendLine(b"Unable to throw that item right now.")
+
+
 def handle_help(player, raw_args):
     """Display available commands or detailed help for one command."""
     topic = raw_args.strip().lower()
@@ -611,6 +667,7 @@ COMMANDS = {
     "talk": CommandSpec("talk", lambda player, rooms, raw, args: handle_talk(player, raw), "talk <character>", "Talk to a character at your location.", min_args=1),
     "consider": CommandSpec("consider", lambda player, rooms, raw, args: handle_consider(player, raw), "consider <character>", "Inspect a character's combat details.", min_args=1),
     "attack": CommandSpec("attack", lambda player, rooms, raw, args: handle_attack(player, raw), "attack <character>", "Strike a hostile character at your location.", min_args=1),
+    "throw": CommandSpec("throw", lambda player, rooms, raw, args: handle_throw(player, raw), "throw <item> at <character>", "Throw a carried ranged item at a nearby hostile character.", min_args=3, args_validator=lambda args: "at" in [arg.lower() for arg in args]),
     "north": CommandSpec("north", lambda player, rooms, raw, args: handle_movement(player, "north"), "north", "Move north.", max_args=0),
     "south": CommandSpec("south", lambda player, rooms, raw, args: handle_movement(player, "south"), "south", "Move south.", max_args=0),
     "east": CommandSpec("east", lambda player, rooms, raw, args: handle_movement(player, "east"), "east", "Move east.", max_args=0),
