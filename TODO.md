@@ -2,7 +2,7 @@
 
 ## Current Checkpoint
 
-The private-alpha gameplay loop is covered by `135` automated tests. The current build includes:
+The private-alpha gameplay loop is covered by `137` automated tests. The current build includes:
 
 - Coordinate-first wilderness movement with Eve's Haven as a VNUM-backed overlay zone.
 - Persistent accounts, items, inventories, equipment, NPC instances, combat state, and body resources.
@@ -13,6 +13,7 @@ The private-alpha gameplay loop is covered by `135` automated tests. The current
 - A real `throw <item> at <character>` action. Practice Kunai throws deal `3` damage, add `2` fatigue, land at the target location, and raise `Throw` proficiency on valid hits or misses.
 - A real `usejutsu substitution` action. It spends `3` chakra, prepares a `30` second defensive window, avoids the next eligible hostile NPC strike, raises Substitution proficiency on resolution, and persists a `60` second cooldown.
 - Coordinate-aware builder commands for digging rooms, editing descriptions, creating basic NPC templates, and seeding persistent NPC spawns.
+- A complete `commands` catalog generated from registered help metadata.
 
 The next step is exercising the current loop through a private-alpha soak pass.
 

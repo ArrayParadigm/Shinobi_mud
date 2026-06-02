@@ -683,6 +683,18 @@ def handle_help(player, raw_args):
         player.sendLine(f"Aliases: {', '.join(command.aliases)}".encode("utf-8"))
 
 
+def handle_commands(player):
+    """Display the complete command catalog from registered metadata."""
+    player.sendLine(b"Command Catalog")
+    for name, command in sorted(COMMAND_REGISTRY.items()):
+        permission = " [admin]" if command.permission == "admin" else ""
+        aliases = f" (aliases: {', '.join(command.aliases)})" if command.aliases else ""
+        player.sendLine(
+            f"  {command.usage}{permission} - {command.description}{aliases}".encode("utf-8")
+        )
+    player.sendLine(b"Use help <command> for detailed usage.")
+
+
 COMMANDS = {
     "look": CommandSpec("look", lambda player, rooms, raw, args: handle_look(player, rooms, raw), "look [at <item>]", "Display your location or inspect an item.", args_validator=lambda args: not args or (len(args) >= 2 and args[0].lower() == "at")),
     "score": CommandSpec("score", lambda player, rooms, raw, args: handle_score(player, rooms), "score", "Display your character sheet.", aliases=("status",), max_args=0),
@@ -714,5 +726,6 @@ COMMANDS = {
     "east": CommandSpec("east", lambda player, rooms, raw, args: handle_movement(player, "east"), "east", "Move east.", max_args=0),
     "west": CommandSpec("west", lambda player, rooms, raw, args: handle_movement(player, "west"), "west", "Move west.", max_args=0),
     "help": CommandSpec("help", lambda player, rooms, raw, args: handle_help(player, raw), "help [command]", "List commands or explain one command.", max_args=1),
+    "commands": CommandSpec("commands", lambda player, rooms, raw, args: handle_commands(player), "commands", "List every command with a brief description.", max_args=0),
 }
 

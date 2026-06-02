@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-06-02 11:09 -0500 - Complete Command Catalog
+
+### Added
+
+- Added `commands` to list every registered player and admin command with usage and a brief description.
+- Marked admin-only entries and displayed aliases directly in the generated catalog.
+- Kept `help <command>` as the detailed lookup for individual commands.
+
+### Verification
+
+- Added catalog content and registry-completeness coverage.
+- Passed `python -m unittest discover -s tests -v` with 137 tests.
+- Passed Python syntax compilation and `git diff --check`.
+
 ## 2026-06-02 11:05 -0500 - Coordinate Overlay Builder
 
 ### Added

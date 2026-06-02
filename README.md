@@ -158,6 +158,7 @@ Eve's Haven is the first complete overlay example. Its anchor and room offsets l
 - `think`: perform the built-in thinking emote at your grid location.
 - `ooc <message>`: speak on the global out-of-character channel.
 - `help [command]`: list available commands or display usage details.
+- `commands`: list every player and admin command with its usage and a brief description.
 
 Commands accept unique prefixes. The stable shortcuts `n`, `s`, `e`, `w`, and `l` always mean `north`, `south`, `east`, `west`, and `look`. Ambiguous prefixes list their possible matches instead of guessing.
 

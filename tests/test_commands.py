@@ -162,6 +162,25 @@ class CommandMetadataTests(unittest.TestCase):
 
         self.assertIn("shutdown", self.player.messages[1])
 
+    def test_commands_catalog_lists_every_command_with_descriptions(self):
+        shinobi_mud.process_command(self.player, "commands")
+
+        catalog = "\n".join(self.player.messages)
+        self.assertEqual(self.player.messages[0], "Command Catalog")
+        self.assertIn("  attack <character> - Strike a hostile character at your location.", catalog)
+        self.assertIn("  commands - List every command with a brief description.", catalog)
+        self.assertIn("  inventory - List the items you carry. (aliases: inv)", catalog)
+        self.assertIn("  shutdown [admin] - Stop the server.", catalog)
+        self.assertEqual(self.player.messages[-1], "Use help <command> for detailed usage.")
+
+    def test_commands_catalog_is_complete_for_registered_metadata(self):
+        shinobi_mud.process_command(self.player, "commands")
+
+        catalog = "\n".join(self.player.messages)
+        for command in shinobi_mud.COMMAND_REGISTRY.values():
+            with self.subTest(command=command.name):
+                self.assertIn(f"  {command.usage}", catalog)
+
 
 if __name__ == "__main__":
     unittest.main()
