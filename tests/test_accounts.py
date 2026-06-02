@@ -267,6 +267,7 @@ class PlayerAdminTests(unittest.TestCase):
         self.assertIn("Player Target", rendered)
         self.assertIn("Specialty: Ninjutsu  Clan: Leaf  Release: Fire", rendered)
         self.assertIn("Body: nutrition=100 hydration=100 fatigue=0", rendered)
+        self.assertIn("Stance: S3 - Balance", rendered)
         self.assertNotIn("secret-hash", rendered)
 
     def test_pset_updates_validated_fields_and_clamps_current_resource(self):

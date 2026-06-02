@@ -14,7 +14,11 @@ from combat import (
     tick_combat,
 )
 from content import sync_authored_content
-from migrations import apply_migrations, migration_014_pulse_combat_engagements
+from migrations import (
+    apply_migrations,
+    migration_014_pulse_combat_engagements,
+    migration_015_stance_profiles,
+)
 from tests.test_accounts import TestProtocol
 
 
@@ -131,12 +135,80 @@ class PulseCombatTests(unittest.TestCase):
         self.assertIsNone(combat_status(self.player.cursor, "Fighter")["action_key"])
 
     def test_authored_stances_adjust_pulse_and_persist_without_engagement(self):
-        mongoose = set_stance(self.player.cursor, "Fighter", "mongoose")
+        stances = self.connection.execute(
+            """
+            SELECT stance_key, accuracy_bonus, damage_bonus,
+                   evasion_bonus, damage_reduction_bonus, pulse_seconds
+            FROM stance_definitions
+            ORDER BY stance_key
+            """
+        ).fetchall()
+        attack = set_stance(self.player.cursor, "Fighter", "s1")
 
-        self.assertEqual((mongoose["accuracy_bonus"], mongoose["evasion_bonus"], mongoose["pulse_seconds"]), (1, -1, 4))
-        self.assertEqual(combat_status(self.player.cursor, "Fighter")["stance_name"], "Mongoose Stance")
-        general_commands.handle_stance(self.player, "crane")
-        self.assertIn("pulse 8s", self.player.messages[-1])
+        self.assertEqual(
+            [tuple(stance) for stance in stances],
+            [
+                ("s1-attack", 2, -1, -1, 0, 6),
+                ("s2-damage", -1, 2, -1, 0, 6),
+                ("s3-balance", 0, 0, 0, 0, 6),
+                ("s4-evasion", -1, -1, 2, 0, 6),
+                ("s5-damage-reduction", -1, -1, 0, 2, 6),
+            ],
+        )
+        self.assertEqual((attack["accuracy_bonus"], attack["evasion_bonus"]), (2, -1))
+        self.assertEqual(combat_status(self.player.cursor, "Fighter")["stance_name"], "S1 - Attack")
+        general_commands.handle_stance(self.player, "s5")
+        self.assertIn("damage reduction +2", self.player.messages[-1])
+
+    def test_s1_attack_stance_turns_near_miss_into_reduced_damage_hit(self):
+        set_stance(self.player.cursor, "Fighter", "s1")
+        engage_npc(self.player.cursor, "Fighter", 500, 499, "practice")
+        self.make_due()
+
+        with patch("combat.random.randint", side_effect=[55, 100]):
+            event = tick_combat(self.connection)[0]
+
+        self.assertTrue(event["player_hit"])
+        self.assertEqual((event["player_damage"], event["npc_health"]), (4, 8))
+
+    def test_s2_damage_stance_increases_outgoing_damage(self):
+        set_stance(self.player.cursor, "Fighter", "s2")
+        engage_npc(self.player.cursor, "Fighter", 500, 499, "practice")
+        self.make_due()
+
+        with patch("combat.random.randint", side_effect=[1, 100]):
+            event = tick_combat(self.connection)[0]
+
+        self.assertEqual((event["player_damage"], event["npc_health"]), (7, 5))
+
+    def test_s4_evasion_stance_turns_near_hit_into_miss(self):
+        set_stance(self.player.cursor, "Fighter", "s4")
+        engage_npc(self.player.cursor, "Fighter", 500, 499, "practice")
+        self.make_due()
+
+        with patch("combat.random.randint", side_effect=[100, 45]):
+            event = tick_combat(self.connection)[0]
+
+        self.assertFalse(event["npc_hit"])
+        self.assertEqual(event["player_health"], 10)
+
+    def test_s5_damage_reduction_stance_absorbs_incoming_damage(self):
+        set_stance(self.player.cursor, "Fighter", "s5")
+        engage_npc(self.player.cursor, "Fighter", 500, 499, "practice")
+        self.make_due()
+
+        with patch("combat.random.randint", side_effect=[100, 1]):
+            event = tick_combat(self.connection)[0]
+
+        self.assertTrue(event["npc_hit"])
+        self.assertEqual((event["npc_damage"], event["player_health"]), (0, 10))
+
+    def test_combat_command_displays_stance_damage_reduction(self):
+        set_stance(self.player.cursor, "Fighter", "s5")
+
+        general_commands.handle_combat(self.player)
+
+        self.assertIn("Damage reduction: +2", self.player.messages[1])
 
     def test_substitution_resolves_on_hostile_pulse(self):
         general_commands.handle_usejutsu(self.player, "sub")
@@ -208,6 +280,60 @@ class PulseCombatTests(unittest.TestCase):
             for row in cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
         }
         self.assertIn("combat_engagements", tables)
+        connection.close()
+
+    def test_migration_15_adds_damage_reduction_and_retires_initial_placeholders(self):
+        connection = sqlite3.connect(":memory:")
+        cursor = connection.cursor()
+        cursor.execute("CREATE TABLE players (id INTEGER PRIMARY KEY, username TEXT)")
+        cursor.execute("CREATE TABLE npc_instances (id INTEGER PRIMARY KEY)")
+        cursor.execute("INSERT INTO players (id, username) VALUES (1, 'Existing')")
+        cursor.execute(
+            """
+            CREATE TABLE stance_definitions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                stance_key TEXT NOT NULL UNIQUE,
+                name TEXT NOT NULL UNIQUE COLLATE NOCASE,
+                description TEXT NOT NULL,
+                accuracy_bonus INTEGER NOT NULL DEFAULT 0,
+                evasion_bonus INTEGER NOT NULL DEFAULT 0,
+                damage_bonus INTEGER NOT NULL DEFAULT 0,
+                pulse_seconds INTEGER NOT NULL DEFAULT 6
+            )
+            """
+        )
+        cursor.execute(
+            """
+            CREATE TABLE character_stances (
+                player_id INTEGER PRIMARY KEY,
+                stance_definition_id INTEGER NOT NULL
+            )
+            """
+        )
+        cursor.execute(
+            """
+            INSERT INTO stance_definitions (
+                stance_key, name, description, accuracy_bonus,
+                evasion_bonus, damage_bonus, pulse_seconds
+            )
+            VALUES ('mongoose', 'Mongoose Stance', 'retired', 1, -1, 0, 4)
+            """
+        )
+        stance_id = cursor.lastrowid
+        cursor.execute(
+            "INSERT INTO character_stances (player_id, stance_definition_id) VALUES (1, ?)",
+            (stance_id,),
+        )
+
+        migration_015_stance_profiles(cursor)
+
+        columns = {
+            column[1]: column[4]
+            for column in cursor.execute("PRAGMA table_info(stance_definitions)")
+        }
+        self.assertEqual(columns["damage_reduction_bonus"], "0")
+        self.assertEqual(cursor.execute("SELECT COUNT(*) FROM stance_definitions").fetchone()[0], 0)
+        self.assertEqual(cursor.execute("SELECT COUNT(*) FROM character_stances").fetchone()[0], 0)
         connection.close()
 
 

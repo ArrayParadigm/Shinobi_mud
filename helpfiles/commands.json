@@ -197,7 +197,7 @@
     },
     "stance": {
         "summary": "List or change your combat stance.",
-        "details": ["Use stance balanced to clear an authored stance. Mongoose speeds basic attacks; Crane slows basic attacks and improves evasion."]
+        "details": ["Use stance with no argument to list the neutral S1-S5 placeholder profiles. S1 favors accuracy, S2 damage, S3 balance, S4 evasion, and S5 damage reduction."]
     },
     "spawnnpc": {
         "summary": "Persist a spawn for an authored NPC template.",

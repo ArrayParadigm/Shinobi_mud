@@ -9,6 +9,7 @@ from techniques import consume_substitution
 
 BASE_AUTO_ATTACK_SECONDS = 6
 BASE_AUTO_ATTACK_RANGE = 0
+BALANCED_STANCE_NAME = "S3 - Balance"
 
 
 def create_combat_tables(cursor):
@@ -23,10 +24,12 @@ def create_combat_tables(cursor):
             accuracy_bonus INTEGER NOT NULL DEFAULT 0,
             evasion_bonus INTEGER NOT NULL DEFAULT 0,
             damage_bonus INTEGER NOT NULL DEFAULT 0,
+            damage_reduction_bonus INTEGER NOT NULL DEFAULT 0,
             pulse_seconds INTEGER NOT NULL DEFAULT 6
         )
         """
     )
+    ensure_stance_columns(cursor)
     cursor.execute(
         """
         CREATE TABLE IF NOT EXISTS character_stances (
@@ -71,15 +74,16 @@ def sync_stance_templates(cursor, templates):
             """
             INSERT INTO stance_definitions (
                 stance_key, name, description, accuracy_bonus,
-                evasion_bonus, damage_bonus, pulse_seconds
+                evasion_bonus, damage_bonus, damage_reduction_bonus, pulse_seconds
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(stance_key) DO UPDATE SET
                 name=excluded.name,
                 description=excluded.description,
                 accuracy_bonus=excluded.accuracy_bonus,
                 evasion_bonus=excluded.evasion_bonus,
                 damage_bonus=excluded.damage_bonus,
+                damage_reduction_bonus=excluded.damage_reduction_bonus,
                 pulse_seconds=excluded.pulse_seconds
             """,
             (
@@ -89,9 +93,41 @@ def sync_stance_templates(cursor, templates):
                 int(template.get("accuracy_bonus", 0)),
                 int(template.get("evasion_bonus", 0)),
                 int(template.get("damage_bonus", 0)),
+                int(template.get("damage_reduction_bonus", 0)),
                 max(1, int(template.get("pulse_seconds", BASE_AUTO_ATTACK_SECONDS))),
             ),
         )
+
+
+def ensure_stance_columns(cursor):
+    """Add stance fields introduced after the initial pulse-combat schema."""
+    columns = {
+        column[1]
+        for column in cursor.execute("PRAGMA table_info(stance_definitions)")
+    }
+    if "damage_reduction_bonus" not in columns:
+        cursor.execute(
+            "ALTER TABLE stance_definitions "
+            "ADD COLUMN damage_reduction_bonus INTEGER NOT NULL DEFAULT 0"
+        )
+
+
+def retire_initial_stance_placeholders(cursor):
+    """Remove the first named prototypes after clearing saved references."""
+    retired_keys = ("mongoose", "crane")
+    cursor.execute(
+        """
+        DELETE FROM character_stances
+        WHERE stance_definition_id IN (
+            SELECT id FROM stance_definitions WHERE stance_key IN (?, ?)
+        )
+        """,
+        retired_keys,
+    )
+    cursor.execute(
+        "DELETE FROM stance_definitions WHERE stance_key IN (?, ?)",
+        retired_keys,
+    )
 
 
 def engage_npc(cursor, username, x, y, npc_name):
@@ -159,15 +195,16 @@ def set_stance(cursor, username, target):
         if not player:
             connection.rollback()
             return {"status": "missing_player"}
-        if target.strip().casefold() in {"off", "none", "balanced"}:
+        if target.strip().casefold() in {"off", "none", "balanced", "balance", "s3"}:
             cursor.execute("DELETE FROM character_stances WHERE player_id=?", (player["id"],))
             connection.commit()
             return {
                 "status": "cleared",
-                "name": "Balanced",
+                "name": BALANCED_STANCE_NAME,
                 "accuracy_bonus": 0,
                 "evasion_bonus": 0,
                 "damage_bonus": 0,
+                "damage_reduction_bonus": 0,
                 "pulse_seconds": BASE_AUTO_ATTACK_SECONDS,
             }
         stances = cursor.execute(
@@ -255,6 +292,7 @@ def combat_status(cursor, username):
                COALESCE(stance_definitions.accuracy_bonus, 0) AS accuracy_bonus,
                COALESCE(stance_definitions.evasion_bonus, 0) AS evasion_bonus,
                COALESCE(stance_definitions.damage_bonus, 0) AS damage_bonus,
+               COALESCE(stance_definitions.damage_reduction_bonus, 0) AS damage_reduction_bonus,
                COALESCE(stance_definitions.pulse_seconds, ?) AS pulse_seconds,
                npc_templates.name AS npc_name, npc_instances.health AS npc_health,
                npc_templates.max_health AS npc_max_health,
@@ -275,7 +313,7 @@ def combat_status(cursor, username):
     if not row:
         return None
     status = dict(row)
-    status["stance_name"] = status["stance_name"] or "Balanced"
+    status["stance_name"] = status["stance_name"] or BALANCED_STANCE_NAME
     if status["npc_name"]:
         status["distance"] = abs(status["player_x"] - status["npc_x"]) + abs(
             status["player_y"] - status["npc_y"]
@@ -319,10 +357,11 @@ def tick_combat(connection, active_usernames=None):
                    npc_templates.name AS npc_name, npc_templates.behavior,
                    npc_templates.attack_damage, npc_templates.accuracy,
                    npc_templates.evasion,
-                   COALESCE(stance_definitions.name, 'Balanced') AS stance_name,
+                   COALESCE(stance_definitions.name, ?) AS stance_name,
                    COALESCE(stance_definitions.accuracy_bonus, 0) AS stance_accuracy,
                    COALESCE(stance_definitions.evasion_bonus, 0) AS stance_evasion,
                    COALESCE(stance_definitions.damage_bonus, 0) AS stance_damage,
+                   COALESCE(stance_definitions.damage_reduction_bonus, 0) AS stance_damage_reduction,
                    COALESCE(stance_definitions.pulse_seconds, ?) AS pulse_seconds,
                    combat_action_queue.action_key,
                    COALESCE(combat_action_queue.accuracy_bonus, 0) AS queued_accuracy,
@@ -338,7 +377,7 @@ def tick_combat(connection, active_usernames=None):
             WHERE combat_engagements.next_pulse_at <= CURRENT_TIMESTAMP
             ORDER BY combat_engagements.player_id
             """,
-            (BASE_AUTO_ATTACK_SECONDS, BASE_AUTO_ATTACK_RANGE),
+            (BALANCED_STANCE_NAME, BASE_AUTO_ATTACK_SECONDS, BASE_AUTO_ATTACK_RANGE),
         ).fetchall()
         for row in rows:
             if active is not None and row["username"] not in active:
@@ -440,7 +479,8 @@ def _resolve_pulse(cursor, row):
         )
         substitution = consume_substitution(cursor, row["username"]) if npc_hit else None
         if npc_hit and not substitution:
-            player_health = max(0, player_health - max(0, row["attack_damage"]))
+            npc_damage = max(0, row["attack_damage"] - row["stance_damage_reduction"])
+            player_health = max(0, player_health - npc_damage)
             player_defeated = player_health == 0
             if player_defeated:
                 player_health = row["max_health"]
@@ -456,7 +496,7 @@ def _resolve_pulse(cursor, row):
         "player_damage": player_damage,
         "npc_health": npc_health,
         "npc_hit": npc_hit,
-        "npc_damage": max(0, row["attack_damage"]),
+        "npc_damage": max(0, row["attack_damage"] - row["stance_damage_reduction"]),
         "player_health": player_health,
         "player_defeated": player_defeated,
         "substitution": substitution,

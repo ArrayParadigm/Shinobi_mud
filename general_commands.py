@@ -134,6 +134,9 @@ def handle_score(player, players_in_rooms=None):
             player.sendLine(f"Intelligence: {stats[9]}  Wisdom: {stats[10]}".encode("utf-8"))
             player.sendLine(f"Specialty: {stats[12]}  Clan: {stats[13]}  Release: {stats[14]}".encode("utf-8"))
             player.sendLine(f"Dojo Alignment: {stats[11]}".encode("utf-8"))
+            stance = combat_status(player.cursor, player.username)
+            if stance:
+                player.sendLine(f"Stance: {stance['stance_name']}".encode("utf-8"))
             player.sendLine(f"Location: ({player.x}, {player.y})".encode("utf-8"))
             overlay = WORLD_OVERLAYS.get((player.x, player.y))
             if overlay:
@@ -516,7 +519,8 @@ def handle_combat(player):
             (
                 f'Stance: {status["stance_name"]}  Pulse: {status["pulse_seconds"]}s  '
                 f'Accuracy: {status["accuracy_bonus"]:+d}  '
-                f'Evasion: {status["evasion_bonus"]:+d}  Damage: {status["damage_bonus"]:+d}'
+                f'Evasion: {status["evasion_bonus"]:+d}  Damage: {status["damage_bonus"]:+d}  '
+                f'Damage reduction: {status["damage_reduction_bonus"]:+d}'
             ).encode("utf-8")
         )
         if not status["npc_name"]:
@@ -542,13 +546,13 @@ def handle_stance(player, target):
     try:
         if not target.strip():
             player.sendLine(b"Stances")
-            player.sendLine(b"  Balanced: +0 accuracy, +0 evasion, +0 damage, 6s pulse")
             for stance in list_stances(player.cursor):
                 player.sendLine(
                     (
                         f'  {stance["name"]}: {stance["accuracy_bonus"]:+d} accuracy, '
                         f'{stance["evasion_bonus"]:+d} evasion, '
-                        f'{stance["damage_bonus"]:+d} damage, {stance["pulse_seconds"]}s pulse'
+                        f'{stance["damage_bonus"]:+d} damage, '
+                        f'{stance["damage_reduction_bonus"]:+d} damage reduction'
                     ).encode("utf-8")
                 )
             return
@@ -562,7 +566,8 @@ def handle_stance(player, target):
                 (
                     f'You settle into {result["name"]}. '
                     f'Accuracy {result["accuracy_bonus"]:+d}, evasion {result["evasion_bonus"]:+d}, '
-                    f'damage {result["damage_bonus"]:+d}, pulse {result["pulse_seconds"]}s.'
+                    f'damage {result["damage_bonus"]:+d}, '
+                    f'damage reduction {result["damage_reduction_bonus"]:+d}.'
                 ).encode("utf-8")
             )
     except Exception as exc:
@@ -756,7 +761,7 @@ COMMANDS = {
     "consider": CommandSpec("consider", lambda player, rooms, raw, args: handle_consider(player, raw), "consider <character>", "Inspect a character's combat details.", min_args=1),
     "attack": CommandSpec("attack", lambda player, rooms, raw, args: handle_attack(player, raw), "attack <character>", "Engage a hostile character for pulse combat.", min_args=1),
     "combat": CommandSpec("combat", lambda player, rooms, raw, args: handle_combat(player), "combat", "Display your active combat engagement and stance.", max_args=0),
-    "stance": CommandSpec("stance", lambda player, rooms, raw, args: handle_stance(player, raw), "stance [balanced|stance]", "List or change your combat stance.", max_args=2),
+    "stance": CommandSpec("stance", lambda player, rooms, raw, args: handle_stance(player, raw), "stance [s1|s2|s3|s4|s5]", "List or change your combat stance.", max_args=2),
     "throw": CommandSpec("throw", lambda player, rooms, raw, args: handle_throw(player, raw), "throw <item> at <character>", "Throw a carried ranged item at a nearby hostile character.", min_args=3, args_validator=lambda args: "at" in [arg.lower() for arg in args]),
     "north": CommandSpec("north", lambda player, rooms, raw, args: handle_movement(player, "north"), "north", "Move north.", max_args=0),
     "south": CommandSpec("south", lambda player, rooms, raw, args: handle_movement(player, "south"), "south", "Move south.", max_args=0),

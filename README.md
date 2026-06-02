@@ -152,7 +152,7 @@ The authored `aexpanse` overlay is anchored at `(1, 1)` with two rooms and a see
 - `consider <character>`: inspect a visible character's combat details.
 - `attack <character>`: engage a hostile NPC at your grid location for slow pulse combat.
 - `combat`: inspect your engagement, range, queued modifier, and active stance.
-- `stance [balanced|stance]`: list or change combat stance. `balanced` clears an authored stance.
+- `stance [s1|s2|s3|s4|s5]`: list or change your placeholder combat stance.
 - `throw <item> at <character>`: throw a carried ranged item at a hostile NPC in your room or one cardinal step away.
 - `who`: list connected characters.
 - `say <message>`: speak to characters at your grid location.
@@ -214,7 +214,15 @@ Eve's Haven is also the compact training loop. Pick up food and water at the ent
 
 The combat loop is engagement-driven and pulse-based. `attack <character>` starts or retargets combat without dealing immediate damage. Basic auto attacks resolve slowly while the target is in the same grid room, using player dexterity, strength, equipped-weapon metadata, NPC evasion, and NPC counterattacks. Engagement remains active when a player moves away, so repositioning creates space instead of acting as a separate flee command. Defeated NPCs disappear until their authored respawn delay elapses. A defeated player recovers to maximum health at the same grid coordinate.
 
-`stance` adds the first authored pulse modifiers. Balanced stance uses a `6` second auto-attack pulse. Mongoose Stance uses a `4` second pulse with `+1` accuracy and `-1` evasion. Crane Stance uses an `8` second pulse with `-1` accuracy and `+2` evasion. The persisted combat queue can apply one-shot range, accuracy, damage, and status modifiers from future skills and jutsus; active abilities remain intentionally narrow for now.
+`stance` adds the first authored combat profiles. All placeholders keep the same `6` second basic auto-attack pulse so stance choice only changes combat tradeoffs:
+
+- `S1 - Attack`: `+2` accuracy, `-1` damage, `-1` evasion.
+- `S2 - Damage`: `+2` damage, `-1` accuracy, `-1` evasion.
+- `S3 - Balance`: no modifiers.
+- `S4 - Evasion`: `+2` evasion, `-1` accuracy, `-1` damage.
+- `S5 - Damage Reduction`: `+2` incoming damage reduction, `-1` accuracy, `-1` damage.
+
+Accuracy and evasion are opposing values. An S1 attacker facing an S2 defender has an easier hit check because the attacker contributes `+2` accuracy while the defender contributes `-1` evasion. NPC pulse combat applies the same player-side stance fields now; player-versus-player engagement can reuse the opposed calculation when it is introduced. The persisted combat queue can still apply one-shot range, accuracy, damage, and status modifiers from future skills and jutsus.
 
 Characters also have abstract body resources: nutrition, hydration, and fatigue. Ordinary movement and hostile combat increase fatigue. `rest` reduces fatigue, consumes a small amount of nutrition and hydration, restores stamina, and restores chakra based on wisdom and current body condition. Rest is blocked at zero nutrition or hydration. `eat` and `drink` consume finite authored supplies to restore body resources.
 

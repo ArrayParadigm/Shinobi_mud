@@ -2,7 +2,7 @@
 
 ## Current Checkpoint
 
-The private-alpha gameplay loop is covered by `160` automated tests. The current build includes:
+The private-alpha gameplay loop is covered by `166` automated tests. The current build includes:
 
 - Coordinate-first wilderness movement with Eve's Haven as a VNUM-backed overlay zone.
 - Persistent accounts, items, inventories, equipment, NPC instances, combat state, and body resources.
@@ -19,7 +19,7 @@ The private-alpha gameplay loop is covered by `160` automated tests. The current
 - Builder-editable command summaries and detailed help prose loaded from `helpfiles/commands.json`.
 - Builder-editable command-catalog sections with clean ANSI-colored headings loaded from `helpfiles/command_categories.json`.
 - Persisted pulse combat engagements that remain active across movement, with up-close basic auto attacks and no separate flee command.
-- Authored `Mongoose Stance` and `Crane Stance`, plus a queued-modifier foundation for later range, accuracy, damage, and status effects.
+- Five neutral authored placeholder stances for accuracy, damage, balance, evasion, and damage reduction, plus a queued-modifier foundation for later range, accuracy, damage, and status effects.
 - `combat` and `stance` commands for inspecting and adjusting the live engagement loop.
 
 The next step is exercising the expanded gameplay and builder loops through a private-alpha soak pass.
@@ -53,6 +53,7 @@ Only keep one sprint active at a time. Reassess the order after each committed s
 - [x] Sprint 18 builder editing suite.
 - [x] Player inspection and validated player-setting administration.
 - [x] Pulse combat engagements, authored stances, and queued ability-modifier foundation.
+- [x] Neutral S1-S5 stance profiles with opposed accuracy/evasion tradeoffs and damage reduction.
 
 ## Sprint 20: Fluid Pulse Combat Foundation
 
@@ -61,7 +62,7 @@ Replace immediate melee turns with a slower engagement loop that leaves room for
 - [x] Persist player-to-NPC engagements and resolve due auto attacks through a dedicated scheduler.
 - [x] Keep basic auto attacks up close while preserving engagement across movement.
 - [x] Avoid a dedicated flee command; movement is the spacing tool.
-- [x] Add authored mongoose and crane stances with pulse, accuracy, and evasion tradeoffs.
+- [x] Add five neutral authored stance profiles with accuracy, damage, evasion, and damage-reduction tradeoffs.
 - [x] Add a persisted one-shot modifier queue for future range, accuracy, damage, and status effects.
 - [x] Add `combat` and `stance` discovery, editable help prose, regression coverage, and migration `14`.
 

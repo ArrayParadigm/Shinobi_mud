@@ -219,6 +219,7 @@ class MultiplayerTests(unittest.TestCase):
             self.array.messages,
         )
         self.assertIn("Location: (1, 1)", self.array.messages)
+        self.assertIn("Stance: S3 - Balance", self.array.messages)
         self.assertIn("Area: Test Town  VNUM: 3000", self.array.messages)
 
     def test_prompt_displays_resources_and_overlay_location(self):

@@ -1,7 +1,7 @@
 import logging
 
 from content import create_authored_content_tables
-from combat import create_combat_tables
+from combat import create_combat_tables, ensure_stance_columns, retire_initial_stance_placeholders
 from body import ensure_body_columns
 from items import create_item_tables, ensure_item_seed_tracking
 from npcs import create_npc_tables
@@ -195,6 +195,13 @@ def migration_014_pulse_combat_engagements(cursor):
     create_combat_tables(cursor)
 
 
+def migration_015_stance_profiles(cursor):
+    """Add damage reduction and retire the initial named stance prototypes."""
+    create_combat_tables(cursor)
+    ensure_stance_columns(cursor)
+    retire_initial_stance_placeholders(cursor)
+
+
 MIGRATIONS = (
     (1, migration_001_non_admin_default),
     (2, migration_002_persistent_items),
@@ -210,6 +217,7 @@ MIGRATIONS = (
     (12, migration_012_throwable_items),
     (13, migration_013_substitution_technique),
     (14, migration_014_pulse_combat_engagements),
+    (15, migration_015_stance_profiles),
 )
 
 

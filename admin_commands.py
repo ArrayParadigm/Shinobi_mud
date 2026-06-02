@@ -7,6 +7,7 @@ from command_system import CommandSpec
 from content import sync_authored_content
 from locations import DIRECTION_OFFSETS, is_within_bounds, online_players, teleport_player
 from twisted.internet import reactor
+from combat import combat_status
 from shinobi_mud import ACTIVE_CONFIG, UTILITIES, WORLD_MAP, WORLD_OVERLAYS, players_in_rooms
 
 logging.info("admin_commands imported")
@@ -924,6 +925,9 @@ def pstat(protocol, username):
             f"fatigue={player['fatigue']} recovery={player['recovery_state']}"
         ).encode("utf-8")
     )
+    stance = combat_status(protocol.cursor, player["username"])
+    if stance:
+        protocol.sendLine(f"  Stance: {stance['stance_name']}".encode("utf-8"))
     protocol.sendLine(f"  Location: ({player['x']}, {player['y']})".encode("utf-8"))
 
 

@@ -1,5 +1,26 @@
 # Changelog
 
+## 2026-06-02 15:51 -0500 - Neutral Stance Profiles
+
+### Added
+
+- Added migration `15` for persisted stance damage reduction.
+- Added five neutral placeholder profiles: S1 attack, S2 damage, S3 balance, S4 evasion, and S5 damage reduction.
+- Displayed active stance in `score`, `combat`, and admin `pstat`.
+
+### Changed
+
+- Removed the temporary mongoose and crane profiles and cleared saved references to them during migration.
+- Standardized placeholder stances on the same `6` second auto-attack pulse so stance selection only changes combat tradeoffs.
+- Applied S5 damage reduction to incoming hostile NPC pulse damage.
+
+### Verification
+
+- Added authored-profile, S1 accuracy, S2 damage, S4 evasion, S5 reduction, inspection-output, and migration cleanup regression coverage.
+- Upgraded the preserved local database through migration `15` while retaining its `7` player rows.
+- Passed `python -m unittest discover -s tests -v` with `166` tests.
+- Passed Python syntax compilation, JSON validation, and `git diff --check`.
+
 ## 2026-06-02 15:36 -0500 - Fluid Pulse Combat Foundation
 
 ### Added
