@@ -70,6 +70,10 @@ def rest_character(cursor, username):
     state = body_state(cursor, username)
     if not state:
         return None
+    if state["nutrition"] <= MIN_BODY_RESOURCE:
+        return {"status": "blocked", "reason": "nutrition"}
+    if state["hydration"] <= MIN_BODY_RESOURCE:
+        return {"status": "blocked", "reason": "hydration"}
 
     stamina_gain = max(1, 3 - state["fatigue"] // 40)
     chakra_gain = chakra_recovery_amount(state)
@@ -90,6 +94,7 @@ def rest_character(cursor, username):
     )
     cursor.connection.commit()
     return {
+        "status": "rested",
         "stamina_restored": stamina - state["stamina"],
         "chakra_restored": chakra - state["chakra"],
         "stamina": stamina,
@@ -101,3 +106,19 @@ def rest_character(cursor, username):
         "fatigue": fatigue,
         "recovery_state": recovery_state,
     }
+
+
+def body_warnings(state):
+    """Return concise warnings for body conditions that affect recovery."""
+    warnings = []
+    if state["nutrition"] <= MIN_BODY_RESOURCE:
+        warnings.append("You are too hungry to recover through rest.")
+    elif state["nutrition"] < 25:
+        warnings.append("Low nutrition is reducing your recovery.")
+    if state["hydration"] <= MIN_BODY_RESOURCE:
+        warnings.append("You are too dehydrated to recover through rest.")
+    elif state["hydration"] < 25:
+        warnings.append("Low hydration is reducing your recovery.")
+    if state["fatigue"] >= 50:
+        warnings.append("High fatigue is straining your recovery.")
+    return warnings

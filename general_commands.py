@@ -1,6 +1,6 @@
 import json
 import logging
-from body import body_state, chakra_recovery_amount, rest_character
+from body import body_state, body_warnings, chakra_recovery_amount, rest_character
 from command_system import CommandSpec
 from items import (
     drop_item,
@@ -9,6 +9,7 @@ from items import (
     inventory_items,
     pickup_item,
     remove_item,
+    consume_item,
     wield_item,
 )
 from locations import (
@@ -195,6 +196,8 @@ def handle_body(player):
         player.sendLine(
             f"Short-rest chakra recovery: {chakra_recovery_amount(state)}".encode("utf-8")
         )
+        for warning in body_warnings(state):
+            player.sendLine(f"Warning: {warning}".encode("utf-8"))
     except Exception as exc:
         logging.error("Unable to display body state for %s: %s", player.username, exc, exc_info=True)
         player.sendLine(b"Unable to display your body state right now.")
@@ -206,6 +209,11 @@ def handle_rest(player):
         result = rest_character(player.cursor, player.username)
         if not result:
             player.sendLine(b"Your body state is unavailable right now.")
+            return
+        if result["status"] == "blocked":
+            player.sendLine(
+                f"You cannot rest until you restore your {result['reason']}.".encode("utf-8")
+            )
             return
         player.sendLine(
             (
@@ -326,6 +334,36 @@ def handle_remove(player, item_name):
     except Exception as exc:
         logging.error("Unable to remove item for %s: %s", player.username, exc, exc_info=True)
         player.sendLine(b"Unable to remove that item right now.")
+
+
+def handle_consume(player, item_name, expected_type, resource_name, verb):
+    """Consume one carried food or drink item."""
+    try:
+        result = consume_item(
+            player.cursor,
+            player.username,
+            item_name.strip(),
+            expected_type,
+            resource_name,
+        )
+        if result["status"] == "missing":
+            player.sendLine(b"You are not carrying that item.")
+        elif result["status"] == "wrong_type":
+            player.sendLine(f'You cannot {verb} {result["name"]}.'.encode("utf-8"))
+        elif result["status"] == "full":
+            player.sendLine(f"Your {resource_name} is already full.".encode("utf-8"))
+        elif result["status"] == "missing_player":
+            player.sendLine(b"Your body state is unavailable right now.")
+        else:
+            player.sendLine(
+                (
+                    f'You {verb} {result["name"]} and restore '
+                    f'{result["restored"]} {resource_name}.'
+                ).encode("utf-8")
+            )
+    except Exception as exc:
+        logging.error("Unable to %s item for %s: %s", verb, player.username, exc, exc_info=True)
+        player.sendLine(f"Unable to {verb} that item right now.".encode("utf-8"))
 
 
 def handle_talk(player, npc_name):
@@ -521,6 +559,8 @@ COMMANDS = {
     "examine": CommandSpec("examine", lambda player, rooms, raw, args: handle_examine(player, raw), "examine <item>", "Inspect a visible or carried item.", min_args=1),
     "wield": CommandSpec("wield", lambda player, rooms, raw, args: handle_wield(player, raw), "wield <item>", "Equip a carried item.", min_args=1),
     "remove": CommandSpec("remove", lambda player, rooms, raw, args: handle_remove(player, raw), "remove <item>", "Unequip a carried item.", min_args=1),
+    "eat": CommandSpec("eat", lambda player, rooms, raw, args: handle_consume(player, raw, "food", "nutrition", "eat"), "eat <item>", "Eat a carried food item to restore nutrition.", min_args=1),
+    "drink": CommandSpec("drink", lambda player, rooms, raw, args: handle_consume(player, raw, "drink", "hydration", "drink"), "drink <item>", "Drink a carried beverage to restore hydration.", min_args=1),
     "talk": CommandSpec("talk", lambda player, rooms, raw, args: handle_talk(player, raw), "talk <character>", "Talk to a character at your location.", min_args=1),
     "consider": CommandSpec("consider", lambda player, rooms, raw, args: handle_consider(player, raw), "consider <character>", "Inspect a character's combat details.", min_args=1),
     "attack": CommandSpec("attack", lambda player, rooms, raw, args: handle_attack(player, raw), "attack <character>", "Strike a hostile character at your location.", min_args=1),

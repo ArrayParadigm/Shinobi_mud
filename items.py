@@ -17,7 +17,9 @@ def create_item_tables(cursor):
             item_type TEXT NOT NULL DEFAULT 'misc',
             equipment_slot TEXT,
             use_text TEXT NOT NULL DEFAULT '',
-            damage_bonus INTEGER NOT NULL DEFAULT 0
+            damage_bonus INTEGER NOT NULL DEFAULT 0,
+            nutrition_restore INTEGER NOT NULL DEFAULT 0,
+            hydration_restore INTEGER NOT NULL DEFAULT 0
         )
         """
     )
@@ -75,6 +77,8 @@ def ensure_item_metadata(cursor):
         ("equipment_slot", "TEXT"),
         ("use_text", "TEXT NOT NULL DEFAULT ''"),
         ("damage_bonus", "INTEGER NOT NULL DEFAULT 0"),
+        ("nutrition_restore", "INTEGER NOT NULL DEFAULT 0"),
+        ("hydration_restore", "INTEGER NOT NULL DEFAULT 0"),
     ):
         if column_name not in definition_columns:
             cursor.execute(f"ALTER TABLE item_definitions ADD COLUMN {column_name} {definition}")
@@ -94,7 +98,8 @@ def room_items(cursor, x, y):
         SELECT room_items.id, item_definitions.name, item_definitions.description,
                item_definitions.keywords, item_definitions.item_type,
                item_definitions.equipment_slot, item_definitions.use_text,
-               item_definitions.damage_bonus
+               item_definitions.damage_bonus, item_definitions.nutrition_restore,
+               item_definitions.hydration_restore
         FROM room_items
         JOIN item_definitions ON item_definitions.id = room_items.item_definition_id
         WHERE room_items.x=? AND room_items.y=?
@@ -111,7 +116,8 @@ def inventory_items(cursor, username):
         SELECT character_inventory.id, item_definitions.name, item_definitions.description,
                item_definitions.keywords, item_definitions.item_type,
                item_definitions.equipment_slot, item_definitions.use_text,
-               item_definitions.damage_bonus, character_inventory.equipped_slot
+               item_definitions.damage_bonus, item_definitions.nutrition_restore,
+               item_definitions.hydration_restore, character_inventory.equipped_slot
         FROM character_inventory
         JOIN item_definitions
           ON item_definitions.id = character_inventory.item_definition_id
@@ -300,3 +306,40 @@ def remove_item(cursor, username, item_name):
     )
     cursor.connection.commit()
     return {"status": "removed", "name": item["name"]}
+
+
+def consume_item(cursor, username, item_name, expected_type, resource_name):
+    """Consume one carried item and restore one bounded body resource."""
+    item = resolve_item(inventory_items(cursor, username), item_name)
+    if not item:
+        return {"status": "missing"}
+    if item["item_type"] != expected_type:
+        return {"status": "wrong_type", "name": item["name"]}
+
+    restore_amount = item[f"{resource_name}_restore"]
+    player = cursor.execute(
+        f"SELECT {resource_name} FROM players WHERE username=?",
+        (username,),
+    ).fetchone()
+    if not player:
+        return {"status": "missing_player"}
+    if player[resource_name] >= 100:
+        return {"status": "full", "name": item["name"]}
+
+    restored = min(100, player[resource_name] + restore_amount)
+    try:
+        cursor.execute("DELETE FROM character_inventory WHERE id=?", (item["id"],))
+        cursor.execute(
+            f"UPDATE players SET {resource_name}=? WHERE username=?",
+            (restored, username),
+        )
+        cursor.connection.commit()
+    except Exception:
+        cursor.connection.rollback()
+        raise
+    return {
+        "status": "consumed",
+        "name": item["name"],
+        "resource": restored,
+        "restored": restored - player[resource_name],
+    }

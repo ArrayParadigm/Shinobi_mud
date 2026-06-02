@@ -301,6 +301,24 @@
             "keywords": ["token", "crystal"],
             "item_type": "curio",
             "use_text": "It has no active use yet."
+        },
+        {
+            "key": "travel-ration",
+            "name": "Travel Ration",
+            "description": "A compact ration packed for a shinobi on the move.",
+            "keywords": ["ration", "food", "travel"],
+            "item_type": "food",
+            "use_text": "Eat it to restore nutrition.",
+            "nutrition_restore": 25
+        },
+        {
+            "key": "water-flask",
+            "name": "Water Flask",
+            "description": "A small flask filled with clear drinking water.",
+            "keywords": ["water", "flask", "drink"],
+            "item_type": "drink",
+            "use_text": "Drink it to restore hydration.",
+            "hydration_restore": 25
         }
     ],
     "item_spawns": [
@@ -318,6 +336,16 @@
             "key": "crystal-token",
             "item": "crystal-token",
             "vnum": 3002
+        },
+        {
+            "key": "travel-ration",
+            "item": "travel-ration",
+            "vnum": 3000
+        },
+        {
+            "key": "water-flask",
+            "item": "water-flask",
+            "vnum": 3000
         }
     ],
     "npc_templates": [

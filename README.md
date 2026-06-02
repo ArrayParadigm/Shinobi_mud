@@ -139,6 +139,8 @@ Eve's Haven is the first complete overlay example. Its anchor and room offsets l
 - `examine <item>`: inspect an item in the room or your inventory.
 - `wield <item>`: equip a carried item in its authored slot.
 - `remove <item>`: unequip a carried item.
+- `eat <item>`: consume a carried food item to restore nutrition.
+- `drink <item>`: consume a carried beverage to restore hydration.
 - `talk <character>`: speak with an NPC at your grid location.
 - `consider <character>`: inspect a visible character's combat details.
 - `attack <character>`: resolve one melee turn against a hostile NPC at your grid location.
@@ -171,11 +173,11 @@ ANSI terminal colors are enabled for new connections by default. Set `default_co
 
 Room items, character inventories, equipped slots, and NPC instances persist in SQLite. Authored templates, item keywords, equipment metadata, and initial VNUM placements live in zone JSON files such as `zones/eveshaven.json`. Startup imports missing spawns once, so picked-up items are not recreated on every restart.
 
-Eve's Haven authors a Haven Map at its entrance, a Practice Kunai in its garden, a Crystal Token in its library, a Haven Guide NPC at the entrance, and a hostile Practice Construct in the garden. `reloadcontent` lets an admin apply JSON template edits and create newly-authored spawns without restarting the server.
+Eve's Haven authors a Haven Map, Travel Ration, and Water Flask at its entrance, a Practice Kunai in its garden, a Crystal Token in its library, a Haven Guide NPC at the entrance, and a hostile Practice Construct in the garden. `reloadcontent` lets an admin apply JSON template edits and create newly-authored spawns without restarting the server.
 
 The combat loop is command-driven and turn-based. `attack <character>` resolves player dexterity against authored NPC evasion, applies strength-based damage plus equipped-weapon metadata on a hit, then resolves a surviving hostile NPC's authored accuracy against player agility. Roommates see the exchange. Defeated NPCs disappear until their authored respawn delay elapses. A defeated player recovers to maximum health at the same grid coordinate.
 
-Characters also have abstract body resources: nutrition, hydration, and fatigue. Ordinary movement and hostile combat increase fatigue. `rest` reduces fatigue, consumes a small amount of nutrition and hydration, restores stamina, and restores chakra based on wisdom and current body condition. Food and drink interactions are the next body-system extension.
+Characters also have abstract body resources: nutrition, hydration, and fatigue. Ordinary movement and hostile combat increase fatigue. `rest` reduces fatigue, consumes a small amount of nutrition and hydration, restores stamina, and restores chakra based on wisdom and current body condition. Rest is blocked at zero nutrition or hydration. `eat` and `drink` consume finite authored supplies to restore body resources.
 
 ### Early Linux Testing
 

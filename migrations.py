@@ -150,6 +150,11 @@ def migration_007_body_foundation(cursor):
     ensure_body_columns(cursor)
 
 
+def migration_008_consumable_items(cursor):
+    """Add authored food and drink restoration metadata."""
+    create_item_tables(cursor)
+
+
 MIGRATIONS = (
     (1, migration_001_non_admin_default),
     (2, migration_002_persistent_items),
@@ -158,6 +163,7 @@ MIGRATIONS = (
     (5, migration_005_inventory_and_character_foundation),
     (6, migration_006_combat_reliability),
     (7, migration_007_body_foundation),
+    (8, migration_008_consumable_items),
 )
 
 

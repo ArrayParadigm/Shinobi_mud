@@ -12,10 +12,11 @@ The foundation checkpoint in `FOUNDATION_CHECKLIST.md` is complete.
 - [x] Add versioned database migrations and automated tests for the core loop.
 - [x] Add ANSI presentation styling with a session-level `color on|off` toggle.
 - [x] Add abstract body resources, short-rest recovery, private whispers, and nearby shouts.
+- [x] Add authored food and drink consumables with recovery-focused body consequences.
 
 ### Current Checkpoint
 
-The private-alpha gameplay loop is covered by 105 automated tests. Runtime database ownership is explicit: the server keeps a maintenance connection for startup and ticks, while each connected player session owns and closes its own connection. The next recommended step is the Body Resource Integration checkpoint before Sprint 15.
+The private-alpha gameplay loop is covered by 112 automated tests. Runtime database ownership is explicit: the server keeps a maintenance connection for startup and ticks, while each connected player session owns and closes its own connection. Body resources now form a complete deliberate recovery loop. The next recommended step is Sprint 15: First Chakra Ability.
 
 ---
 
@@ -230,15 +231,15 @@ Sprint 15 introduces cooldowns, cast timing, and scheduler integration. Establis
 
 ---
 
-## Recommended Next Step: Body Resource Integration
+## Body Resource Integration
 
 Turn the body-resource foundation into a complete gameplay loop before adding chakra abilities.
 
-- [ ] Add authored food and drink consumables.
-- [ ] Add `eat <item>` and `drink <item>` interactions.
-- [ ] Decide the consequences of low nutrition, low hydration, and high fatigue.
-- [ ] Tune travel, combat, and rest costs through focused tests.
-- [ ] Keep the model abstract enough to support future medical and roleplay extensions.
+- [x] Add authored food and drink consumables.
+- [x] Add `eat <item>` and `drink <item>` interactions.
+- [x] Decide the consequences of low nutrition, low hydration, and high fatigue.
+- [x] Tune travel, combat, and rest costs through focused tests.
+- [x] Keep the model abstract enough to support future medical and roleplay extensions.
 
 ### Done When
 

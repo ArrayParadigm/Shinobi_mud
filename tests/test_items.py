@@ -7,7 +7,7 @@ import shinobi_mud
 import utils
 from content import sync_authored_content
 from items import inventory_items, room_items
-from migrations import apply_migrations
+from migrations import apply_migrations, migration_008_consumable_items
 from tests.test_accounts import TestProtocol
 
 
@@ -68,9 +68,9 @@ class ItemPersistenceTests(unittest.TestCase):
 
         self.assertEqual(
             [row["name"] for row in definitions],
-            ["Crystal Token", "Haven Map", "Practice Kunai"],
+            ["Crystal Token", "Haven Map", "Practice Kunai", "Travel Ration", "Water Flask"],
         )
-        self.assertEqual(len(placements), 3)
+        self.assertEqual(len(placements), 5)
         self.assertEqual((placements[1]["x"], placements[1]["y"]), (500, 500))
         self.assertEqual(imported["item_spawns"], 0)
 
@@ -80,7 +80,7 @@ class ItemPersistenceTests(unittest.TestCase):
         self.assertEqual(
             self.player.messages,
             [
-                "Open Land\nYou see open land around you.\nItems: Haven Map\nCharacters: Haven Guide",
+                "Open Land\nYou see open land around you.\nItems: Haven Map, Travel Ration, Water Flask\nCharacters: Haven Guide",
             ],
         )
 
@@ -129,7 +129,10 @@ class ItemPersistenceTests(unittest.TestCase):
         )
 
         self.assertEqual(imported["item_spawns"], 0)
-        self.assertEqual(room_items(self.player.cursor, 500, 500), [])
+        self.assertEqual(
+            [item["name"] for item in room_items(self.player.cursor, 500, 500)],
+            ["Travel Ration", "Water Flask"],
+        )
         self.assertEqual(
             [item["name"] for item in inventory_items(self.player.cursor, "Collector")],
             ["Haven Map"],
@@ -148,7 +151,7 @@ class ItemPersistenceTests(unittest.TestCase):
         )
         self.assertEqual(
             [item["name"] for item in room_items(self.player.cursor, 500, 500)],
-            ["Haven Map"],
+            ["Haven Map", "Travel Ration", "Water Flask"],
         )
         self.assertEqual(inventory_items(self.player.cursor, "Collector"), [])
 
@@ -225,6 +228,126 @@ class ItemPersistenceTests(unittest.TestCase):
         general_commands.handle_look(self.player, raw_args="at kun")
 
         self.assertEqual(self.player.messages[0], "Practice Kunai")
+
+    def test_eat_and_drink_restore_resources_and_remove_items(self):
+        self.connection.execute(
+            "UPDATE players SET nutrition=70, hydration=90 WHERE username=?",
+            ("Collector",),
+        )
+        self.connection.commit()
+        general_commands.handle_get(self.player, "ration")
+        general_commands.handle_get(self.player, "flask")
+
+        general_commands.handle_consume(self.player, "ration", "food", "nutrition", "eat")
+        general_commands.handle_consume(self.player, "flask", "drink", "hydration", "drink")
+
+        resources = self.connection.execute(
+            "SELECT nutrition, hydration FROM players WHERE username=?",
+            ("Collector",),
+        ).fetchone()
+        self.assertEqual(tuple(resources), (95, 100))
+        self.assertEqual(inventory_items(self.player.cursor, "Collector"), [])
+        self.assertEqual(
+            self.player.messages[-2:],
+            [
+                "You eat Travel Ration and restore 25 nutrition.",
+                "You drink Water Flask and restore 10 hydration.",
+            ],
+        )
+
+    def test_consumption_rejects_missing_wrong_type_and_full_resource_without_destroying_items(self):
+        general_commands.handle_get(self.player, "ration")
+        general_commands.handle_get(self.player, "flask")
+
+        general_commands.handle_consume(self.player, "missing", "food", "nutrition", "eat")
+        general_commands.handle_consume(self.player, "flask", "food", "nutrition", "eat")
+        general_commands.handle_consume(self.player, "ration", "food", "nutrition", "eat")
+
+        self.assertEqual(
+            self.player.messages[-3:],
+            [
+                "You are not carrying that item.",
+                "You cannot eat Water Flask.",
+                "Your nutrition is already full.",
+            ],
+        )
+        self.assertEqual(
+            [item["name"] for item in inventory_items(self.player.cursor, "Collector")],
+            ["Travel Ration", "Water Flask"],
+        )
+
+    def test_ordinal_consumption_removes_only_selected_item(self):
+        definition_id = self.connection.execute(
+            "SELECT id FROM item_definitions WHERE item_key=?",
+            ("travel-ration",),
+        ).fetchone()["id"]
+        player_id = self.connection.execute(
+            "SELECT id FROM players WHERE username=?",
+            ("Collector",),
+        ).fetchone()["id"]
+        self.connection.executemany(
+            "INSERT INTO character_inventory (item_definition_id, player_id) VALUES (?, ?)",
+            [(definition_id, player_id), (definition_id, player_id)],
+        )
+        self.connection.execute(
+            "UPDATE players SET nutrition=50 WHERE username=?",
+            ("Collector",),
+        )
+        self.connection.commit()
+
+        general_commands.handle_consume(self.player, "2.ration", "food", "nutrition", "eat")
+
+        self.assertEqual(
+            [item["name"] for item in inventory_items(self.player.cursor, "Collector")],
+            ["Travel Ration"],
+        )
+
+    def test_consumed_authored_item_does_not_respawn_after_content_reload(self):
+        self.connection.execute(
+            "UPDATE players SET nutrition=50 WHERE username=?",
+            ("Collector",),
+        )
+        self.connection.commit()
+        general_commands.handle_get(self.player, "ration")
+        general_commands.handle_consume(self.player, "ration", "food", "nutrition", "eat")
+
+        imported = sync_authored_content(
+            self.connection,
+            str(PROJECT_ROOT / "zones"),
+            shinobi_mud.WORLD_OVERLAYS,
+        )
+
+        self.assertEqual(imported["item_spawns"], 0)
+        self.assertNotIn(
+            "Travel Ration",
+            [item["name"] for item in room_items(self.player.cursor, 500, 500)],
+        )
+
+    def test_consumable_migration_preserves_existing_item_definitions(self):
+        connection = sqlite3.connect(":memory:")
+        connection.row_factory = sqlite3.Row
+        connection.execute(
+            """
+            CREATE TABLE item_definitions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                item_key TEXT NOT NULL UNIQUE,
+                name TEXT NOT NULL UNIQUE COLLATE NOCASE,
+                description TEXT NOT NULL
+            )
+            """
+        )
+        connection.execute(
+            "INSERT INTO item_definitions (item_key, name, description) VALUES (?, ?, ?)",
+            ("legacy-item", "Legacy Item", "Still present."),
+        )
+
+        migration_008_consumable_items(connection.cursor())
+
+        item = connection.execute(
+            "SELECT name, nutrition_restore, hydration_restore FROM item_definitions"
+        ).fetchone()
+        self.assertEqual(tuple(item), ("Legacy Item", 0, 0))
+        connection.close()
 
 
 if __name__ == "__main__":

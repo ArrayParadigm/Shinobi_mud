@@ -110,6 +110,45 @@ class BodyFoundationTests(unittest.TestCase):
         self.assertEqual(tuple(player), (100, 100, 0, "ready"))
         connection.close()
 
+    def test_rest_blocks_when_nutrition_or_hydration_is_depleted(self):
+        for column in ("nutrition", "hydration"):
+            self.connection.execute(
+                f"UPDATE players SET nutrition=50, hydration=50, {column}=0 WHERE username=?",
+                ("RestingUser",),
+            )
+            self.connection.commit()
+            general_commands.handle_rest(self.player)
+
+        self.assertEqual(
+            self.player.messages,
+            [
+                "You cannot rest until you restore your nutrition.",
+                "You cannot rest until you restore your hydration.",
+            ],
+        )
+
+    def test_body_command_warns_about_low_resources_and_strained_fatigue(self):
+        self.connection.execute(
+            """
+            UPDATE players
+            SET nutrition=20, hydration=0, fatigue=50
+            WHERE username=?
+            """,
+            ("RestingUser",),
+        )
+        self.connection.commit()
+
+        general_commands.handle_body(self.player)
+
+        self.assertEqual(
+            self.player.messages[-3:],
+            [
+                "Warning: Low nutrition is reducing your recovery.",
+                "Warning: You are too dehydrated to recover through rest.",
+                "Warning: High fatigue is straining your recovery.",
+            ],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

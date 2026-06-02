@@ -1,5 +1,24 @@
 # Changelog
 
+## 2026-06-02 - Body Resource Integration
+
+### Added
+
+- Added authored Travel Ration and Water Flask consumables through migration 8 item metadata.
+- Added `eat <item>` and `drink <item>` with existing item keyword, prefix, and ordinal targeting.
+- Added body warnings for low nutrition, low hydration, and strained fatigue.
+
+### Changed
+
+- Blocked short rests when nutrition or hydration reaches zero.
+- Kept authored consumables finite: consumed seeded items remain absent after content reload.
+
+### Verification
+
+- Added migration, consumable, targeting, depletion, warning, and content-reload regression coverage.
+- Passed `python -m unittest discover -s tests -v` with 112 tests.
+- Passed Python syntax compilation and `git diff --check`.
+
 ## 2026-06-02 - Body and Social Foundation
 
 ### Added
