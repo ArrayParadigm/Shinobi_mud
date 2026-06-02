@@ -1,6 +1,14 @@
 # Changelog
 
-## 2026-06-02 - Throw Skill Vertical Slice
+## 2026-06-02 10:40 -0500 - Roadmap and Changelog Consolidation
+
+### Changed
+
+- Reorganized `TODO.md` into a concise active roadmap with completed checkpoints summarized once.
+- Made Substitution Technique the single active Sprint 16 implementation queue.
+- Added timestamps to roadmap-era changelog headings using corresponding Git commit times.
+
+## 2026-06-02 10:33 -0500 - Throw Skill Vertical Slice
 
 ### Added
 
@@ -14,7 +22,7 @@
 - Passed `python -m unittest discover -s tests -v` with 127 tests.
 - Passed Python syntax compilation and `git diff --check`.
 
-## 2026-06-02 - Usage-Based Skill and Jutsu Framework
+## 2026-06-02 10:19 -0500 - Usage-Based Skill and Jutsu Framework
 
 ### Added
 
@@ -36,7 +44,7 @@
 - Passed `python -m unittest discover -s tests -v` with 121 tests.
 - Passed Python syntax compilation and `git diff --check`.
 
-## 2026-06-02 - Body Resource Integration
+## 2026-06-02 09:46 -0500 - Body Resource Integration
 
 ### Added
 
@@ -55,7 +63,7 @@
 - Passed `python -m unittest discover -s tests -v` with 112 tests.
 - Passed Python syntax compilation and `git diff --check`.
 
-## 2026-06-02 - Body and Social Foundation
+## 2026-06-02 09:42 -0500 - Body and Social Foundation
 
 ### Added
 
@@ -76,7 +84,7 @@
 - Passed `python -m unittest discover -s tests -v` with 105 tests.
 - Passed Python syntax compilation across the repository.
 
-## 2026-06-02 - Runtime State Ownership
+## 2026-06-02 09:42 -0500 - Runtime State Ownership
 
 ### Changed
 
@@ -91,7 +99,7 @@
 - Passed `python -m unittest discover -s tests -v` with 97 tests.
 - Passed Python syntax compilation across the repository.
 
-## 2026-06-02 - ANSI Presentation QoL
+## 2026-06-02 09:42 -0500 - ANSI Presentation QoL
 
 ### Added
 
@@ -110,7 +118,7 @@
 - Passed `python -m unittest discover -s tests -v` with 92 tests.
 - Passed Python syntax compilation across the repository.
 
-## 2026-06-01 - Combat Reliability
+## 2026-06-01 17:30 -0500 - Combat Reliability
 
 ### Added
 
@@ -132,7 +140,7 @@
 - Passed `python -m unittest discover -s tests -v` with 86 tests.
 - Passed Python syntax compilation across the repository.
 
-## 2026-06-01 - Inventory Management and Character Foundation
+## 2026-06-01 15:50 -0500 - Inventory Management and Character Foundation
 
 ### Added
 
@@ -156,7 +164,7 @@
 - Passed `python -m unittest discover -s tests -v` with 79 tests.
 - Passed Python syntax compilation across the repository.
 
-## 2026-06-01 - Inventory Sprint Reprioritization
+## 2026-06-01 15:39 -0500 - Inventory Sprint Reprioritization
 
 ### Changed
 
@@ -166,7 +174,7 @@
 - Added a presentation cleanup pass for compact maps and readable room sections.
 - Shifted combat reliability, character foundation, chakra abilities, builder tooling, and the private-alpha exercise to Sprints 13 through 17.
 
-## 2026-06-01 - Post-Combat Roadmap Checkpoint
+## 2026-06-01 15:34 -0500 - Post-Combat Roadmap Checkpoint
 
 ### Changed
 
@@ -180,7 +188,7 @@
 - Passed `python -m unittest discover -s tests -v` with 74 tests.
 - Passed Python syntax compilation across the repository.
 
-## 2026-06-01 - Basic NPC Combat Slice
+## 2026-06-01 15:19 -0500 - Basic NPC Combat Slice
 
 ### Added
 
@@ -201,7 +209,7 @@
 - Passed `python -m unittest discover -s tests -v` with 74 tests.
 - Passed Python syntax compilation across the repository.
 
-## 2026-06-01 - JSON-Authored Content and NPC Foundation
+## 2026-06-01 15:13 -0500 - JSON-Authored Content and NPC Foundation
 
 ### Added
 
@@ -222,7 +230,7 @@
 - Passed `python -m unittest discover -s tests -v` with 69 tests.
 - Passed Python syntax compilation across the repository.
 
-## 2026-06-01 - Persistent Items and Inventories
+## 2026-06-01 15:01 -0500 - Persistent Items and Inventories
 
 ### Added
 
@@ -237,7 +245,7 @@
 - Passed `python -m unittest discover -s tests -v` with 63 tests.
 - Passed Python syntax compilation across the repository.
 
-## 2026-06-01 - Private Alpha Hardening and Player Feedback
+## 2026-06-01 14:54 -0500 - Private Alpha Hardening and Player Feedback
 
 ### Added
 
@@ -257,7 +265,7 @@
 - Passed `python -m unittest discover -s tests -v` with 58 tests.
 - Passed Python syntax compilation across the repository.
 
-## 2026-06-01 - Post-Foundation Roadmap Checkpoint
+## 2026-06-01 14:47 -0500 - Post-Foundation Roadmap Checkpoint
 
 ### Added
 
@@ -275,7 +283,7 @@
 - Passed `python -m unittest discover -s tests -v` with 51 tests.
 - Passed Python syntax compilation across the repository.
 
-## 2026-06-01 - First Overlay Content Slice
+## 2026-06-01 12:09 -0500 - First Overlay Content Slice
 
 ### Added
 
@@ -295,7 +303,7 @@
 - Passed `python -m unittest discover -s tests -v` with 50 tests.
 - Passed Python syntax compilation across the repository.
 
-## 2026-06-01 - Command Prefix Matching
+## 2026-06-01 12:03 -0500 - Command Prefix Matching
 
 ### Added
 
@@ -318,7 +326,7 @@
 - Passed `python -m unittest discover -s tests -v` with 43 tests.
 - Passed Python syntax compilation across the repository.
 
-## 2026-06-01 - Movement Lock Recovery
+## 2026-06-01 10:56 -0500 - Movement Lock Recovery
 
 ### Fixed
 
@@ -333,7 +341,7 @@
 - Passed `python -m unittest discover -s tests -v` with 30 tests.
 - Passed Python syntax compilation and a file-backed SQLite lock probe.
 
-## 2026-06-01 - Multiplayer Basics
+## 2026-06-01 10:45 -0500 - Multiplayer Basics
 
 ### Added
 
@@ -355,7 +363,7 @@
 - Passed `python -m unittest discover -s tests -v` with 26 tests.
 - Passed Python syntax compilation across the repository.
 
-## 2026-06-01 - Coordinate-First World Locations
+## 2026-06-01 10:39 -0500 - Coordinate-First World Locations
 
 ### Added
 
@@ -378,7 +386,7 @@
 - Passed `python -m unittest discover -s tests -v` with 18 tests.
 - Passed Python syntax compilation across the repository.
 
-## 2026-06-01 - Test Harness and Runtime Baseline
+## 2026-06-01 10:29 -0500 - Test Harness and Runtime Baseline
 
 ### Added
 
@@ -399,7 +407,7 @@
 - Passed `python -m unittest discover -s tests -v` with 11 tests.
 - Passed Python syntax compilation across the repository.
 
-## 2026-06-01 - Foundation and Account Security Checkpoint
+## 2026-06-01 10:25 -0500 - Foundation and Account Security Checkpoint
 
 ### Added
 
