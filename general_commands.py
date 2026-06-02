@@ -1,5 +1,6 @@
 import json
 import logging
+from body import body_state, chakra_recovery_amount, rest_character
 from command_system import CommandSpec
 from items import (
     drop_item,
@@ -54,6 +55,7 @@ def handle_look(player, players_in_rooms=None, raw_args=""):
             overlays=WORLD_OVERLAYS,
             width_radius=5,
             height_radius=2,
+            color_enabled=getattr(player, "color_enabled", False),
         )
         player.sendLine(map_view.encode("utf-8"))
         player.list_players_in_room()
@@ -81,6 +83,7 @@ def handle_movement(player, direction):
                 overlays=WORLD_OVERLAYS,
                 width_radius=5,
                 height_radius=2,
+                color_enabled=getattr(player, "color_enabled", False),
             )
             player.sendLine(map_view.encode("utf-8"))
             player.list_players_in_room()
@@ -162,8 +165,64 @@ def handle_survey(player):
             overlays=WORLD_OVERLAYS,
             width_radius=20,
             height_radius=10,
+            color_enabled=getattr(player, "color_enabled", False),
         ).encode("utf-8")
     )
+
+
+def handle_color(player, setting):
+    """Toggle ANSI terminal colors for the current connection."""
+    requested = setting.strip().lower()
+    if requested not in {"on", "off"}:
+        player.sendLine(b"Usage: color <on|off>")
+        return
+    player.color_enabled = requested == "on"
+    player.sendLine(f"Color is now {requested}.".encode("utf-8"))
+
+
+def handle_body(player):
+    """Display abstract body resources and current recovery readiness."""
+    try:
+        state = body_state(player.cursor, player.username)
+        if not state:
+            player.sendLine(b"Your body state is unavailable right now.")
+            return
+        player.sendLine(b"Body")
+        player.sendLine(
+            f"Nutrition: {state['nutrition']}/100  Hydration: {state['hydration']}/100  Fatigue: {state['fatigue']}/100".encode("utf-8")
+        )
+        player.sendLine(f"Recovery: {state['recovery_state']}".encode("utf-8"))
+        player.sendLine(
+            f"Short-rest chakra recovery: {chakra_recovery_amount(state)}".encode("utf-8")
+        )
+    except Exception as exc:
+        logging.error("Unable to display body state for %s: %s", player.username, exc, exc_info=True)
+        player.sendLine(b"Unable to display your body state right now.")
+
+
+def handle_rest(player):
+    """Take one deliberate short rest to recover stamina and chakra."""
+    try:
+        result = rest_character(player.cursor, player.username)
+        if not result:
+            player.sendLine(b"Your body state is unavailable right now.")
+            return
+        player.sendLine(
+            (
+                f"You rest and recover {result['stamina_restored']} stamina and "
+                f"{result['chakra_restored']} chakra."
+            ).encode("utf-8")
+        )
+        player.sendLine(
+            (
+                f"Stamina: {result['stamina']}/{result['max_stamina']}  "
+                f"Chakra: {result['chakra']}/{result['max_chakra']}  "
+                f"Fatigue: {result['fatigue']}/100"
+            ).encode("utf-8")
+        )
+    except Exception as exc:
+        logging.error("Unable to rest character %s: %s", player.username, exc, exc_info=True)
+        player.sendLine(b"Unable to rest right now.")
 
 
 def handle_inventory(player):
@@ -453,6 +512,9 @@ COMMANDS = {
     "loc": CommandSpec("loc", lambda player, rooms, raw, args: handle_loc(player), "loc", "Display your grid coordinates and area.", max_args=0),
     "who": CommandSpec("who", lambda player, rooms, raw, args: handle_who(player, rooms), "who", "List connected characters.", max_args=0),
     "survey": CommandSpec("survey", lambda player, rooms, raw, args: handle_survey(player), "survey", "Display a compact terrain view.", max_args=0),
+    "color": CommandSpec("color", lambda player, rooms, raw, args: handle_color(player, raw), "color <on|off>", "Toggle ANSI terminal colors for this connection.", min_args=1, max_args=1),
+    "body": CommandSpec("body", lambda player, rooms, raw, args: handle_body(player), "body", "Display your body resources and recovery readiness.", max_args=0),
+    "rest": CommandSpec("rest", lambda player, rooms, raw, args: handle_rest(player), "rest", "Recover stamina and chakra through a short rest.", max_args=0),
     "inventory": CommandSpec("inventory", lambda player, rooms, raw, args: handle_inventory(player), "inventory", "List the items you carry.", aliases=("inv",), max_args=0),
     "get": CommandSpec("get", lambda player, rooms, raw, args: handle_get(player, raw), "get <item>", "Pick up an item at your location.", min_args=1),
     "drop": CommandSpec("drop", lambda player, rooms, raw, args: handle_drop(player, raw), "drop <item>", "Drop a carried item at your location.", min_args=1),

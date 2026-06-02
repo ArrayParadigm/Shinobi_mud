@@ -67,6 +67,52 @@ class MultiplayerTests(unittest.TestCase):
         for player in (self.array, self.eve, self.distant):
             self.assertEqual(player.messages, ["[OOC] Array: server test"])
 
+    def test_whisper_is_private_and_accepts_online_targets(self):
+        social_commands.handle_whisper(
+            self.array,
+            "Distant quiet words",
+            ["Distant", "quiet", "words"],
+            shinobi_mud.players_in_rooms,
+        )
+
+        self.assertEqual(self.array.messages, ["[Whisper] to Distant: quiet words"])
+        self.assertEqual(self.distant.messages, ["[Whisper] from Array: quiet words"])
+        self.assertEqual(self.eve.messages, [])
+
+    def test_shout_reaches_adjacent_characters_but_not_farther_ones(self):
+        farther = self.create_player("Farther", 3, 3)
+        farther.messages.clear()
+
+        social_commands.handle_shout(
+            self.array,
+            "training begins",
+            ["training", "begins"],
+            shinobi_mud.players_in_rooms,
+        )
+
+        self.assertEqual(self.array.messages, ['Array shouts, "training begins"'])
+        self.assertEqual(self.eve.messages, ['Array shouts, "training begins"'])
+        self.assertEqual(self.distant.messages, ['Array shouts, "training begins"'])
+        self.assertEqual(farther.messages, [])
+
+    def test_whisper_and_shout_strip_terminal_control_sequences(self):
+        social_commands.handle_whisper(
+            self.array,
+            "Distant \x1b[31mquiet\x1b[0m",
+            ["Distant", "\x1b[31mquiet\x1b[0m"],
+            shinobi_mud.players_in_rooms,
+        )
+        social_commands.handle_shout(
+            self.array,
+            "\x1b[31mtraining\x1b[0m",
+            ["\x1b[31mtraining\x1b[0m"],
+            shinobi_mud.players_in_rooms,
+        )
+
+        self.assertEqual(self.array.messages[0], "[Whisper] to Distant: quiet")
+        self.assertEqual(self.distant.messages[0], "[Whisper] from Array: quiet")
+        self.assertNotIn("\x1b", "".join(self.array.messages + self.distant.messages))
+
     def test_chat_logs_action_without_message_text(self):
         with self.assertLogs(level=logging.INFO) as captured:
             social_commands.handle_ooc(

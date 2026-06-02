@@ -2,6 +2,8 @@
 
 import sqlite3
 
+from body import add_fatigue
+
 
 DIRECTION_OFFSETS = {
     "north": (0, -1),
@@ -47,7 +49,15 @@ def destination_for(x, y, direction):
     return coordinate_key(x + dx, y + dy)
 
 
-def relocate_player(player, new_x, new_y, players_by_location, departure_message, arrival_message):
+def relocate_player(
+    player,
+    new_x,
+    new_y,
+    players_by_location,
+    departure_message,
+    arrival_message,
+    fatigue_gain=0,
+):
     """Persist and track a location change after the destination is validated."""
     old_key = coordinate_key(player.x, player.y)
     new_key = coordinate_key(new_x, new_y)
@@ -56,6 +66,8 @@ def relocate_player(player, new_x, new_y, players_by_location, departure_message
             "UPDATE players SET x=?, y=? WHERE username=?",
             (new_x, new_y, player.username),
         )
+        if fatigue_gain:
+            add_fatigue(player.cursor, player.username, fatigue_gain)
         player.cursor.connection.commit()
     except sqlite3.OperationalError as exc:
         player.cursor.connection.rollback()
@@ -93,6 +105,7 @@ def move_player(player, direction, world_map, players_by_location):
         players_by_location,
         f"{player.username} leaves {direction}.",
         f"{player.username} arrives.",
+        fatigue_gain=1,
     )
 
 

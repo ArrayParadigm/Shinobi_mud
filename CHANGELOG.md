@@ -1,5 +1,60 @@
 # Changelog
 
+## 2026-06-02 - Body and Social Foundation
+
+### Added
+
+- Added persistent abstract nutrition, hydration, fatigue, and recovery-readiness fields through migration 7.
+- Added `body` for condition inspection and `rest` for deliberate stamina and chakra recovery.
+- Added private online `whisper` messages and nearby `shout` messages for the current and adjacent grid coordinates.
+
+### Changed
+
+- Increased fatigue through ordinary movement and valid hostile combat turns.
+- Made short-rest chakra recovery depend on wisdom, nutrition, hydration, and fatigue.
+- Extended terminal-control sanitization to whispers and shouts.
+- Deferred reproductive and mature-consequence mechanics until an explicit adult-only opt-in roleplay design exists.
+
+### Verification
+
+- Added body migration, recovery, exertion, whisper, shout, and sanitization coverage.
+- Passed `python -m unittest discover -s tests -v` with 105 tests.
+- Passed Python syntax compilation across the repository.
+
+## 2026-06-02 - Runtime State Ownership
+
+### Changed
+
+- Removed SQLite database creation from module import side effects.
+- Kept one server-maintenance SQLite connection for initialization, validation, authored-content synchronization, and scheduled world ticks.
+- Changed live protocols to receive independent factory-created SQLite connections and close them on disconnect.
+- Prevented pre-login disconnects from broadcasting departure messages for sessions that never joined a tracked room.
+
+### Verification
+
+- Added lifecycle coverage for independent factory sessions, owned-connection cleanup, pre-login disconnects, player commands, repeated initialization, and world ticks after session disconnects.
+- Passed `python -m unittest discover -s tests -v` with 97 tests.
+- Passed Python syntax compilation across the repository.
+
+## 2026-06-02 - ANSI Presentation QoL
+
+### Added
+
+- Added semantic ANSI styling for prompts, room titles, room-section labels, map markers, and social-channel metadata.
+- Added `color on|off` for changing ANSI output during the current connection.
+- Added `default_color_enabled` configuration, enabled by default.
+
+### Changed
+
+- Removed terminal control sequences from player-authored `say`, `ooc`, and `emote` text before broadcasting it.
+- Kept plain-text rendering intact for clients with color disabled.
+
+### Verification
+
+- Added presentation coverage for toggling, colored prompts, colored maps, plain output, and chat sanitization.
+- Passed `python -m unittest discover -s tests -v` with 92 tests.
+- Passed Python syntax compilation across the repository.
+
 ## 2026-06-01 - Combat Reliability
 
 ### Added

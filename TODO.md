@@ -10,6 +10,12 @@ The foundation checkpoint in `FOUNDATION_CHECKLIST.md` is complete.
 - [x] Add metadata-driven commands, automatic unique-prefix matching, and `help`.
 - [x] Drop Eve's Haven onto the wilderness grid as the first VNUM-backed overlay zone.
 - [x] Add versioned database migrations and automated tests for the core loop.
+- [x] Add ANSI presentation styling with a session-level `color on|off` toggle.
+- [x] Add abstract body resources, short-rest recovery, private whispers, and nearby shouts.
+
+### Current Checkpoint
+
+The private-alpha gameplay loop is covered by 105 automated tests. Runtime database ownership is explicit: the server keeps a maintenance connection for startup and ticks, while each connected player session owns and closes its own connection. The next recommended step is the Body Resource Integration checkpoint before Sprint 15.
 
 ---
 
@@ -173,9 +179,76 @@ New players can create understandable ninja characters, and existing private-alp
 
 ---
 
-## Sprint 15: First Chakra Ability
+## Presentation QoL Checkpoint
 
-Add one complete ninja ability only after combat and character resource semantics are stable.
+- [x] Add semantic ANSI styling for prompts, room blocks, maps, and social-channel metadata.
+- [x] Add `color on|off` as a session-level player preference.
+- [x] Keep plain output available for clients that do not render ANSI colors cleanly.
+- [x] Strip terminal control sequences from player-authored chat and emotes.
+- [x] Add regression tests for colored output, plain output, toggling, and chat sanitization.
+
+---
+
+## Runtime State Ownership Checkpoint
+
+Clean up initialization and database ownership before adding scheduler-driven ability state. Keep this sprint focused on lifecycle boundaries; do not redesign gameplay systems.
+
+- [x] Remove database creation from module import side effects.
+- [x] Keep one explicit server-maintenance connection for initialization, validation, authored-content synchronization, and world ticks.
+- [x] Replace the shared module-level SQLite cursor passed to every protocol with factory-created per-session connections.
+- [x] Close protocol-owned connections on disconnect without closing injected test connections.
+- [x] Avoid departure broadcasts for sessions that disconnect before joining a tracked room.
+- [x] Confirm world ticks and player commands perform database work without relying on one long-lived shared cursor.
+- [x] Preserve startup validation, reconnect behavior, migrations, and all existing gameplay output.
+- [x] Add regression tests for factory sessions, disconnect cleanup, repeated server initialization, player commands, and world ticks.
+- [x] Document the maintenance-versus-session connection lifecycle in the README.
+
+### Done When
+
+Server startup, player sessions, and scheduled world ticks have clear database ownership; repeated initialization remains testable; and the existing private-alpha loop still passes its regression suite.
+
+### Why This Comes First
+
+Sprint 15 introduces cooldowns, cast timing, and scheduler integration. Establishing runtime-state ownership first keeps those timed writes from depending on the current shared-cursor and import-order behavior.
+
+---
+
+## Body and Social Foundation Checkpoint
+
+- [x] Persist abstract nutrition, hydration, fatigue, and recovery-readiness fields.
+- [x] Add `body` and `rest` so players can inspect condition and deliberately recover stamina and chakra.
+- [x] Increase fatigue through ordinary movement and valid hostile combat turns.
+- [x] Add private online `whisper` messages.
+- [x] Add nearby `shout` messages for the current and adjacent grid coordinates.
+- [x] Strip terminal control sequences from the new player-authored social messages.
+- [x] Add migration and regression coverage for body recovery, exertion, whispering, shouting, and sanitization.
+
+### Deferred Adult-Only Design
+
+- [ ] Define any reproductive or mature-consequence mechanics as an explicit adult-only, opt-in roleplay module before implementation.
+- [ ] Keep ordinary character creation and body recovery independent from any mature systems.
+
+---
+
+## Recommended Next Step: Body Resource Integration
+
+Turn the body-resource foundation into a complete gameplay loop before adding chakra abilities.
+
+- [ ] Add authored food and drink consumables.
+- [ ] Add `eat <item>` and `drink <item>` interactions.
+- [ ] Decide the consequences of low nutrition, low hydration, and high fatigue.
+- [ ] Tune travel, combat, and rest costs through focused tests.
+- [ ] Keep the model abstract enough to support future medical and roleplay extensions.
+
+### Done When
+
+Players can spend and restore body resources deliberately, and the consequences are clear enough for chakra recovery to build on them.
+
+---
+
+## Sprint 15 - First Chakra Ability
+
+Add one complete ninja ability after the runtime-state cleanup and the existing combat and character foundations are stable.
 
 - [ ] Define authored ability data for chakra cost, range, cast time, cooldown, and effect.
 - [ ] Add one offensive jutsu and one defensive response.
@@ -222,10 +295,10 @@ The current game loop survives a real private test session and produces actionab
 
 ## Communication and Social Backlog
 
-- [ ] Add `whisper`.
-- [ ] Add `shout`.
+- [x] Add `whisper`.
+- [x] Add `shout`.
 - [ ] Add a larger social-command library.
-- [ ] Design richer roleplay socials, including optional mature consequence systems.
+- [ ] Design richer roleplay socials, including explicit adult-only opt-in mature consequence systems.
 
 ---
 
@@ -256,3 +329,4 @@ The current game loop survives a real private test session and produces actionab
 - Keep `(x, y)` coordinates canonical. VNUM rooms remain optional authored overlays.
 - Add migrations and automated tests alongside each persistent system.
 - Prefer one complete vertical slice over several partially connected systems.
+- Keep the runtime-state cleanup narrow: lifecycle ownership first, broader architecture changes only when a failing test or Sprint 15 requirement justifies them.

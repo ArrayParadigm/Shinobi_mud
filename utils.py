@@ -3,6 +3,7 @@ import json
 import logging
 import items
 import npcs
+import presentation
 
 logging.info("utils imported")
 
@@ -151,6 +152,7 @@ def render_open_land(
     overlays=None,
     width_radius=20,
     height_radius=10,
+    color_enabled=False,
 ):
     """Renders a portion of the world map centered around the player's position."""
     if world_map is None:
@@ -163,40 +165,41 @@ def render_open_land(
         for x in range(player_x - width_radius, player_x + width_radius + 1):
             if 0 <= y < len(world_map) and 0 <= x < len(world_map[0]):
                 if x == player_x and y == player_y:
-                    row += "P"  # Mark the player
+                    row += presentation.map_symbol("P", color_enabled)  # Mark the player
                 elif overlays and (x, y) in overlays:
-                    row += "#"  # Mark authored content without mutating terrain
+                    row += presentation.map_symbol("#", color_enabled)  # Mark authored content without mutating terrain
                 else:
                     row += world_map[y][x]
             else:
-                row += "?"  # Out-of-bounds area
+                row += presentation.map_symbol("?", color_enabled)  # Out-of-bounds area
         visible_map.append(row)
 
-    visible_map.append("Legend: P=you  #=authored area")
+    visible_map.append(presentation.legend(color_enabled))
     return "\n".join(visible_map)
 
 def render_room(player, overlays=None):
     """Render location details as one compact, readable room block."""
+    color_enabled = getattr(player, "color_enabled", False)
     overlay = (overlays or {}).get((player.x, player.y))
     if not overlay:
-        lines = ["Open Land", "You see open land around you."]
+        lines = [presentation.room_title("Open Land", color_enabled), "You see open land around you."]
     else:
         room = overlay["room"]
         exits = ", ".join(room.get("exits", {}).keys()) or "None"
         description = room.get("description", "No description.")
         lines = [
-            f"{overlay['zone_name']} [{overlay['vnum']}]",
+            presentation.room_title(f"{overlay['zone_name']} [{overlay['vnum']}]", color_enabled),
             description,
             "",
-            f"Exits: {exits}",
+            presentation.section("Exits", exits, color_enabled),
         ]
 
     visible_items = items.room_items(player.cursor, player.x, player.y)
     if visible_items:
-        lines.append(f"Items: {items.format_item_names(visible_items)}")
+        lines.append(presentation.section("Items", items.format_item_names(visible_items), color_enabled))
 
     visible_npcs = npcs.npcs_at(player.cursor, player.x, player.y)
     if visible_npcs:
-        lines.append(f"Characters: {', '.join(npc['name'] for npc in visible_npcs)}")
+        lines.append(presentation.section("Characters", ", ".join(npc["name"] for npc in visible_npcs), color_enabled))
 
     player.sendLine("\n".join(lines).encode("utf-8"))

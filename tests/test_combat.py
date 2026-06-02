@@ -66,13 +66,14 @@ class CombatSliceTests(unittest.TestCase):
             """,
             ("Practice Construct",),
         ).fetchone()["health"]
-        player_health = self.connection.execute(
-            "SELECT health FROM players WHERE username=?",
+        player = self.connection.execute(
+            "SELECT health, fatigue FROM players WHERE username=?",
             ("Fighter",),
-        ).fetchone()["health"]
+        ).fetchone()
 
         self.assertEqual(npc_health, 7)
-        self.assertEqual(player_health, 8)
+        self.assertEqual(player["health"], 8)
+        self.assertEqual(player["fatigue"], 5)
         self.assertEqual(
             self.player.messages,
             [

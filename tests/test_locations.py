@@ -50,11 +50,11 @@ class LocationTests(unittest.TestCase):
         self.assertEqual((self.player.x, self.player.y), (2, 1))
         self.assertNotIn((1, 1), shinobi_mud.players_in_rooms)
         self.assertEqual(shinobi_mud.players_in_rooms[(2, 1)], [self.player])
-        coordinates = self.connection.execute(
-            "SELECT x, y FROM players WHERE username=?",
+        saved = self.connection.execute(
+            "SELECT x, y, fatigue FROM players WHERE username=?",
             ("Walker",),
         ).fetchone()
-        self.assertEqual(tuple(coordinates), (2, 1))
+        self.assertEqual(tuple(saved), (2, 1, 1))
 
     def test_login_restores_coordinates_saved_by_movement(self):
         self.connection.execute(

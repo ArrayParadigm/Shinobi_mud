@@ -1,6 +1,7 @@
 import logging
 
 from content import create_authored_content_tables
+from body import ensure_body_columns
 from items import create_item_tables, ensure_item_seed_tracking
 from npcs import create_npc_tables
 
@@ -27,6 +28,10 @@ PLAYER_COLUMNS = (
     "max_chakra",
     "clan",
     "natural_release",
+    "nutrition",
+    "hydration",
+    "fatigue",
+    "recovery_state",
 )
 
 
@@ -54,7 +59,11 @@ def create_players_table(cursor, table_name="players"):
             max_stamina INTEGER DEFAULT 10,
             max_chakra INTEGER DEFAULT 10,
             clan TEXT DEFAULT 'Unaffiliated',
-            natural_release TEXT DEFAULT 'Undeclared'
+            natural_release TEXT DEFAULT 'Undeclared',
+            nutrition INTEGER NOT NULL DEFAULT 100,
+            hydration INTEGER NOT NULL DEFAULT 100,
+            fatigue INTEGER NOT NULL DEFAULT 0,
+            recovery_state TEXT NOT NULL DEFAULT 'ready'
         )
         """
     )
@@ -136,6 +145,11 @@ def migration_006_combat_reliability(cursor):
     create_npc_tables(cursor)
 
 
+def migration_007_body_foundation(cursor):
+    """Add abstract body resources for rest and future recovery systems."""
+    ensure_body_columns(cursor)
+
+
 MIGRATIONS = (
     (1, migration_001_non_admin_default),
     (2, migration_002_persistent_items),
@@ -143,6 +157,7 @@ MIGRATIONS = (
     (4, migration_004_npc_combat_state),
     (5, migration_005_inventory_and_character_foundation),
     (6, migration_006_combat_reliability),
+    (7, migration_007_body_foundation),
 )
 
 

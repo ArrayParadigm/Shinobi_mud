@@ -111,6 +111,8 @@ The server reads its TCP port from `config.json`.
 
 Each launch writes a timestamped runtime log under `logs/`. These local logs are ignored by Git and include command activity, warnings, and exception tracebacks for debugging.
 
+The server keeps one maintenance SQLite connection for startup work, authored-content reloads, validation, and scheduled world ticks. Each connected player session receives its own SQLite connection and closes it on disconnect.
+
 For a basic private Linux deployment, follow [LINUX_ALPHA.md](LINUX_ALPHA.md).
 
 ### World Locations
@@ -125,9 +127,12 @@ Eve's Haven is the first complete overlay example. Its anchor and room offsets l
 
 - `look [at <item>]`: display a compact local terrain view or inspect an item.
 - `survey`: display the larger terrain view.
+- `color <on|off>`: toggle ANSI terminal colors for the current connection.
 - `north`, `south`, `east`, `west`: move across the world grid.
 - `loc`: display your grid coordinates and optional overlay area.
 - `score`: display your character sheet. `status` remains available as an alias.
+- `body`: display nutrition, hydration, fatigue, and short-rest chakra recovery.
+- `rest`: recover stamina and chakra while reducing fatigue.
 - `inventory`: list persistent carried and equipped items. `inv` remains available as an alias.
 - `get <item>`: pick up an item at your grid location.
 - `drop <item>`: drop a carried item at your grid location.
@@ -139,6 +144,8 @@ Eve's Haven is the first complete overlay example. Its anchor and room offsets l
 - `attack <character>`: resolve one melee turn against a hostile NPC at your grid location.
 - `who`: list connected characters.
 - `say <message>`: speak to characters at your grid location.
+- `whisper <character> <message>`: privately message an online character.
+- `shout <message>`: speak to characters at your location and adjacent grid coordinates.
 - `emote <action>`: perform an action at your grid location.
 - `think`: perform the built-in thinking emote at your grid location.
 - `ooc <message>`: speak on the global out-of-character channel.
@@ -160,11 +167,15 @@ Admin overlay tools:
 
 The player prompt reports current and maximum health, stamina, chakra, and location after commands. Map output includes a legend. Nearby-character listings are controlled by `show_nearby_players` and `nearby_player_radius` in `config.json`.
 
+ANSI terminal colors are enabled for new connections by default. Set `default_color_enabled` in `config.json` to change the server default, or use `color off` for clients that do not render ANSI colors cleanly.
+
 Room items, character inventories, equipped slots, and NPC instances persist in SQLite. Authored templates, item keywords, equipment metadata, and initial VNUM placements live in zone JSON files such as `zones/eveshaven.json`. Startup imports missing spawns once, so picked-up items are not recreated on every restart.
 
 Eve's Haven authors a Haven Map at its entrance, a Practice Kunai in its garden, a Crystal Token in its library, a Haven Guide NPC at the entrance, and a hostile Practice Construct in the garden. `reloadcontent` lets an admin apply JSON template edits and create newly-authored spawns without restarting the server.
 
 The combat loop is command-driven and turn-based. `attack <character>` resolves player dexterity against authored NPC evasion, applies strength-based damage plus equipped-weapon metadata on a hit, then resolves a surviving hostile NPC's authored accuracy against player agility. Roommates see the exchange. Defeated NPCs disappear until their authored respawn delay elapses. A defeated player recovers to maximum health at the same grid coordinate.
+
+Characters also have abstract body resources: nutrition, hydration, and fatigue. Ordinary movement and hostile combat increase fatigue. `rest` reduces fatigue, consumes a small amount of nutrition and hydration, restores stamina, and restores chakra based on wisdom and current body condition. Food and drink interactions are the next body-system extension.
 
 ### Early Linux Testing
 

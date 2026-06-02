@@ -2,6 +2,8 @@
 
 import random
 
+from body import add_fatigue
+
 
 BASE_HIT_CHANCE = 50
 STAT_HIT_CHANCE_STEP = 5
@@ -191,6 +193,7 @@ def attack_npc(cursor, username, x, y, npc_name):
             connection.rollback()
             return {"status": "not_attackable", "npc_name": npc["name"]}
 
+        add_fatigue(cursor, username, 5)
         weapon_damage = _equipped_damage_bonus(cursor, player["id"])
         player_damage = max(1, player["strength"] // 2 + weapon_damage)
         player_hit_chance = hit_chance(player["dexterity"], npc["evasion"])

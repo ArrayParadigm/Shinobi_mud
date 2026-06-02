@@ -98,6 +98,22 @@ class StartupSmokeTests(unittest.TestCase):
                 }
             )
 
+    def test_validation_rejects_non_boolean_color_default(self):
+        shinobi_mud.conn = sqlite3.connect(":memory:")
+        shinobi_mud.conn.row_factory = sqlite3.Row
+        shinobi_mud.cursor = shinobi_mud.conn.cursor()
+        shinobi_mud.ensure_tables_exist(shinobi_mud.conn)
+        shinobi_mud.apply_migrations(shinobi_mud.conn)
+        shinobi_mud.COMMAND_REGISTRY.clear()
+        shinobi_mud.load_commands()
+        with self.assertRaises(RuntimeError):
+            shinobi_mud.validate_server_state(
+                {
+                    "default_color_enabled": "yes",
+                    "zone_directory": str(PROJECT_ROOT / "zones"),
+                }
+            )
+
     def test_configure_logging_creates_nested_log_directory(self):
         with tempfile.TemporaryDirectory() as temporary_directory:
             log_path = Path(temporary_directory) / "logs" / "smoke.log"

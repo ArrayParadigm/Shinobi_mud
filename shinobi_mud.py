@@ -14,6 +14,7 @@ from content import sync_authored_content
 from locations import broadcast_at, coordinate_key, is_within_bounds, nearby_players, players_at, track_player, untrack_player
 from migrations import apply_migrations, create_players_table
 from npcs import tick_npcs
+from presentation import prompt
 from twisted.internet import task
 
 DEBUG_MODE = True  # True allows for debugging options; False disables them
@@ -23,6 +24,7 @@ DEFAULT_MOTD = "Welcome to Ninja MUD!"
 DEFAULT_PORT = 4000
 DATABASE_BUSY_TIMEOUT_SECONDS = 1
 DEFAULT_NEARBY_PLAYER_RADIUS = 20
+DEFAULT_COLOR_ENABLED = True
 DEFAULT_LOG_FILE = os.path.join(
     "logs",
     f"mud_{datetime.now():%Y%m%d_%H%M%S}_{os.getpid()}.log",
@@ -171,16 +173,20 @@ def connect_database(db_file):
     return connection
 
 
-conn = connect_database(DEFAULT_DB_FILE)
-cursor = conn.cursor()
+conn = None
+cursor = None
 MOTD = DEFAULT_MOTD
 
 def debug_log(message):
     """Wrapper for debug-level logging."""
     logging.debug(message)
 
-def preload_zones(zone_directory):
+def preload_zones(zone_directory, connection=None):
     """Preloads zone files from the specified directory and initializes database rooms."""
+    active_connection = connection or conn
+    if active_connection is None:
+        raise RuntimeError("Database connection is not initialized.")
+    active_cursor = active_connection.cursor()
     for file_name in os.listdir(zone_directory):
         if file_name.endswith(".json"):
             try:
@@ -190,7 +196,7 @@ def preload_zones(zone_directory):
 
                     # Ensure rooms are loaded into the database
                     for room_id, room_data in zone_data["rooms"].items():
-                        cursor.execute(
+                        active_cursor.execute(
                             '''INSERT OR IGNORE INTO rooms (id, name, description, exits) 
                             VALUES (?, ?, ?, ?)''',
                             (
@@ -200,7 +206,7 @@ def preload_zones(zone_directory):
                                 json.dumps(room_data.get("exits", {})),
                             )
                         )
-                conn.commit()
+                active_connection.commit()
             except Exception as e:
                 logging.error(f"Error preloading zone file {file_name}: {e}", exc_info=True)
 
@@ -278,6 +284,8 @@ def is_username_active(username, exclude=None):
 
 def ensure_tables_exist(connection=None):
     active_connection = connection or conn
+    if active_connection is None:
+        raise RuntimeError("Database connection is not initialized.")
     active_cursor = active_connection.cursor()
     try:
         # Create players table if it doesn't exist
@@ -319,8 +327,13 @@ def get_state_handlers():
 class NinjaMUDProtocol(basic.LineReceiver):
     delimiter = b"\n"
 
-    def __init__(self, cursor):
-        self.cursor = cursor  # Save the cursor for database operations
+    def __init__(self, cursor=None, connection=None, owns_connection=False):
+        if cursor is not None and connection is not None:
+            raise ValueError("Provide a database cursor or connection, not both.")
+        self.connection = connection or (cursor.connection if cursor is not None else None)
+        self.cursor = cursor or (self.connection.cursor() if self.connection is not None else None)
+        self.owns_connection = owns_connection
+        self.connection_closed = False
         self.state = "GET_USERNAME"
         self.character_creation_data = {}
         self.username = None
@@ -331,6 +344,7 @@ class NinjaMUDProtocol(basic.LineReceiver):
         self.in_zone = False
         self.x = 500
         self.y = 500
+        self.color_enabled = bool(ACTIVE_CONFIG.get("default_color_enabled", DEFAULT_COLOR_ENABLED))
                 
     def connectionMade(self):
         logging.info("New connection established from %s.", self.transport.getPeer())
@@ -348,6 +362,13 @@ class NinjaMUDProtocol(basic.LineReceiver):
     def connectionLost(self, reason):
         logging.info(f"Connection lost for user {self.username}. Reason: {reason}")
         self.untrack_player()
+        self.close_connection()
+
+    def close_connection(self):
+        """Close a protocol-owned database connection once."""
+        if self.owns_connection and self.connection is not None and not self.connection_closed:
+            self.connection.close()
+            self.connection_closed = True
     
     def lineReceived(self, line):
         try:
@@ -483,6 +504,7 @@ class NinjaMUDProtocol(basic.LineReceiver):
                 overlays=WORLD_OVERLAYS,
                 width_radius=NORMAL_MAP_WIDTH_RADIUS,
                 height_radius=NORMAL_MAP_HEIGHT_RADIUS,
+                color_enabled=self.color_enabled,
             )
             self.sendLine(map_view.encode("utf-8"))
             self.list_players_in_room()
@@ -504,7 +526,11 @@ class NinjaMUDProtocol(basic.LineReceiver):
         logging.info("Player %s is now at %s.", self.username, self.location_key)
     
     def untrack_player(self):
+        if self.username is None:
+            return
         room_key = self.location_key
+        if self not in players_in_rooms.get(room_key, []):
+            return
         broadcast_at(
             players_in_rooms,
             room_key,
@@ -539,10 +565,15 @@ class NinjaMUDProtocol(basic.LineReceiver):
             else:
                 location = f"({self.x}, {self.y})"
             self.sendLine(
-                (
-                    f"[HP:{stats['health']}/{stats['max_health']} "
-                    f"ST:{stats['stamina']}/{stats['max_stamina']} "
-                    f"CH:{stats['chakra']}/{stats['max_chakra']} | {location}]"
+                prompt(
+                    stats["health"],
+                    stats["max_health"],
+                    stats["stamina"],
+                    stats["max_stamina"],
+                    stats["chakra"],
+                    stats["max_chakra"],
+                    location,
+                    enabled=self.color_enabled,
                 ).encode("utf-8")
             )
         except Exception as exc:
@@ -669,8 +700,14 @@ class NinjaMUDProtocol(basic.LineReceiver):
             )
 
 class NinjaMUDFactory(protocol.Factory):
+    def __init__(self, db_file):
+        self.db_file = db_file
+
     def buildProtocol(self, addr):
-        return NinjaMUDProtocol(cursor)  # Pass the cursor here
+        return NinjaMUDProtocol(
+            connection=connect_database(self.db_file),
+            owns_connection=True,
+        )
 
 import json
 
@@ -810,6 +847,10 @@ def validate_server_state(config):
     if not isinstance(show_nearby_players, bool):
         errors.append("Configured show_nearby_players must be true or false.")
 
+    default_color_enabled = config.get("default_color_enabled", DEFAULT_COLOR_ENABLED)
+    if not isinstance(default_color_enabled, bool):
+        errors.append("Configured default_color_enabled must be true or false.")
+
     try:
         nearby_player_radius = config.get(
             "nearby_player_radius",
@@ -853,7 +894,7 @@ def run_server(config_file=DEFAULT_CONFIG_FILE, reactor_instance=reactor):
     try:
         config = initialize_server(config_file)
         port = int(config.get("server_port", DEFAULT_PORT))
-        reactor_instance.listenTCP(port, NinjaMUDFactory())
+        reactor_instance.listenTCP(port, NinjaMUDFactory(config.get("db_file", DEFAULT_DB_FILE)))
         logging.info("Ninja MUD Server running on port %s.", port)
         if hasattr(reactor_instance, "callLater"):
             start_world_tick(reactor_instance)
@@ -866,6 +907,8 @@ def run_server(config_file=DEFAULT_CONFIG_FILE, reactor_instance=reactor):
 
 def run_world_tick():
     """Advance lightweight persistent NPC bookkeeping."""
+    if conn is None:
+        raise RuntimeError("Database connection is not initialized.")
     updated_npcs = tick_npcs(conn)
     logging.debug("World tick updated %s NPC instances.", updated_npcs)
     return updated_npcs

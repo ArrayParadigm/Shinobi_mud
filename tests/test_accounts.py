@@ -15,6 +15,7 @@ class TestProtocol(shinobi_mud.NinjaMUDProtocol):
     def __init__(self, cursor):
         super().__init__(cursor)
         self.messages = []
+        self.color_enabled = False
 
     def sendLine(self, message):
         self.messages.append(message.decode("utf-8"))
