@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-06-02 15:08 -0500 - Sprint 18 Builder Editing Suite
+
+### Added
+
+- Added `buildzone` and `zonelist` for a clear in-game path from empty grid to anchored authored zone.
+- Added `redit` and `rstat` for room titles, descriptions, flags, exits, offsets, and inspection.
+- Added `medit` and `mstat` for authored NPC prose, behavior, combat values, respawn timing, and inspection.
+- Added `iedit`, `istat`, and `spawnitem` for authored item creation, editing, inspection, and finite persistent placement.
+
+### Changed
+
+- Display authored room titles in normal room rendering while retaining zone names as the fallback for existing content.
+- Reject accidental blank builder prose before JSON persistence.
+- Marked Sprint 18 complete and moved the active roadmap to private-alpha exercise.
+
+### Verification
+
+- Passed `python -m unittest discover -s tests -v` with 147 tests.
+- Passed Python syntax compilation and `git diff --check`.
+
 ## 2026-06-02 14:57 -0500 - Categorized Command Catalog
 
 ### Added

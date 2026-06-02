@@ -53,15 +53,24 @@
         "commands"
     ],
     "Builder": [
+        "buildzone",
         "createzone",
+        "zonelist",
         "goto",
         "zoneinfo",
         "placezone",
         "reloadcontent",
         "dig",
         "roomdesc",
+        "redit",
+        "rstat",
         "createnpc",
-        "spawnnpc"
+        "medit",
+        "mstat",
+        "spawnnpc",
+        "iedit",
+        "istat",
+        "spawnitem"
     ],
     "Admin": [
         "shutdown",

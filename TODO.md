@@ -2,7 +2,7 @@
 
 ## Current Checkpoint
 
-The private-alpha gameplay loop is covered by `143` automated tests. The current build includes:
+The private-alpha gameplay loop is covered by `147` automated tests. The current build includes:
 
 - Coordinate-first wilderness movement with Eve's Haven as a VNUM-backed overlay zone.
 - Persistent accounts, items, inventories, equipment, NPC instances, combat state, and body resources.
@@ -13,11 +13,12 @@ The private-alpha gameplay loop is covered by `143` automated tests. The current
 - A real `throw <item> at <character>` action. Practice Kunai throws deal `3` damage, add `2` fatigue, land at the target location, and raise `Throw` proficiency on valid hits or misses.
 - A real `usejutsu substitution` action. It spends `3` chakra, prepares a `30` second defensive window, avoids the next eligible hostile NPC strike, raises Substitution proficiency on resolution, and persists a `60` second cooldown.
 - Coordinate-aware builder commands for digging rooms, editing descriptions, creating basic NPC templates, and seeding persistent NPC spawns.
+- Engaged in-game builder editing for anchored zones, rooms, NPC templates, item templates, and finite authored spawns.
 - A complete `commands` catalog generated from registered help metadata.
 - Builder-editable command summaries and detailed help prose loaded from `helpfiles/commands.json`.
 - Builder-editable command-catalog sections with clean ANSI-colored headings loaded from `helpfiles/command_categories.json`.
 
-The next step is expanding the in-game builder suite before the private-alpha soak pass.
+The next step is exercising the expanded gameplay and builder loops through a private-alpha soak pass.
 
 ## Working Rules
 
@@ -45,6 +46,7 @@ Only keep one sprint active at a time. Reassess the order after each committed s
 - [x] First real jutsu action: `Substitution Technique`.
 - [x] Coordinate-overlay builder and compact training playground.
 - [x] Builder-editable help prose and categorized command discovery.
+- [x] Sprint 18 builder editing suite.
 
 ## Sprint 16: Substitution Technique
 
@@ -82,14 +84,15 @@ An admin can build and reload a small training encounter through authored conten
 
 Expand the current compact builder tools into an engaged in-game authoring workflow.
 
-- [ ] Clean up zone creation and anchoring so they form one clear in-game workflow.
-- [ ] Add `redit` for room titles, descriptions, exits, and room flags such as indoor, outdoor, and vacuum.
-- [ ] Retain `dig` as the brief coordinate-aware room-creation command.
-- [ ] Add `rstat` for inspecting room identity, coordinates, exits, and flags.
-- [ ] Add `medit` for NPC name, description, health, stats, flags, and read-only VNUM.
-- [ ] Add `mstat` for NPC inspection.
-- [ ] Add `iedit` for item creation and modification.
-- [ ] Add `istat` for item inspection.
+- [x] Add `buildzone` for one-step anchored zone creation with a usable starting room and `zonelist` for placement inspection.
+- [x] Add `redit` for room titles, descriptions, exits, and room flags such as indoor, outdoor, and vacuum.
+- [x] Retain `dig` as the brief coordinate-aware room-creation command.
+- [x] Add `rstat` for inspecting room identity, coordinates, exits, and flags.
+- [x] Add `medit` for NPC prose, behavior, health, combat values, and respawn timing.
+- [x] Add `mstat` for NPC inspection.
+- [x] Add `iedit` for item creation and modification.
+- [x] Add `istat` for item inspection.
+- [x] Add `spawnitem` so newly authored items can be placed as finite persistent seeds without editing JSON.
 
 ### Done When
 

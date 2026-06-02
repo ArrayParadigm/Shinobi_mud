@@ -7,6 +7,10 @@
         "summary": "Display your body resources and recovery readiness.",
         "details": ["Shows nutrition, hydration, fatigue, recovery state, and short-rest chakra recovery."]
     },
+    "buildzone": {
+        "summary": "Create, anchor, and enter a usable authored zone.",
+        "details": ["Admin builder command. Creates an anchored zone with one starting room so editing can begin immediately."]
+    },
     "color": {
         "summary": "Toggle ANSI terminal colors for this connection.",
         "details": ["Use color off if your client does not render ANSI colors cleanly."]
@@ -75,6 +79,14 @@
         "summary": "List the items you carry.",
         "details": ["Equipped slots are displayed alongside carried items."]
     },
+    "iedit": {
+        "summary": "Create or edit an authored item template.",
+        "details": ["Admin builder command. Supports name, description, keywords, type, slot, use text, damage, throw damage, nutrition, and hydration fields."]
+    },
+    "istat": {
+        "summary": "Inspect an authored item template.",
+        "details": ["Admin builder command. Displays the current editable fields for one globally keyed item template."]
+    },
     "jutsu": {
         "summary": "List available jutsus, inspect one, or show the full catalog.",
         "details": ["Use jutsu all to include catalog placeholders that are not implemented yet."]
@@ -90,6 +102,14 @@
     "north": {
         "summary": "Move north.",
         "details": []
+    },
+    "medit": {
+        "summary": "Edit an authored NPC template.",
+        "details": ["Admin builder command. Supports prose, behavior, combat values, and respawn timing."]
+    },
+    "mstat": {
+        "summary": "Inspect an authored NPC template.",
+        "details": ["Admin builder command. Displays the current editable fields for one globally keyed NPC template."]
     },
     "ooc": {
         "summary": "Speak on the global out-of-character channel.",
@@ -115,9 +135,17 @@
         "summary": "Recover stamina and chakra through a short rest.",
         "details": ["Rest consumes nutrition and hydration. Depleted nutrition or hydration blocks recovery."]
     },
+    "redit": {
+        "summary": "Edit the current authored room.",
+        "details": ["Admin builder command. Supports room title, description, flags, and explicit exits."]
+    },
     "roomdesc": {
         "summary": "Replace the current authored room description.",
         "details": ["Admin builder command. Updates the current overlay room in authored JSON."]
+    },
+    "rstat": {
+        "summary": "Inspect authored room builder fields.",
+        "details": ["Admin builder command. Displays room title, description, offsets, flags, and exits."]
     },
     "say": {
         "summary": "Speak to characters at your location.",
@@ -158,6 +186,10 @@
     "spawnnpc": {
         "summary": "Persist a spawn for an authored NPC template.",
         "details": ["Admin builder command. Creates a one-time authored NPC seed in the current room."]
+    },
+    "spawnitem": {
+        "summary": "Persist a finite authored item seed.",
+        "details": ["Admin builder command. Places one finite item seed in the current authored room."]
     },
     "survey": {
         "summary": "Display a compact terrain view.",
@@ -202,5 +234,9 @@
     "zoneinfo": {
         "summary": "Inspect an authored overlay room.",
         "details": ["Admin builder command. With no VNUM, inspects the current location."]
+    },
+    "zonelist": {
+        "summary": "List authored zones and placement status.",
+        "details": ["Admin builder command. Shows filenames, display names, VNUM ranges, anchors, and room counts."]
     }
 }

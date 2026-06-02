@@ -188,7 +188,10 @@ def render_room(player, overlays=None):
         exits = ", ".join(room.get("exits", {}).keys()) or "None"
         description = room.get("description", "No description.")
         lines = [
-            presentation.room_title(f"{overlay['zone_name']} [{overlay['vnum']}]", color_enabled),
+            presentation.room_title(
+                f"{room.get('name', overlay['zone_name'])} [{overlay['vnum']}]",
+                color_enabled,
+            ),
             description,
             "",
             presentation.section("Exits", exits, color_enabled),

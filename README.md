@@ -176,6 +176,8 @@ Keep executable command syntax, aliases, permissions, and validation rules in Py
 
 Admin overlay tools:
 
+- `buildzone <zone_key> <start_vnum> <end_vnum> <x> <y> <room_title>`: create an anchored zone with one usable starting room and move there.
+- `zonelist`: list authored zone filenames, ranges, anchors, and room counts.
 - `goto <vnum>`: teleport to an authored overlay room while retaining canonical coordinates.
 - `goto grid <x> <y>`: teleport to canonical world coordinates.
 - `goto player <name>`: teleport to an online character.
@@ -184,9 +186,15 @@ Admin overlay tools:
 - `reloadcontent`: import authored JSON template changes and missing spawns into live state.
 - `dig <direction> <room_name>`: create a coordinate-aware authored room and reciprocal exit.
 - `roomdesc <description>`: replace the current authored room description.
+- `redit <title|desc|flag|exit> <value>` and `rstat [vnum]`: edit and inspect room titles, descriptions, flags, and explicit exits.
 - `createnpc <npc_key> <name>`: create a basic static authored NPC template in the current zone.
+- `medit <npc_key> <field> <value>` and `mstat <npc_key>`: edit and inspect NPC prose, behavior, combat values, and respawn timing.
 - `spawnnpc <npc_key>`: persist and import an authored NPC spawn in the current room.
+- `iedit create <item_key> <name>`, `iedit <item_key> <field> <value>`, and `istat <item_key>`: create, edit, and inspect authored item templates.
+- `spawnitem <item_key>`: persist and import a finite authored item seed in the current room.
 - `copyover`: report that soft restarts are intentionally disabled for now.
+
+For a fresh zone, start with `buildzone`, use `dig` to expand its coordinate layout, use `redit` and `rstat` to refine rooms, then create templates with `createnpc` or `iedit` and place finite instances with `spawnnpc` or `spawnitem`. JSON remains the authored source of truth, while successful edits synchronize live SQLite template metadata immediately.
 
 The player prompt reports current and maximum health, stamina, chakra, and location after commands. Map output includes a legend. Nearby-character listings are controlled by `show_nearby_players` and `nearby_player_radius` in `config.json`.
 

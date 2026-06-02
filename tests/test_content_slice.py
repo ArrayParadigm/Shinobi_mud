@@ -292,7 +292,9 @@ class ContentSliceTests(unittest.TestCase):
             self.assertEqual(
                 persisted["rooms"]["7001"],
                 {
-                    "description": "A sparring alcove.",
+                    "name": "A sparring alcove.",
+                    "description": "An unfinished authored room.",
+                    "flags": [],
                     "exits": {"south": 7000},
                     "x_offset": 0,
                     "y_offset": -1,
@@ -373,6 +375,129 @@ class ContentSliceTests(unittest.TestCase):
                 ["Practice Dummy"],
             )
             self.assertIn("Created 0 item spawns and 0 NPC spawns.", self.player.messages[-1])
+
+    def test_buildzone_creates_anchored_starting_room_and_lists_zone(self):
+        original_directory = os.getcwd()
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            os.chdir(temporary_directory)
+            try:
+                Path("zones").mkdir()
+
+                admin_commands.buildzone(
+                    self.player,
+                    "training-yard",
+                    "7000",
+                    "7099",
+                    "10",
+                    "20",
+                    "Training Yard",
+                )
+                admin_commands.zonelist(self.player)
+
+                persisted = json.loads(Path("zones/training-yard.json").read_text(encoding="utf-8"))
+                self.assertEqual(persisted["anchor"], {"x": 10, "y": 20})
+                self.assertEqual(persisted["rooms"]["7000"]["name"], "Training Yard")
+                self.assertEqual((self.player.x, self.player.y), (10, 20))
+                self.assertEqual(shinobi_mud.WORLD_OVERLAYS[(10, 20)]["vnum"], 7000)
+                self.assertIn(
+                    "  training-yard.json: Training Yard [7000-7099] anchor=(10, 20) rooms=1",
+                    self.player.messages,
+                )
+            finally:
+                os.chdir(original_directory)
+
+    def test_redit_rstat_and_render_room_expose_titles_flags_and_exits(self):
+        zone_data = {
+            "name": "Sample",
+            "range": {"start": 7000, "end": 7001},
+            "anchor": {"x": 1, "y": 1},
+            "rooms": {
+                "7000": {"description": "Square.", "exits": {}, "x_offset": 0, "y_offset": 0},
+                "7001": {"description": "North.", "exits": {}, "x_offset": 0, "y_offset": -1},
+            },
+        }
+        with self.temporary_zone(zone_data) as zone_path:
+            admin_commands.redit(self.player, "title", "Village Square")
+            admin_commands.redit(self.player, "desc", "A welcoming village square.")
+            admin_commands.redit(self.player, "flag", "outdoor on")
+            admin_commands.redit(self.player, "exit", "north 7001")
+            admin_commands.rstat(self.player)
+            utils.render_room(self.player, shinobi_mud.WORLD_OVERLAYS)
+
+            persisted = json.loads(zone_path.read_text(encoding="utf-8"))
+            self.assertEqual(persisted["rooms"]["7000"]["name"], "Village Square")
+            self.assertEqual(persisted["rooms"]["7000"]["flags"], ["outdoor"])
+            self.assertEqual(persisted["rooms"]["7000"]["exits"], {"north": 7001})
+            self.assertIn("Room [7000] Village Square", self.player.messages)
+            self.assertIn("  Flags: outdoor", self.player.messages)
+            self.assertIn(
+                "Village Square [7000]\nA welcoming village square.\n\nExits: north",
+                self.player.messages,
+            )
+
+    def test_medit_and_mstat_sync_authored_npc_fields(self):
+        zone_data = {
+            "name": "Sample",
+            "range": {"start": 7000, "end": 7000},
+            "anchor": {"x": 1, "y": 1},
+            "rooms": {"7000": {"description": "Square.", "exits": {}, "x_offset": 0, "y_offset": 0}},
+            "npc_templates": [],
+        }
+        with self.temporary_zone(zone_data) as zone_path:
+            sync_authored_content(self.connection, "zones", shinobi_mud.WORLD_OVERLAYS)
+            admin_commands.createnpc(self.player, "guard", "Village Guard")
+            admin_commands.medit(self.player, "guard", "behavior", "hostile")
+            admin_commands.medit(self.player, "guard", "health", "15")
+            admin_commands.medit(self.player, "guard", "damage", "4")
+            admin_commands.mstat(self.player, "guard")
+
+            persisted = json.loads(zone_path.read_text(encoding="utf-8"))
+            template = persisted["npc_templates"][0]
+            saved = self.connection.execute(
+                "SELECT behavior, max_health, attack_damage FROM npc_templates WHERE npc_key='guard'"
+            ).fetchone()
+            self.assertEqual(template["behavior"], "hostile")
+            self.assertEqual(template["max_health"], 15)
+            self.assertEqual(tuple(saved), ("hostile", 15, 4))
+            self.assertIn("NPC guard: Village Guard", self.player.messages)
+            self.assertIn("  Combat: health=15 damage=4 accuracy=5 evasion=5 respawn=60s", self.player.messages)
+
+    def test_iedit_spawnitem_and_istat_keep_consumed_seed_finite(self):
+        zone_data = {
+            "name": "Sample",
+            "content_key": "sample",
+            "range": {"start": 7000, "end": 7000},
+            "anchor": {"x": 1, "y": 1},
+            "rooms": {"7000": {"description": "Square.", "exits": {}, "x_offset": 0, "y_offset": 0}},
+            "item_templates": [],
+            "item_spawns": [],
+        }
+        with self.temporary_zone(zone_data) as zone_path:
+            sync_authored_content(self.connection, "zones", shinobi_mud.WORLD_OVERLAYS)
+            admin_commands.iedit(self.player, "create", "", "field-ration Field Ration")
+            admin_commands.iedit(self.player, "field-ration", "type", "food")
+            admin_commands.iedit(self.player, "field-ration", "nutrition", "30")
+            admin_commands.spawnitem(self.player, "field-ration")
+            admin_commands.istat(self.player, "field-ration")
+
+            persisted = json.loads(zone_path.read_text(encoding="utf-8"))
+            self.assertEqual(
+                persisted["item_spawns"],
+                [{"key": "builder-field-ration-7000", "item": "field-ration", "vnum": 7000}],
+            )
+            self.assertEqual(
+                self.connection.execute("SELECT COUNT(*) FROM room_items").fetchone()[0],
+                1,
+            )
+            self.connection.execute("DELETE FROM room_items")
+            self.connection.commit()
+            admin_commands.reloadcontent(self.player)
+            self.assertEqual(
+                self.connection.execute("SELECT COUNT(*) FROM room_items").fetchone()[0],
+                0,
+            )
+            self.assertIn("Item field-ration: Field Ration", self.player.messages)
+            self.assertIn("  Type: food slot=None damage=0 throw=0 nutrition=30 hydration=0", self.player.messages)
 
 
 if __name__ == "__main__":
