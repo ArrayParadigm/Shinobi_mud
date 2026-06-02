@@ -425,7 +425,11 @@
             "key": "substitution-technique",
             "name": "Substitution Technique",
             "description": "Defensive-response training for escaping a strike through substitution.",
-            "usage_gain": 1
+            "usage_gain": 1,
+            "chakra_cost": 3,
+            "activation_seconds": 30,
+            "cooldown_seconds": 60,
+            "effect_key": "substitution"
         },
         {
             "key": "body-flicker-technique",

@@ -2,7 +2,7 @@
 
 ## Current Checkpoint
 
-The private-alpha gameplay loop is covered by `127` automated tests. The current build includes:
+The private-alpha gameplay loop is covered by `132` automated tests. The current build includes:
 
 - Coordinate-first wilderness movement with Eve's Haven as a VNUM-backed overlay zone.
 - Persistent accounts, items, inventories, equipment, NPC instances, combat state, and body resources.
@@ -11,8 +11,9 @@ The private-alpha gameplay loop is covered by `127` automated tests. The current
 - Authored skill and jutsu catalogs with usage-based `0-100%` proficiency.
 - `skill`, `prac`, `jutsu`, and `train` discovery commands with `[unimplemented]` catalog placeholders.
 - A real `throw <item> at <character>` action. Practice Kunai throws deal `3` damage, add `2` fatigue, land at the target location, and raise `Throw` proficiency on valid hits or misses.
+- A real `usejutsu substitution` action. It spends `3` chakra, prepares a `30` second defensive window, avoids the next eligible hostile NPC strike, raises Substitution proficiency on resolution, and persists a `60` second cooldown.
 
-The next step is completing the Substitution Technique half of Sprint 16.
+The next step is making authored encounter expansion practical through Sprint 17 builder tools.
 
 ## Working Rules
 
@@ -37,19 +38,20 @@ Only keep one sprint active at a time. Reassess the order after each committed s
 - [x] Food and drink consumption with recovery consequences.
 - [x] Usage-based skill and jutsu framework with discoverable placeholder catalogs.
 - [x] First real skill action: `Throw`.
+- [x] First real jutsu action: `Substitution Technique`.
 
 ## Sprint 16: Substitution Technique
 
 Implement one defensive jutsu without widening into a general ability engine prematurely.
 
-- [ ] Define authored jutsu execution metadata: chakra cost, activation window, cooldown, and effect key.
-- [ ] Add a player command for activating `Substitution Technique`.
-- [ ] Consume chakra transactionally and reject activation when chakra is insufficient.
-- [ ] Persist active defensive state and cooldown expiry.
-- [ ] Resolve the next eligible hostile NPC strike through Substitution instead of applying damage.
-- [ ] Record successful Substitution resolution through the jutsu-progression helper.
-- [ ] Integrate expiry and cooldown handling with the existing world scheduler where needed.
-- [ ] Add tests for activation, insufficient chakra, defensive resolution, expiry, cooldowns, reconnect persistence, and rollback.
+- [x] Define authored jutsu execution metadata: chakra cost, activation window, cooldown, and effect key.
+- [x] Add a player command for activating `Substitution Technique`.
+- [x] Consume chakra transactionally and reject activation when chakra is insufficient.
+- [x] Persist active defensive state and cooldown expiry.
+- [x] Resolve the next eligible hostile NPC strike through Substitution instead of applying damage.
+- [x] Record successful Substitution resolution through the jutsu-progression helper.
+- [x] Integrate expiry and cooldown handling with the existing world scheduler where needed.
+- [x] Add tests for activation, insufficient chakra, defensive resolution, expiry, cooldowns, reconnect persistence, and rollback.
 - [ ] Run an isolated TCP smoke pass without disturbing the preserved database or an active server process.
 
 ### Done When

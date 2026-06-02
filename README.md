@@ -145,6 +145,7 @@ Eve's Haven is the first complete overlay example. Its anchor and room offsets l
 - `train [jutsu]`: list jutsus or inspect one jutsu's proficiency.
 - `skill [all|skill]`: list available skills, inspect one, or show the full skill catalog.
 - `jutsu [all|jutsu]`: list available jutsus, inspect one, or show the full jutsu catalog.
+- `usejutsu <jutsu>`: activate an implemented jutsu.
 - `talk <character>`: speak with an NPC at your grid location.
 - `consider <character>`: inspect a visible character's combat details.
 - `attack <character>`: resolve one melee turn against a hostile NPC at your grid location.
@@ -186,7 +187,9 @@ Characters also have abstract body resources: nutrition, hydration, and fatigue.
 
 Skills and jutsus have separate authored definitions and persistent `0-100%` proficiency. `prac`, `train`, `skill`, and `jutsu` list available records. `skill all` and `jutsu all` expose the wider authored catalog, with future records marked `[unimplemented]`. Valid gameplay use raises proficiency through an authored usage gain; the visible tiers are `Novice`, `Adept`, `Skilled`, `Master`, and `Grandmaster`.
 
-`throw <item> at <character>` is the first real skill action. A valid throw accepts a carried authored item with ranged damage, targets a hostile NPC in the current room or one cardinal step away, adds `2` fatigue, lands the item at the target location, and raises `Throw` proficiency even when the attack misses. The Practice Kunai deals `3` thrown damage. Substitution Technique remains the next technique slice.
+`throw <item> at <character>` is the first real skill action. A valid throw accepts a carried authored item with ranged damage, targets a hostile NPC in the current room or one cardinal step away, adds `2` fatigue, lands the item at the target location, and raises `Throw` proficiency even when the attack misses. The Practice Kunai deals `3` thrown damage.
+
+`usejutsu substitution` prepares Substitution Technique for `30` seconds at a cost of `3` chakra. The next eligible hostile NPC strike during that window is avoided, successful resolution raises Substitution proficiency, and the technique then remains on a persisted `60` second cooldown.
 
 ### Early Linux Testing
 

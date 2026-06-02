@@ -1,5 +1,24 @@
 # Changelog
 
+## 2026-06-02 10:59 -0500 - Substitution Technique Vertical Slice
+
+### Added
+
+- Added authored jutsu execution metadata and persisted per-character activation state through migration 13.
+- Added `usejutsu <jutsu>` and implemented Substitution Technique as a `3` chakra preparation with a `30` second defensive window and a `60` second cooldown.
+- Added scheduler cleanup for expired jutsu activations and cooldowns.
+
+### Changed
+
+- Made the next eligible hostile NPC strike consume prepared Substitution Technique instead of damaging the player.
+- Raised Substitution proficiency when its defensive effect resolves successfully.
+
+### Verification
+
+- Added activation, insufficient-chakra, persistence, expiry, defensive-resolution, cooldown, and transactional rollback coverage.
+- Passed `python -m unittest discover -s tests -v` with 132 tests.
+- Passed Python syntax compilation and `git diff --check`.
+
 ## 2026-06-02 10:40 -0500 - Roadmap and Changelog Consolidation
 
 ### Changed

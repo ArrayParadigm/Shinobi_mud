@@ -14,6 +14,7 @@ from content import sync_authored_content
 from locations import broadcast_at, coordinate_key, is_within_bounds, nearby_players, players_at, track_player, untrack_player
 from migrations import apply_migrations, create_players_table
 from npcs import tick_npcs
+from techniques import tick_jutsu_states
 from presentation import prompt
 from twisted.internet import task
 
@@ -914,7 +915,9 @@ def run_world_tick():
     if conn is None:
         raise RuntimeError("Database connection is not initialized.")
     updated_npcs = tick_npcs(conn)
+    updated_jutsu_states = tick_jutsu_states(conn)
     logging.debug("World tick updated %s NPC instances.", updated_npcs)
+    logging.debug("World tick expired %s jutsu states.", updated_jutsu_states)
     return updated_npcs
 
 

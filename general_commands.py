@@ -21,7 +21,7 @@ from locations import (
     online_players,
 )
 from npcs import attack_npc, consider_npc, talk_to_npc, throw_item_at_npc
-from techniques import jutsu_detail, list_jutsus, list_skills, proficiency_label, skill_detail
+from techniques import activate_jutsu, jutsu_detail, list_jutsus, list_skills, proficiency_label, skill_detail
 from shinobi_mud import (
     COMMAND_REGISTRY,
     UTILITIES,
@@ -511,7 +511,19 @@ def handle_attack(player, npc_name):
                 f'{player.username} attacks {result["npc_name"]}, but misses.',
             )
 
-        if not result["npc_hit"]:
+        if result["substitution"]:
+            player.sendLine(
+                (
+                    f'You evade {result["npc_name"]} through Substitution Technique. '
+                    f'Jutsu: {result["substitution"]["proficiency"]} '
+                    f'({result["substitution"]["progress_percent"]}%).'
+                ).encode("utf-8")
+            )
+            _broadcast_combat(
+                player,
+                f'{player.username} evades {result["npc_name"]} through Substitution Technique.',
+            )
+        elif not result["npc_hit"]:
             player.sendLine(f'{result["npc_name"]} attacks you, but misses.'.encode("utf-8"))
             _broadcast_combat(
                 player,
@@ -550,6 +562,34 @@ def handle_attack(player, npc_name):
     except Exception as exc:
         logging.error("Unable to attack NPC for %s: %s", player.username, exc, exc_info=True)
         player.sendLine(b"Unable to attack that character right now.")
+
+
+def handle_usejutsu(player, target):
+    """Activate one implemented jutsu by name or unique prefix."""
+    try:
+        result = activate_jutsu(player.cursor, player.username, target)
+        if result["status"] == "missing":
+            player.sendLine(b"You do not know that jutsu.")
+        elif result["status"] == "unimplemented":
+            player.sendLine(f'{result["name"]} is not implemented yet.'.encode("utf-8"))
+        elif result["status"] == "missing_player":
+            player.sendLine(b"Your character is unavailable right now.")
+        elif result["status"] == "insufficient_chakra":
+            player.sendLine(f'You do not have enough chakra to activate {result["name"]}.'.encode("utf-8"))
+        elif result["status"] == "active":
+            player.sendLine(f'{result["name"]} is already active.'.encode("utf-8"))
+        elif result["status"] == "cooldown":
+            player.sendLine(f'{result["name"]} is still on cooldown.'.encode("utf-8"))
+        else:
+            player.sendLine(
+                (
+                    f'You prepare {result["name"]} for {result["active_seconds"]} seconds. '
+                    f'Chakra: {result["chakra"]}.'
+                ).encode("utf-8")
+            )
+    except Exception as exc:
+        logging.error("Unable to activate jutsu for %s: %s", player.username, exc, exc_info=True)
+        player.sendLine(b"Unable to activate that jutsu right now.")
 
 
 def handle_throw(player, raw_args):
@@ -664,6 +704,7 @@ COMMANDS = {
     "train": CommandSpec("train", lambda player, rooms, raw, args: handle_progression(player, raw, "jutsu"), "train [jutsu]", "List jutsus or inspect usage-based proficiency.", max_args=3),
     "skill": CommandSpec("skill", lambda player, rooms, raw, args: handle_progression(player, raw, "skill", allow_all=True), "skill [all|skill]", "List available skills, inspect one, or show the full catalog.", max_args=2),
     "jutsu": CommandSpec("jutsu", lambda player, rooms, raw, args: handle_progression(player, raw, "jutsu", allow_all=True), "jutsu [all|jutsu]", "List available jutsus, inspect one, or show the full catalog.", max_args=3),
+    "usejutsu": CommandSpec("usejutsu", lambda player, rooms, raw, args: handle_usejutsu(player, raw), "usejutsu <jutsu>", "Activate an implemented jutsu.", min_args=1, max_args=3),
     "talk": CommandSpec("talk", lambda player, rooms, raw, args: handle_talk(player, raw), "talk <character>", "Talk to a character at your location.", min_args=1),
     "consider": CommandSpec("consider", lambda player, rooms, raw, args: handle_consider(player, raw), "consider <character>", "Inspect a character's combat details.", min_args=1),
     "attack": CommandSpec("attack", lambda player, rooms, raw, args: handle_attack(player, raw), "attack <character>", "Strike a hostile character at your location.", min_args=1),

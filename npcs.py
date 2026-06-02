@@ -4,7 +4,7 @@ import random
 
 from body import add_fatigue
 from items import inventory_items, resolve_item
-from techniques import record_skill_use
+from techniques import consume_substitution, record_skill_use
 
 
 BASE_HIT_CHANCE = 50
@@ -230,12 +230,13 @@ def attack_npc(cursor, username, x, y, npc_name):
         npc_hit_chance = hit_chance(npc["accuracy"], player["agility"])
         npc_hit = random.randint(1, 100) <= npc_hit_chance
         player_health = player["health"]
-        if npc_hit:
+        substitution = consume_substitution(cursor, username) if npc_hit else None
+        if npc_hit and not substitution:
             player_health = max(0, player_health - npc_damage)
         player_defeated = player_health == 0
         if player_defeated:
             player_health = player["max_health"]
-        if npc_hit:
+        if npc_hit and not substitution:
             cursor.execute(
                 "UPDATE players SET health=? WHERE id=?",
                 (player_health, player["id"]),
@@ -258,6 +259,7 @@ def attack_npc(cursor, username, x, y, npc_name):
         "npc_damage": npc_damage,
         "player_health": player_health,
         "player_defeated": player_defeated,
+        "substitution": substitution,
     }
 
 

@@ -14,9 +14,11 @@ from migrations import (
 from techniques import (
     list_jutsus,
     list_skills,
+    activate_jutsu,
     proficiency_label,
     record_jutsu_use,
     record_skill_use,
+    tick_jutsu_states,
 )
 from tests.test_accounts import TestProtocol
 
@@ -127,6 +129,56 @@ class TechniqueFrameworkTests(unittest.TestCase):
                 "Jutsus",
                 "  Substitution Technique: Novice (1%)",
             ],
+        )
+
+    def test_substitution_activation_spends_chakra_and_persists_cooldown(self):
+        result = activate_jutsu(self.player.cursor, "Student", "sub")
+
+        state = self.connection.execute(
+            "SELECT active_until, cooldown_until FROM character_jutsu_states"
+        ).fetchone()
+        chakra = self.connection.execute(
+            "SELECT chakra FROM players WHERE username='Student'"
+        ).fetchone()["chakra"]
+
+        self.assertEqual(result["status"], "activated")
+        self.assertEqual(chakra, 7)
+        self.assertIsNotNone(state["active_until"])
+        self.assertIsNotNone(state["cooldown_until"])
+        self.assertEqual(
+            activate_jutsu(self.player.cursor, "Student", "sub")["status"],
+            "active",
+        )
+
+    def test_substitution_activation_rejects_insufficient_chakra(self):
+        self.connection.execute("UPDATE players SET chakra=2 WHERE username='Student'")
+        self.connection.commit()
+
+        result = activate_jutsu(self.player.cursor, "Student", "sub")
+
+        self.assertEqual(result["status"], "insufficient_chakra")
+        self.assertEqual(
+            self.connection.execute("SELECT COUNT(*) FROM character_jutsu_states").fetchone()[0],
+            0,
+        )
+
+    def test_jutsu_tick_clears_expired_substitution_state(self):
+        activate_jutsu(self.player.cursor, "Student", "sub")
+        self.connection.execute(
+            """
+            UPDATE character_jutsu_states
+            SET active_until=datetime('now', '-1 second'),
+                cooldown_until=datetime('now', '-1 second')
+            """
+        )
+        self.connection.commit()
+
+        updated = tick_jutsu_states(self.connection)
+
+        self.assertEqual(updated, 1)
+        self.assertEqual(
+            self.connection.execute("SELECT COUNT(*) FROM character_jutsu_states").fetchone()[0],
+            0,
         )
 
     def test_usage_progress_caps_at_grandmaster(self):

@@ -20,7 +20,11 @@ def create_technique_tables(cursor):
             name TEXT NOT NULL UNIQUE COLLATE NOCASE,
             description TEXT NOT NULL,
             usage_gain INTEGER NOT NULL DEFAULT 1,
-            is_available INTEGER NOT NULL DEFAULT 1
+            is_available INTEGER NOT NULL DEFAULT 1,
+            chakra_cost INTEGER NOT NULL DEFAULT 0,
+            activation_seconds INTEGER NOT NULL DEFAULT 0,
+            cooldown_seconds INTEGER NOT NULL DEFAULT 0,
+            effect_key TEXT NOT NULL DEFAULT ''
         )
         """
     )
@@ -60,8 +64,22 @@ def create_technique_tables(cursor):
         )
         """
     )
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS character_jutsu_states (
+            player_id INTEGER NOT NULL,
+            jutsu_definition_id INTEGER NOT NULL,
+            active_until TEXT,
+            cooldown_until TEXT,
+            PRIMARY KEY (player_id, jutsu_definition_id),
+            FOREIGN KEY (player_id) REFERENCES players(id),
+            FOREIGN KEY (jutsu_definition_id) REFERENCES jutsu_definitions(id)
+        )
+        """
+    )
     ensure_usage_progress_columns(cursor)
     ensure_catalog_availability_columns(cursor)
+    ensure_jutsu_execution_columns(cursor)
 
 
 def ensure_usage_progress_columns(cursor):
@@ -104,6 +122,37 @@ def ensure_catalog_availability_columns(cursor):
             )
 
 
+def ensure_jutsu_execution_columns(cursor):
+    """Add authored execution metadata and persisted defensive state."""
+    columns = {
+        column[1]
+        for column in cursor.execute("PRAGMA table_info(jutsu_definitions)")
+    }
+    for column_name, definition in (
+        ("chakra_cost", "INTEGER NOT NULL DEFAULT 0"),
+        ("activation_seconds", "INTEGER NOT NULL DEFAULT 0"),
+        ("cooldown_seconds", "INTEGER NOT NULL DEFAULT 0"),
+        ("effect_key", "TEXT NOT NULL DEFAULT ''"),
+    ):
+        if column_name not in columns:
+            cursor.execute(
+                f"ALTER TABLE jutsu_definitions ADD COLUMN {column_name} {definition}"
+            )
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS character_jutsu_states (
+            player_id INTEGER NOT NULL,
+            jutsu_definition_id INTEGER NOT NULL,
+            active_until TEXT,
+            cooldown_until TEXT,
+            PRIMARY KEY (player_id, jutsu_definition_id),
+            FOREIGN KEY (player_id) REFERENCES players(id),
+            FOREIGN KEY (jutsu_definition_id) REFERENCES jutsu_definitions(id)
+        )
+        """
+    )
+
+
 def sync_skill_templates(cursor, templates):
     """Import authored ordinary-skill definitions."""
     for template in templates:
@@ -135,14 +184,19 @@ def sync_jutsu_templates(cursor, templates):
         cursor.execute(
             """
             INSERT INTO jutsu_definitions (
-                jutsu_key, name, description, usage_gain, is_available
+                jutsu_key, name, description, usage_gain, is_available,
+                chakra_cost, activation_seconds, cooldown_seconds, effect_key
             )
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(jutsu_key) DO UPDATE SET
                 name=excluded.name,
                 description=excluded.description,
                 usage_gain=excluded.usage_gain,
-                is_available=excluded.is_available
+                is_available=excluded.is_available,
+                chakra_cost=excluded.chakra_cost,
+                activation_seconds=excluded.activation_seconds,
+                cooldown_seconds=excluded.cooldown_seconds,
+                effect_key=excluded.effect_key
             """,
             (
                 template["key"],
@@ -150,6 +204,10 @@ def sync_jutsu_templates(cursor, templates):
                 template["description"],
                 int(template.get("usage_gain", 1)),
                 int(template.get("available", True)),
+                int(template.get("chakra_cost", 0)),
+                int(template.get("activation_seconds", 0)),
+                int(template.get("cooldown_seconds", 0)),
+                template.get("effect_key", ""),
             ),
         )
 
@@ -214,6 +272,146 @@ def record_jutsu_use(cursor, username, jutsu_key, commit=True):
         progress_table="character_jutsus",
         commit=commit,
     )
+
+
+def activate_jutsu(cursor, username, target):
+    """Spend chakra and persist one authored jutsu activation window."""
+    connection = cursor.connection
+    try:
+        cursor.execute("BEGIN IMMEDIATE")
+        player = cursor.execute(
+            "SELECT id, chakra FROM players WHERE username=?",
+            (username,),
+        ).fetchone()
+        if not player:
+            connection.rollback()
+            return {"status": "missing_player"}
+        definition = _resolve_named(
+            cursor.execute(
+                """
+                SELECT id, jutsu_key, name, chakra_cost, activation_seconds,
+                       cooldown_seconds, effect_key
+                FROM jutsu_definitions
+                WHERE is_available=1
+                ORDER BY id
+                """
+            ).fetchall(),
+            target,
+        )
+        if not definition:
+            connection.rollback()
+            return {"status": "missing"}
+        if not definition["effect_key"]:
+            connection.rollback()
+            return {"status": "unimplemented", "name": definition["name"]}
+        state = cursor.execute(
+            """
+            SELECT active_until, cooldown_until,
+                   active_until > CURRENT_TIMESTAMP AS active,
+                   cooldown_until > CURRENT_TIMESTAMP AS cooling_down
+            FROM character_jutsu_states
+            WHERE player_id=? AND jutsu_definition_id=?
+            """,
+            (player["id"], definition["id"]),
+        ).fetchone()
+        if state and state["active"]:
+            connection.rollback()
+            return {"status": "active", "name": definition["name"]}
+        if state and state["cooling_down"]:
+            connection.rollback()
+            return {"status": "cooldown", "name": definition["name"]}
+        if player["chakra"] < definition["chakra_cost"]:
+            connection.rollback()
+            return {"status": "insufficient_chakra", "name": definition["name"]}
+        cursor.execute(
+            "UPDATE players SET chakra=chakra-? WHERE id=?",
+            (definition["chakra_cost"], player["id"]),
+        )
+        cursor.execute(
+            """
+            INSERT INTO character_jutsu_states (
+                player_id, jutsu_definition_id, active_until, cooldown_until
+            )
+            VALUES (
+                ?, ?,
+                datetime('now', '+' || ? || ' seconds'),
+                datetime('now', '+' || ? || ' seconds')
+            )
+            ON CONFLICT(player_id, jutsu_definition_id) DO UPDATE SET
+                active_until=excluded.active_until,
+                cooldown_until=excluded.cooldown_until
+            """,
+            (
+                player["id"],
+                definition["id"],
+                definition["activation_seconds"],
+                definition["cooldown_seconds"],
+            ),
+        )
+        connection.commit()
+    except Exception:
+        connection.rollback()
+        raise
+    return {
+        "status": "activated",
+        "name": definition["name"],
+        "chakra": player["chakra"] - definition["chakra_cost"],
+        "active_seconds": definition["activation_seconds"],
+        "cooldown_seconds": definition["cooldown_seconds"],
+    }
+
+
+def consume_substitution(cursor, username):
+    """Consume an active Substitution defense and record successful use."""
+    state = cursor.execute(
+        """
+        SELECT states.player_id, states.jutsu_definition_id
+        FROM character_jutsu_states AS states
+        JOIN players ON players.id=states.player_id
+        JOIN jutsu_definitions ON jutsu_definitions.id=states.jutsu_definition_id
+        WHERE players.username=?
+          AND jutsu_definitions.effect_key='substitution'
+          AND states.active_until > CURRENT_TIMESTAMP
+        """,
+        (username,),
+    ).fetchone()
+    if not state:
+        return None
+    cursor.execute(
+        """
+        UPDATE character_jutsu_states
+        SET active_until=NULL
+        WHERE player_id=? AND jutsu_definition_id=?
+        """,
+        (state["player_id"], state["jutsu_definition_id"]),
+    )
+    return record_jutsu_use(
+        cursor,
+        username,
+        "substitution-technique",
+        commit=False,
+    )
+
+
+def tick_jutsu_states(connection):
+    """Clear expired activation windows while retaining active cooldowns."""
+    cursor = connection.execute(
+        """
+        UPDATE character_jutsu_states
+        SET active_until=NULL
+        WHERE active_until IS NOT NULL
+          AND active_until <= CURRENT_TIMESTAMP
+        """
+    )
+    connection.execute(
+        """
+        DELETE FROM character_jutsu_states
+        WHERE active_until IS NULL
+          AND cooldown_until <= CURRENT_TIMESTAMP
+        """
+    )
+    connection.commit()
+    return cursor.rowcount
 
 
 def proficiency_label(progress_percent):

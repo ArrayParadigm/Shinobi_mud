@@ -10,6 +10,7 @@ from content import sync_authored_content
 from migrations import apply_migrations, migration_006_combat_reliability
 from npcs import attack_npc, npcs_at, throw_item_at_npc, tick_npcs
 from items import inventory_items, room_items
+from techniques import activate_jutsu
 from tests.test_accounts import TestProtocol
 
 
@@ -162,6 +163,72 @@ class CombatSliceTests(unittest.TestCase):
             self.player.messages[-1],
             "Practice Construct strikes you for 2 damage. You are defeated, then recover here with 15 health.",
         )
+
+    def test_substitution_prevents_landing_npc_strike_and_records_jutsu_use(self):
+        activate_jutsu(self.player.cursor, "Fighter", "sub")
+        self.player.messages.clear()
+
+        with patch("npcs.random.randint", side_effect=[100, 1]):
+            general_commands.handle_attack(self.player, "Practice Construct")
+
+        player = self.connection.execute(
+            "SELECT health, chakra FROM players WHERE username='Fighter'"
+        ).fetchone()
+        progress = self.connection.execute(
+            """
+            SELECT progress_percent
+            FROM character_jutsus
+            JOIN players ON players.id=character_jutsus.player_id
+            JOIN jutsu_definitions ON jutsu_definitions.id=character_jutsus.jutsu_definition_id
+            WHERE players.username='Fighter'
+              AND jutsu_definitions.jutsu_key='substitution-technique'
+            """
+        ).fetchone()["progress_percent"]
+
+        self.assertEqual((player["health"], player["chakra"]), (10, 7))
+        self.assertEqual(progress, 1)
+        self.assertEqual(
+            activate_jutsu(self.player.cursor, "Fighter", "sub")["status"],
+            "cooldown",
+        )
+        self.assertEqual(
+            self.player.messages,
+            [
+                "You attack Practice Construct, but miss.",
+                "You evade Practice Construct through Substitution Technique. Jutsu: Novice (1%).",
+            ],
+        )
+
+    def test_substitution_progression_failure_rolls_back_combat_turn(self):
+        activate_jutsu(self.player.cursor, "Fighter", "sub")
+        self.connection.execute(
+            """
+            CREATE TRIGGER reject_substitution_progress
+            BEFORE INSERT ON character_jutsus
+            BEGIN
+                SELECT RAISE(ABORT, 'blocked substitution progress');
+            END
+            """
+        )
+        self.connection.commit()
+
+        with patch("npcs.random.randint", side_effect=[1, 1]):
+            with self.assertRaises(sqlite3.IntegrityError):
+                attack_npc(self.player.cursor, "Fighter", 500, 499, "Practice Construct")
+
+        npc_health = self.connection.execute(
+            """
+            SELECT health
+            FROM npc_instances
+            JOIN npc_templates ON npc_templates.id=npc_instances.npc_template_id
+            WHERE npc_templates.name='Practice Construct'
+            """
+        ).fetchone()["health"]
+        state = self.connection.execute(
+            "SELECT active_until FROM character_jutsu_states"
+        ).fetchone()["active_until"]
+        self.assertEqual(npc_health, 12)
+        self.assertIsNotNone(state)
 
     def test_damage_persists_across_disconnect_and_reconnect(self):
         self.player.track_player()

@@ -7,6 +7,7 @@ from npcs import create_npc_tables
 from techniques import (
     create_technique_tables,
     ensure_catalog_availability_columns,
+    ensure_jutsu_execution_columns,
     ensure_usage_progress_columns,
 )
 
@@ -182,6 +183,12 @@ def migration_012_throwable_items(cursor):
     create_item_tables(cursor)
 
 
+def migration_013_substitution_technique(cursor):
+    """Add authored jutsu execution metadata and persisted activation state."""
+    create_technique_tables(cursor)
+    ensure_jutsu_execution_columns(cursor)
+
+
 MIGRATIONS = (
     (1, migration_001_non_admin_default),
     (2, migration_002_persistent_items),
@@ -195,6 +202,7 @@ MIGRATIONS = (
     (10, migration_010_usage_based_techniques),
     (11, migration_011_technique_catalog_placeholders),
     (12, migration_012_throwable_items),
+    (13, migration_013_substitution_technique),
 )
 
 

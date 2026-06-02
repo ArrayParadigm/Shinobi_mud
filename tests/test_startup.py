@@ -79,6 +79,7 @@ class StartupSmokeTests(unittest.TestCase):
                     "jutsu_definitions",
                     "character_skills",
                     "character_jutsus",
+                    "character_jutsu_states",
                 }
                 <= tables
             )
