@@ -386,8 +386,7 @@
             "key": "throw",
             "name": "Throw",
             "description": "Training for thrown kunai, shuriken, and similar ranged weapons.",
-            "max_rank": 100,
-            "practice_cost": 1
+            "usage_gain": 1
         }
     ],
     "jutsu_templates": [
@@ -395,8 +394,7 @@
             "key": "substitution-technique",
             "name": "Substitution Technique",
             "description": "Defensive-response training for escaping a strike through substitution.",
-            "max_rank": 100,
-            "training_cost": 1
+            "usage_gain": 1
         }
     ],
     "anchor": {

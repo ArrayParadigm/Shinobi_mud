@@ -141,8 +141,8 @@ Eve's Haven is the first complete overlay example. Its anchor and room offsets l
 - `remove <item>`: unequip a carried item.
 - `eat <item>`: consume a carried food item to restore nutrition.
 - `drink <item>`: consume a carried beverage to restore hydration.
-- `prac [skill]`: list ordinary skills or spend practice points to raise one.
-- `train [jutsu]`: list jutsus or spend training points to raise one.
+- `prac [skill]`: list ordinary skills or inspect one skill's proficiency.
+- `train [jutsu]`: list jutsus or inspect one jutsu's proficiency.
 - `talk <character>`: speak with an NPC at your grid location.
 - `consider <character>`: inspect a visible character's combat details.
 - `attack <character>`: resolve one melee turn against a hostile NPC at your grid location.
@@ -181,7 +181,7 @@ The combat loop is command-driven and turn-based. `attack <character>` resolves 
 
 Characters also have abstract body resources: nutrition, hydration, and fatigue. Ordinary movement and hostile combat increase fatigue. `rest` reduces fatigue, consumes a small amount of nutrition and hydration, restores stamina, and restores chakra based on wisdom and current body condition. Rest is blocked at zero nutrition or hydration. `eat` and `drink` consume finite authored supplies to restore body resources.
 
-Skills and jutsus have separate authored definitions and persistent character progress. New characters begin with 5 practice points and 5 training points. `prac` and `train` list available records; providing a target spends one point to raise that record by one rank, up to its authored cap. The starter records are `Throw` and `Substitution Technique`. They establish progression storage only: ranged attacks, chakra costs, cooldowns, and defensive effects arrive in the next technique slice.
+Skills and jutsus have separate authored definitions and persistent `0-100%` proficiency. `prac` and `train` list available records or inspect one in detail. Valid gameplay use raises proficiency through an authored usage gain; the visible tiers are `Novice`, `Adept`, `Skilled`, `Master`, and `Grandmaster`. The starter records are `Throw` and `Substitution Technique`. They establish progression storage only: ranged attacks, chakra costs, cooldowns, and defensive effects arrive in the next technique slice.
 
 ### Early Linux Testing
 

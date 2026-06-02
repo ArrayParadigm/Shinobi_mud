@@ -1,22 +1,23 @@
 # Changelog
 
-## 2026-06-02 - Skill and Jutsu Framework
+## 2026-06-02 - Usage-Based Skill and Jutsu Framework
 
 ### Added
 
-- Added separate authored skill and jutsu definitions with persistent character progress through migration 9.
-- Added `prac [skill]` and `train [jutsu]` for listing and advancing ordinary skills and jutsus separately.
+- Added separate authored skill and jutsu definitions with persistent per-character proficiency through migrations 9 and 10.
+- Added `prac [skill]` and `train [jutsu]` for listing ordinary skills and jutsus or inspecting proficiency.
 - Seeded `Throw` and `Substitution Technique` as the first framework records.
-- Added persisted practice-point and training-point pools for new and migrated characters.
+- Added reusable valid-use progression helpers with authored gains, a `100%` cap, and `Novice` through `Grandmaster` display tiers.
 
 ### Changed
 
+- Replaced point-spend advancement with usage-based proficiency.
 - Deferred ranged attacks, chakra costs, cooldowns, cast timing, and Substitution combat effects to the first technique vertical slice.
 
 ### Verification
 
-- Added authored-sync, advancement, cap, invalid-target, migration, and reconnect-persistence coverage.
-- Passed `python -m unittest discover -s tests -v` with 117 tests.
+- Added authored-sync, valid-use advancement, cap, invalid-target, tier-boundary, migration, and reconnect-persistence coverage.
+- Passed `python -m unittest discover -s tests -v` with 118 tests.
 - Passed Python syntax compilation and `git diff --check`.
 
 ## 2026-06-02 - Body Resource Integration

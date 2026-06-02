@@ -4,7 +4,7 @@ from content import create_authored_content_tables
 from body import ensure_body_columns
 from items import create_item_tables, ensure_item_seed_tracking
 from npcs import create_npc_tables
-from techniques import create_technique_tables, ensure_technique_player_columns
+from techniques import create_technique_tables, ensure_usage_progress_columns
 
 
 PLAYER_COLUMNS = (
@@ -33,8 +33,6 @@ PLAYER_COLUMNS = (
     "hydration",
     "fatigue",
     "recovery_state",
-    "practice_points",
-    "training_points",
 )
 
 
@@ -67,8 +65,6 @@ def create_players_table(cursor, table_name="players"):
             hydration INTEGER NOT NULL DEFAULT 100,
             fatigue INTEGER NOT NULL DEFAULT 0,
             recovery_state TEXT NOT NULL DEFAULT 'ready'
-            ,practice_points INTEGER NOT NULL DEFAULT 5
-            ,training_points INTEGER NOT NULL DEFAULT 5
         )
         """
     )
@@ -163,7 +159,12 @@ def migration_008_consumable_items(cursor):
 def migration_009_skill_and_jutsu_framework(cursor):
     """Add authored technique definitions and character progression storage."""
     create_technique_tables(cursor)
-    ensure_technique_player_columns(cursor)
+
+
+def migration_010_usage_based_techniques(cursor):
+    """Replace point-spend advancement with percentage progress from valid use."""
+    create_technique_tables(cursor)
+    ensure_usage_progress_columns(cursor)
 
 
 MIGRATIONS = (
@@ -176,6 +177,7 @@ MIGRATIONS = (
     (7, migration_007_body_foundation),
     (8, migration_008_consumable_items),
     (9, migration_009_skill_and_jutsu_framework),
+    (10, migration_010_usage_based_techniques),
 )
 
 

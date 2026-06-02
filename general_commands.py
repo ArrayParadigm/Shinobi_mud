@@ -21,7 +21,7 @@ from locations import (
     online_players,
 )
 from npcs import attack_npc, consider_npc, talk_to_npc
-from techniques import list_jutsus, list_skills, practice_skill, train_jutsu
+from techniques import jutsu_detail, list_jutsus, list_skills, proficiency_label, skill_detail
 from shinobi_mud import (
     COMMAND_REGISTRY,
     UTILITIES,
@@ -368,54 +368,43 @@ def handle_consume(player, item_name, expected_type, resource_name, verb):
 
 
 def handle_progression(player, target, kind):
-    """List or deliberately raise one ordinary skill or jutsu."""
+    """List or inspect usage-based ordinary skill or jutsu progress."""
     try:
         if kind == "skill":
             rows = list_skills(player.cursor, player.username)
-            advance = practice_skill
+            detail = skill_detail
             heading = "Skills"
-            points_label = "Practice points"
-            verb = "practice"
         else:
             rows = list_jutsus(player.cursor, player.username)
-            advance = train_jutsu
+            detail = jutsu_detail
             heading = "Jutsus"
-            points_label = "Training points"
-            verb = "train"
 
         if not target.strip():
             player.sendLine(heading.encode("utf-8"))
             if not rows:
                 player.sendLine(b"  None")
                 return
-            player.sendLine(f"{points_label}: {rows[0]['points']}".encode("utf-8"))
             for row in rows:
                 player.sendLine(
-                    f"  {row['name']}: {row['rank']}/{row['max_rank']}".encode("utf-8")
+                    (
+                        f"  {row['name']}: {proficiency_label(row['progress_percent'])} "
+                        f"({row['progress_percent']}%)"
+                    ).encode("utf-8")
                 )
             return
 
-        result = advance(player.cursor, player.username, target)
-        if result["status"] == "missing":
+        result = detail(player.cursor, player.username, target)
+        if not result:
             player.sendLine(f"You do not know that {kind}.".encode("utf-8"))
-        elif result["status"] == "missing_player":
-            player.sendLine(b"Your character is unavailable right now.")
-        elif result["status"] == "capped":
-            player.sendLine(
-                f'{result["name"]} is already at its cap of {result["rank"]}.'.encode("utf-8")
-            )
-        elif result["status"] == "insufficient":
-            player.sendLine(f"You do not have enough points to {verb} {result['name']}.".encode("utf-8"))
         else:
+            player.sendLine(result["name"].encode("utf-8"))
+            player.sendLine(result["description"].encode("utf-8"))
             player.sendLine(
-                (
-                    f'You {verb} {result["name"]}. '
-                    f'Rank: {result["rank"]}. {points_label}: {result["points"]}.'
-                ).encode("utf-8")
+                f'Proficiency: {result["proficiency"]} ({result["progress_percent"]}%)'.encode("utf-8")
             )
     except Exception as exc:
-        logging.error("Unable to update %s progress for %s: %s", kind, player.username, exc, exc_info=True)
-        player.sendLine(f"Unable to {kind == 'skill' and 'practice' or 'train'} right now.".encode("utf-8"))
+        logging.error("Unable to display %s progress for %s: %s", kind, player.username, exc, exc_info=True)
+        player.sendLine(b"Unable to display your technique progress right now.")
 
 
 def handle_talk(player, npc_name):
@@ -613,8 +602,8 @@ COMMANDS = {
     "remove": CommandSpec("remove", lambda player, rooms, raw, args: handle_remove(player, raw), "remove <item>", "Unequip a carried item.", min_args=1),
     "eat": CommandSpec("eat", lambda player, rooms, raw, args: handle_consume(player, raw, "food", "nutrition", "eat"), "eat <item>", "Eat a carried food item to restore nutrition.", min_args=1),
     "drink": CommandSpec("drink", lambda player, rooms, raw, args: handle_consume(player, raw, "drink", "hydration", "drink"), "drink <item>", "Drink a carried beverage to restore hydration.", min_args=1),
-    "prac": CommandSpec("prac", lambda player, rooms, raw, args: handle_progression(player, raw, "skill"), "prac [skill]", "List skills or spend practice points to raise one.", max_args=2),
-    "train": CommandSpec("train", lambda player, rooms, raw, args: handle_progression(player, raw, "jutsu"), "train [jutsu]", "List jutsus or spend training points to raise one.", max_args=3),
+    "prac": CommandSpec("prac", lambda player, rooms, raw, args: handle_progression(player, raw, "skill"), "prac [skill]", "List skills or inspect usage-based proficiency.", max_args=2),
+    "train": CommandSpec("train", lambda player, rooms, raw, args: handle_progression(player, raw, "jutsu"), "train [jutsu]", "List jutsus or inspect usage-based proficiency.", max_args=3),
     "talk": CommandSpec("talk", lambda player, rooms, raw, args: handle_talk(player, raw), "talk <character>", "Talk to a character at your location.", min_args=1),
     "consider": CommandSpec("consider", lambda player, rooms, raw, args: handle_consider(player, raw), "consider <character>", "Inspect a character's combat details.", min_args=1),
     "attack": CommandSpec("attack", lambda player, rooms, raw, args: handle_attack(player, raw), "attack <character>", "Strike a hostile character at your location.", min_args=1),

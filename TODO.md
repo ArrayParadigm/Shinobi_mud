@@ -16,7 +16,7 @@ The foundation checkpoint in `FOUNDATION_CHECKLIST.md` is complete.
 
 ### Current Checkpoint
 
-The private-alpha gameplay loop is covered by 117 automated tests. Runtime database ownership is explicit: the server keeps a maintenance connection for startup and ticks, while each connected player session owns and closes its own connection. Skills and jutsus now have separate authored definitions, persistent character progress, and deliberate advancement commands. The next recommended step is Sprint 16: First Technique Vertical Slice.
+The private-alpha gameplay loop is covered by 118 automated tests. Runtime database ownership is explicit: the server keeps a maintenance connection for startup and ticks, while each connected player session owns and closes its own connection. Skills and jutsus now have separate authored definitions, persistent usage-based proficiency, and inspection commands. The next recommended step is Sprint 16: First Technique Vertical Slice.
 
 ---
 
@@ -249,28 +249,29 @@ Players can spend and restore body resources deliberately, and the consequences 
 
 ## Sprint 15: Skill and Jutsu Framework
 
-Establish persistent progression scaffolding before implementing technique effects. Keep this sprint focused on authored definitions, character progress, and training commands.
+Establish persistent progression scaffolding before implementing technique effects. Keep this sprint focused on authored definitions, character progress, and inspection commands.
 
 - [x] Define authored skill data and persistent character skill progress.
-- [x] Add `prac [skill]` for listing known skills or deliberately raising one skill.
+- [x] Add `prac [skill]` for listing ordinary skills or inspecting one skill's proficiency.
 - [x] Define authored jutsu data and persistent character jutsu progress separately from ordinary skills.
-- [x] Add `train [jutsu]` for listing known jutsus or deliberately raising one jutsu.
-- [x] Decide the initial advancement costs, caps, and source of practice or training opportunities.
+- [x] Add `train [jutsu]` for listing jutsus or inspecting one jutsu's proficiency.
+- [x] Add usage-based advancement with authored gains and a `100%` proficiency cap.
+- [x] Display proficiency tiers: `Novice`, `Adept`, `Skilled`, `Master`, and `Grandmaster`.
 - [x] Seed `Throw` as the first ordinary skill for future kunai, shuriken, and similar ranged weapons.
 - [x] Seed `Substitution Technique` as the first jutsu for the later defensive-response slice.
 - [x] Display skill and jutsu progress clearly enough to test persistence through reconnects.
-- [x] Add a versioned migration and regression tests for authored definitions, advancement, caps, invalid targets, and reconnect persistence.
+- [x] Add versioned migrations and regression tests for authored definitions, valid-use advancement, caps, invalid targets, reconnect persistence, tier boundaries, and migration compatibility.
 - [x] Keep `Throw` and `Substitution Technique` as framework records in this sprint; do not add ranged attacks, chakra costs, cooldowns, cast timing, or combat effects yet.
 
-### Advancement Defaults
+### Usage Progression Defaults
 
-- New and migrated characters receive 5 practice points and 5 training points.
-- `Throw` and `Substitution Technique` each cost 1 point per rank and cap at 100.
-- Practice-point and training-point replenishment is deferred until progression rewards have a deliberate gameplay source.
+- Valid use adds the authored gain; `Throw` and `Substitution Technique` currently default to `+1%`.
+- Proficiency tiers are `Novice` (`0-24%`), `Adept` (`25-49%`), `Skilled` (`50-74%`), `Master` (`75-99%`), and `Grandmaster` (`100%`).
+- `prac` and `train` are inspection commands. Sprint 16 gameplay commands call the progression helpers after valid use.
 
 ### Done When
 
-Players can inspect and advance one persisted skill and one persisted jutsu through separate commands, and new authored techniques can be added without changing the character schema.
+Players can inspect one persisted skill and one persisted jutsu through separate commands, valid use records proficiency progress, and new authored techniques can be added without changing the character schema.
 
 ---
 
@@ -280,8 +281,10 @@ Turn the framework records into one narrow combat extension after progression st
 
 - [ ] Add a deliberate ranged-targeting rule for `Throw`.
 - [ ] Allow an appropriate carried kunai, shuriken, or similar authored item to use the `Throw` skill.
+- [ ] Record successful `Throw` use through the skill-progression helper.
 - [ ] Define authored jutsu execution data for chakra cost, range, cast time, cooldown, and effect.
 - [ ] Implement `Substitution Technique` as the first defensive response.
+- [ ] Record successful `Substitution Technique` activation through the jutsu-progression helper.
 - [ ] Consume chakra and restore it through the existing deliberate recovery loop.
 - [ ] Integrate ability timing with the world scheduler.
 - [ ] Add tests for ranged targeting, item handling, casting, cooldowns, insufficient chakra, and defensive timing.
