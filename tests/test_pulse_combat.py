@@ -181,6 +181,18 @@ class PulseCombatTests(unittest.TestCase):
 
         self.assertEqual((event["player_damage"], event["npc_health"]), (7, 5))
 
+    def test_equipped_weapon_bonus_stacks_with_s2_stance_damage(self):
+        general_commands.handle_get(self.player, "kun")
+        general_commands.handle_wield(self.player, "kun")
+        set_stance(self.player.cursor, "Fighter", "s2")
+        engage_npc(self.player.cursor, "Fighter", 500, 499, "practice")
+        self.make_due()
+
+        with patch("combat.random.randint", side_effect=[1, 100]):
+            event = tick_combat(self.connection)[0]
+
+        self.assertEqual((event["player_damage"], event["npc_health"]), (8, 4))
+
     def test_s4_evasion_stance_turns_near_hit_into_miss(self):
         set_stance(self.player.cursor, "Fighter", "s4")
         engage_npc(self.player.cursor, "Fighter", 500, 499, "practice")

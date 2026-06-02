@@ -16,9 +16,9 @@
 
 ### Verification
 
-- Added authored-profile, S1 accuracy, S2 damage, S4 evasion, S5 reduction, inspection-output, and migration cleanup regression coverage.
+- Added authored-profile, S1 accuracy, S2 damage, S4 evasion, S5 reduction, inspection-output, migration cleanup, and equipped-weapon stacking regression coverage.
 - Upgraded the preserved local database through migration `15` while retaining its `7` player rows.
-- Passed `python -m unittest discover -s tests -v` with `166` tests.
+- Passed `python -m unittest discover -s tests -v` with `167` tests.
 - Passed Python syntax compilation, JSON validation, and `git diff --check`.
 
 ## 2026-06-02 15:36 -0500 - Fluid Pulse Combat Foundation
