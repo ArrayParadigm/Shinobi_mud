@@ -16,7 +16,7 @@ The foundation checkpoint in `FOUNDATION_CHECKLIST.md` is complete.
 
 ### Current Checkpoint
 
-The private-alpha gameplay loop is covered by 112 automated tests. Runtime database ownership is explicit: the server keeps a maintenance connection for startup and ticks, while each connected player session owns and closes its own connection. Body resources now form a complete deliberate recovery loop. The next recommended step is Sprint 15: First Chakra Ability.
+The private-alpha gameplay loop is covered by 117 automated tests. Runtime database ownership is explicit: the server keeps a maintenance connection for startup and ticks, while each connected player session owns and closes its own connection. Skills and jutsus now have separate authored definitions, persistent character progress, and deliberate advancement commands. The next recommended step is Sprint 16: First Technique Vertical Slice.
 
 ---
 
@@ -47,7 +47,7 @@ Improve operational confidence before adding systems with larger state surfaces.
 
 ### Deferred Until Needed
 
-- [ ] Add a repeatable two-client soak test for login, movement, chat, disconnects, and reconnects. Scheduled for Sprint 17.
+- [ ] Add a repeatable two-client soak test for login, movement, chat, disconnects, and reconnects. Scheduled for Sprint 18.
 - [ ] Add encrypted transport before any open-internet password testing.
 
 ### Private Alpha Status
@@ -134,7 +134,7 @@ Turn the persistent-item proof of concept into a usable interaction layer before
 - [x] Improve `inventory` formatting so carried items and equipped items are easy to scan.
 - [x] Add equipment storage and basic `wield <item>` and `remove <item>` commands.
 - [x] Define the Practice Kunai as an authored weapon/tool that can be examined and wielded.
-- [x] Defer thrown-kunai attacks until the combat reliability sprint has a deliberate ranged-targeting rule.
+- [x] Defer thrown-kunai attacks until the skill framework and a deliberate ranged-targeting rule are in place.
 - [x] Clean up room presentation: group map, room header, description, exits, items, NPCs, and players into readable sections.
 - [x] Decide whether normal `look` and movement should use a compact local map while `survey` provides the larger terrain view.
 - [x] Avoid noisy empty-state lines such as `You are alone in this room.` when the rest of the room output already reads cleanly.
@@ -210,7 +210,7 @@ Server startup, player sessions, and scheduled world ticks have clear database o
 
 ### Why This Comes First
 
-Sprint 15 introduces cooldowns, cast timing, and scheduler integration. Establishing runtime-state ownership first keeps those timed writes from depending on the current shared-cursor and import-order behavior.
+Sprint 16 introduces cooldowns, cast timing, and scheduler integration after the Sprint 15 progression framework. Establishing runtime-state ownership first keeps those timed writes from depending on the former shared-cursor and import-order behavior.
 
 ---
 
@@ -247,30 +247,59 @@ Players can spend and restore body resources deliberately, and the consequences 
 
 ---
 
-## Sprint 15 - First Chakra Ability
+## Sprint 15: Skill and Jutsu Framework
 
-Add one complete ninja ability after the runtime-state cleanup and the existing combat and character foundations are stable.
+Establish persistent progression scaffolding before implementing technique effects. Keep this sprint focused on authored definitions, character progress, and training commands.
 
-- [ ] Define authored ability data for chakra cost, range, cast time, cooldown, and effect.
-- [ ] Add one offensive jutsu and one defensive response.
-- [ ] Consume chakra and restore it through a deliberate recovery rule.
-- [ ] Integrate ability timing with the world scheduler.
-- [ ] Add tests for casting, cooldowns, insufficient chakra, and defensive timing.
+- [x] Define authored skill data and persistent character skill progress.
+- [x] Add `prac [skill]` for listing known skills or deliberately raising one skill.
+- [x] Define authored jutsu data and persistent character jutsu progress separately from ordinary skills.
+- [x] Add `train [jutsu]` for listing known jutsus or deliberately raising one jutsu.
+- [x] Decide the initial advancement costs, caps, and source of practice or training opportunities.
+- [x] Seed `Throw` as the first ordinary skill for future kunai, shuriken, and similar ranged weapons.
+- [x] Seed `Substitution Technique` as the first jutsu for the later defensive-response slice.
+- [x] Display skill and jutsu progress clearly enough to test persistence through reconnects.
+- [x] Add a versioned migration and regression tests for authored definitions, advancement, caps, invalid targets, and reconnect persistence.
+- [x] Keep `Throw` and `Substitution Technique` as framework records in this sprint; do not add ranged attacks, chakra costs, cooldowns, cast timing, or combat effects yet.
+
+### Advancement Defaults
+
+- New and migrated characters receive 5 practice points and 5 training points.
+- `Throw` and `Substitution Technique` each cost 1 point per rank and cap at 100.
+- Practice-point and training-point replenishment is deferred until progression rewards have a deliberate gameplay source.
 
 ### Done When
 
-Players can use and counter one chakra-driven ability without bypassing the combat rules established in Sprint 13.
+Players can inspect and advance one persisted skill and one persisted jutsu through separate commands, and new authored techniques can be added without changing the character schema.
 
 ---
 
-## Sprint 16: Builder and Training Playground
+## Sprint 16: First Technique Vertical Slice
+
+Turn the framework records into one narrow combat extension after progression storage is stable.
+
+- [ ] Add a deliberate ranged-targeting rule for `Throw`.
+- [ ] Allow an appropriate carried kunai, shuriken, or similar authored item to use the `Throw` skill.
+- [ ] Define authored jutsu execution data for chakra cost, range, cast time, cooldown, and effect.
+- [ ] Implement `Substitution Technique` as the first defensive response.
+- [ ] Consume chakra and restore it through the existing deliberate recovery loop.
+- [ ] Integrate ability timing with the world scheduler.
+- [ ] Add tests for ranged targeting, item handling, casting, cooldowns, insufficient chakra, and defensive timing.
+
+### Done When
+
+Players can throw an authored ranged weapon and use Substitution Technique without bypassing the combat rules established in Sprint 13.
+
+---
+
+## Sprint 17: Builder and Training Playground
 
 Make it practical to expand content without editing Python.
 
 - [ ] Replace placeholder `dig` with coordinate-aware overlay editing.
 - [ ] Add room-description editing for authored zones.
 - [ ] Add a small admin workflow for creating or updating authored NPC templates and spawns.
-- [ ] Build a compact training area that exercises melee, recovery, and the first chakra ability.
+- [ ] Build a compact training area that exercises melee, recovery, Throw, and Substitution Technique.
 - [ ] Add reload and persistence tests for edited content.
 
 ### Done When
@@ -279,7 +308,7 @@ An admin can build a small training encounter through authored content tools and
 
 ---
 
-## Sprint 17: Private Alpha Exercise
+## Sprint 18: Private Alpha Exercise
 
 Exercise the playable loop before widening the feature surface.
 
@@ -309,8 +338,8 @@ The current game loop survives a real private test session and produces actionab
 - [x] Add `zoneinfo [vnum]`.
 - [x] Add `placezone <zone_file> <x> <y>`.
 - [x] Add `reloadcontent` for applying authored JSON edits to live templates and missing spawns.
-- [ ] Replace placeholder `dig` with coordinate-aware overlay editing. Scheduled for Sprint 16.
-- [ ] Add room-description editing for authored zones. Scheduled for Sprint 16.
+- [ ] Replace placeholder `dig` with coordinate-aware overlay editing. Scheduled for Sprint 17.
+- [ ] Add room-description editing for authored zones. Scheduled for Sprint 17.
 - [ ] Create a robust live-management admin surface after command-line builder tools mature.
 
 ---

@@ -5,6 +5,7 @@ import os
 
 from items import create_item_tables
 from npcs import create_npc_tables
+from techniques import create_technique_tables, sync_jutsu_templates, sync_skill_templates
 
 
 def create_authored_content_tables(cursor):
@@ -26,6 +27,7 @@ def sync_authored_content(connection, zones_directory, overlays):
     create_item_tables(cursor)
     create_npc_tables(cursor)
     create_authored_content_tables(cursor)
+    create_technique_tables(cursor)
     coordinates_by_vnum = {
         overlay["vnum"]: coordinates
         for coordinates, overlay in overlays.items()
@@ -40,6 +42,8 @@ def sync_authored_content(connection, zones_directory, overlays):
         content_key = zone_data.get("content_key", os.path.splitext(zone_file)[0])
         _sync_item_templates(cursor, zone_data.get("item_templates", []))
         _sync_npc_templates(cursor, zone_data.get("npc_templates", []))
+        sync_skill_templates(cursor, zone_data.get("skill_templates", []))
+        sync_jutsu_templates(cursor, zone_data.get("jutsu_templates", []))
         created["item_spawns"] += _sync_item_spawns(
             cursor,
             content_key,

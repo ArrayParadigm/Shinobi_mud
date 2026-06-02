@@ -871,6 +871,10 @@ def validate_server_state(config):
         "authored_content_seeds",
         "npc_templates",
         "npc_instances",
+        "skill_definitions",
+        "jutsu_definitions",
+        "character_skills",
+        "character_jutsus",
     }
     tables = {
         row[0]
