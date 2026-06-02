@@ -2,6 +2,7 @@ import json
 import logging
 import presentation
 from body import body_state, body_warnings, chakra_recovery_amount, rest_character
+from combat import combat_status, engage_npc, list_stances, set_stance
 from command_system import CommandSpec
 from help_content import (
     DEFAULT_CATEGORY_FILE,
@@ -28,7 +29,7 @@ from locations import (
     move_player,
     online_players,
 )
-from npcs import attack_npc, consider_npc, talk_to_npc, throw_item_at_npc
+from npcs import consider_npc, talk_to_npc, throw_item_at_npc
 from techniques import activate_jutsu, jutsu_detail, list_jutsus, list_skills, proficiency_label, skill_detail
 from shinobi_mud import (
     ACTIVE_CONFIG,
@@ -99,6 +100,15 @@ def handle_movement(player, direction):
             player.sendLine(map_view.encode("utf-8"))
             player.list_players_in_room()
             player.list_nearby_players()
+            status = combat_status(player.cursor, player.username)
+            if status and status["npc_name"]:
+                range_state = "in range" if status["auto_in_range"] else "out of range"
+                player.sendLine(
+                    (
+                        f'Combat range: {status["distance"]} step(s) from '
+                        f'{status["npc_name"]}; basic auto attack {range_state}.'
+                    ).encode("utf-8")
+                )
         else:
             player.sendLine(b"You can't go that way.")
     except LocationPersistenceError:
@@ -465,9 +475,9 @@ def _broadcast_combat(player, message):
 
 
 def handle_attack(player, npc_name):
-    """Resolve one turn of melee combat against an NPC."""
+    """Enter or retarget slow pulse combat against a hostile NPC."""
     try:
-        result = attack_npc(
+        result = engage_npc(
             player.cursor,
             player.username,
             player.x,
@@ -483,94 +493,81 @@ def handle_attack(player, npc_name):
         if result["status"] == "not_attackable":
             player.sendLine(f'{result["npc_name"]} is not a combat target.'.encode("utf-8"))
             return
-        if result["status"] == "npc_defeated":
-            message = (
-                f'You strike {result["npc_name"]} for {result["player_damage"]} '
-                "damage and defeat it."
-            )
-            player.sendLine(message.encode("utf-8"))
-            _broadcast_combat(
-                player,
-                (
-                    f'{player.username} strikes {result["npc_name"]} for '
-                    f'{result["player_damage"]} damage and defeats it.'
-                ),
-            )
-            return
-
-        if result["player_hit"]:
-            player.sendLine(
-                (
-                f'You strike {result["npc_name"]} for {result["player_damage"]} damage. '
-                f'{result["npc_name"]} has {result["npc_health"]} health remaining.'
-                ).encode("utf-8")
-            )
-            _broadcast_combat(
-                player,
-                (
-                    f'{player.username} strikes {result["npc_name"]} for '
-                    f'{result["player_damage"]} damage. '
-                    f'{result["npc_name"]} has {result["npc_health"]} health remaining.'
-                ),
-            )
-        else:
-            player.sendLine(f'You attack {result["npc_name"]}, but miss.'.encode("utf-8"))
-            _broadcast_combat(
-                player,
-                f'{player.username} attacks {result["npc_name"]}, but misses.',
-            )
-
-        if result["substitution"]:
-            player.sendLine(
-                (
-                    f'You evade {result["npc_name"]} through Substitution Technique. '
-                    f'Jutsu: {result["substitution"]["proficiency"]} '
-                    f'({result["substitution"]["progress_percent"]}%).'
-                ).encode("utf-8")
-            )
-            _broadcast_combat(
-                player,
-                f'{player.username} evades {result["npc_name"]} through Substitution Technique.',
-            )
-        elif not result["npc_hit"]:
-            player.sendLine(f'{result["npc_name"]} attacks you, but misses.'.encode("utf-8"))
-            _broadcast_combat(
-                player,
-                f'{result["npc_name"]} attacks {player.username}, but misses.',
-            )
-        elif result["player_defeated"]:
-            player.sendLine(
-                (
-                    f'{result["npc_name"]} strikes you for {result["npc_damage"]} damage. '
-                    f'You are defeated, then recover here with {result["player_health"]} health.'
-                ).encode("utf-8")
-            )
-            _broadcast_combat(
-                player,
-                (
-                    f'{result["npc_name"]} strikes {player.username} for '
-                    f'{result["npc_damage"]} damage. '
-                    f'{player.username} is defeated and recovers here.'
-                ),
-            )
-        else:
-            player.sendLine(
-                (
-                    f'{result["npc_name"]} strikes you for {result["npc_damage"]} damage. '
-                    f'You have {result["player_health"]} health remaining.'
-                ).encode("utf-8")
-            )
-            _broadcast_combat(
-                player,
-                (
-                    f'{result["npc_name"]} strikes {player.username} for '
-                    f'{result["npc_damage"]} damage. '
-                    f'{player.username} has {result["player_health"]} health remaining.'
-                ),
-            )
+        player.sendLine(
+            (
+                f'You engage {result["npc_name"]}. Basic auto attacks pulse every '
+                f'{result["pulse_seconds"]} seconds while you are in range.'
+            ).encode("utf-8")
+        )
     except Exception as exc:
         logging.error("Unable to attack NPC for %s: %s", player.username, exc, exc_info=True)
         player.sendLine(b"Unable to attack that character right now.")
+
+
+def handle_combat(player):
+    """Display the current stance, engagement target, and auto-attack range."""
+    try:
+        status = combat_status(player.cursor, player.username)
+        if not status:
+            player.sendLine(b"Your character is unavailable right now.")
+            return
+        player.sendLine(b"Combat")
+        player.sendLine(
+            (
+                f'Stance: {status["stance_name"]}  Pulse: {status["pulse_seconds"]}s  '
+                f'Accuracy: {status["accuracy_bonus"]:+d}  '
+                f'Evasion: {status["evasion_bonus"]:+d}  Damage: {status["damage_bonus"]:+d}'
+            ).encode("utf-8")
+        )
+        if not status["npc_name"]:
+            player.sendLine(b"Engagement: none")
+            return
+        range_state = "in range" if status["auto_in_range"] else "out of range"
+        player.sendLine(
+            (
+                f'Engagement: {status["npc_name"]} '
+                f'({status["npc_health"]}/{status["npc_max_health"]} health), '
+                f'{status["distance"]} step(s) away; basic auto attack {range_state}.'
+            ).encode("utf-8")
+        )
+        if status["action_key"]:
+            player.sendLine(f'Queued modifier: {status["action_key"]}'.encode("utf-8"))
+    except Exception as exc:
+        logging.error("Unable to display combat state for %s: %s", player.username, exc, exc_info=True)
+        player.sendLine(b"Unable to display combat state right now.")
+
+
+def handle_stance(player, target):
+    """List authored stances or switch the character's persistent stance."""
+    try:
+        if not target.strip():
+            player.sendLine(b"Stances")
+            player.sendLine(b"  Balanced: +0 accuracy, +0 evasion, +0 damage, 6s pulse")
+            for stance in list_stances(player.cursor):
+                player.sendLine(
+                    (
+                        f'  {stance["name"]}: {stance["accuracy_bonus"]:+d} accuracy, '
+                        f'{stance["evasion_bonus"]:+d} evasion, '
+                        f'{stance["damage_bonus"]:+d} damage, {stance["pulse_seconds"]}s pulse'
+                    ).encode("utf-8")
+                )
+            return
+        result = set_stance(player.cursor, player.username, target)
+        if result["status"] == "missing":
+            player.sendLine(b"You do not know that stance.")
+        elif result["status"] == "missing_player":
+            player.sendLine(b"Your character is unavailable right now.")
+        else:
+            player.sendLine(
+                (
+                    f'You settle into {result["name"]}. '
+                    f'Accuracy {result["accuracy_bonus"]:+d}, evasion {result["evasion_bonus"]:+d}, '
+                    f'damage {result["damage_bonus"]:+d}, pulse {result["pulse_seconds"]}s.'
+                ).encode("utf-8")
+            )
+    except Exception as exc:
+        logging.error("Unable to set stance for %s: %s", player.username, exc, exc_info=True)
+        player.sendLine(b"Unable to change stance right now.")
 
 
 def handle_usejutsu(player, target):
@@ -757,7 +754,9 @@ COMMANDS = {
     "usejutsu": CommandSpec("usejutsu", lambda player, rooms, raw, args: handle_usejutsu(player, raw), "usejutsu <jutsu>", "Activate an implemented jutsu.", min_args=1, max_args=3),
     "talk": CommandSpec("talk", lambda player, rooms, raw, args: handle_talk(player, raw), "talk <character>", "Talk to a character at your location.", min_args=1),
     "consider": CommandSpec("consider", lambda player, rooms, raw, args: handle_consider(player, raw), "consider <character>", "Inspect a character's combat details.", min_args=1),
-    "attack": CommandSpec("attack", lambda player, rooms, raw, args: handle_attack(player, raw), "attack <character>", "Strike a hostile character at your location.", min_args=1),
+    "attack": CommandSpec("attack", lambda player, rooms, raw, args: handle_attack(player, raw), "attack <character>", "Engage a hostile character for pulse combat.", min_args=1),
+    "combat": CommandSpec("combat", lambda player, rooms, raw, args: handle_combat(player), "combat", "Display your active combat engagement and stance.", max_args=0),
+    "stance": CommandSpec("stance", lambda player, rooms, raw, args: handle_stance(player, raw), "stance [balanced|stance]", "List or change your combat stance.", max_args=2),
     "throw": CommandSpec("throw", lambda player, rooms, raw, args: handle_throw(player, raw), "throw <item> at <character>", "Throw a carried ranged item at a nearby hostile character.", min_args=3, args_validator=lambda args: "at" in [arg.lower() for arg in args]),
     "north": CommandSpec("north", lambda player, rooms, raw, args: handle_movement(player, "north"), "north", "Move north.", max_args=0),
     "south": CommandSpec("south", lambda player, rooms, raw, args: handle_movement(player, "south"), "south", "Move south.", max_args=0),

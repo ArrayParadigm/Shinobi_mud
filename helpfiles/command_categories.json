@@ -37,6 +37,8 @@
     "Combat": [
         "consider",
         "attack",
+        "combat",
+        "stance",
         "throw"
     ],
     "Social": [

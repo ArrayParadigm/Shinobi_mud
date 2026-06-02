@@ -1,6 +1,7 @@
 import logging
 
 from content import create_authored_content_tables
+from combat import create_combat_tables
 from body import ensure_body_columns
 from items import create_item_tables, ensure_item_seed_tracking
 from npcs import create_npc_tables
@@ -189,6 +190,11 @@ def migration_013_substitution_technique(cursor):
     ensure_jutsu_execution_columns(cursor)
 
 
+def migration_014_pulse_combat_engagements(cursor):
+    """Add persisted pulse combat engagements, stances, and queued modifiers."""
+    create_combat_tables(cursor)
+
+
 MIGRATIONS = (
     (1, migration_001_non_admin_default),
     (2, migration_002_persistent_items),
@@ -203,6 +209,7 @@ MIGRATIONS = (
     (11, migration_011_technique_catalog_placeholders),
     (12, migration_012_throwable_items),
     (13, migration_013_substitution_technique),
+    (14, migration_014_pulse_combat_engagements),
 )
 
 

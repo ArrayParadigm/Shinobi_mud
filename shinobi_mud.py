@@ -10,6 +10,7 @@ import sys
 from datetime import datetime
 from auth import hash_password, validate_username, verify_password
 from command_system import CommandSpec
+from combat import clear_engagement, tick_combat
 from content import sync_authored_content
 from locations import broadcast_at, coordinate_key, is_within_bounds, nearby_players, players_at, track_player, untrack_player
 from migrations import apply_migrations, create_players_table
@@ -74,6 +75,8 @@ SHOW_NEARBY_PLAYERS = True
 NEARBY_PLAYER_RADIUS = DEFAULT_NEARBY_PLAYER_RADIUS
 WORLD_TICK_INTERVAL_SECONDS = 30
 WORLD_TICK_LOOP = None
+COMBAT_TICK_INTERVAL_SECONDS = 1
+COMBAT_TICK_LOOP = None
 NORMAL_MAP_WIDTH_RADIUS = 5
 NORMAL_MAP_HEIGHT_RADIUS = 2
 BASE_ATTRIBUTE_SCORE = 5
@@ -362,6 +365,11 @@ class NinjaMUDProtocol(basic.LineReceiver):
         
     def connectionLost(self, reason):
         logging.info(f"Connection lost for user {self.username}. Reason: {reason}")
+        if self.username and self.cursor:
+            try:
+                clear_engagement(self.cursor, self.username)
+            except sqlite3.Error:
+                logging.warning("Unable to clear combat engagement for %s.", self.username)
         self.untrack_player()
         self.close_connection()
 
@@ -876,6 +884,10 @@ def validate_server_state(config):
         "jutsu_definitions",
         "character_skills",
         "character_jutsus",
+        "stance_definitions",
+        "character_stances",
+        "combat_engagements",
+        "combat_action_queue",
     }
     tables = {
         row[0]
@@ -903,6 +915,7 @@ def run_server(config_file=DEFAULT_CONFIG_FILE, reactor_instance=reactor):
         logging.info("Ninja MUD Server running on port %s.", port)
         if hasattr(reactor_instance, "callLater"):
             start_world_tick(reactor_instance)
+            start_combat_tick(reactor_instance)
         reactor_instance.run()
         return config
     except Exception:
@@ -932,6 +945,114 @@ def start_world_tick(clock=reactor):
     WORLD_TICK_LOOP.start(WORLD_TICK_INTERVAL_SECONDS, now=False)
     logging.info("World tick scheduled every %s seconds.", WORLD_TICK_INTERVAL_SECONDS)
     return WORLD_TICK_LOOP
+
+
+def run_combat_tick():
+    """Resolve due combat pulses for connected characters and deliver feedback."""
+    if conn is None:
+        raise RuntimeError("Database connection is not initialized.")
+    online = {
+        player.username: player
+        for bucket in players_in_rooms.values()
+        for player in bucket
+        if player.username
+    }
+    events = tick_combat(conn, online)
+    for event in events:
+        player = online.get(event["username"])
+        if not player:
+            continue
+        for message, room_message in _combat_event_messages(event):
+            player.sendLine(message.encode("utf-8"))
+            if room_message:
+                broadcast_at(
+                    players_in_rooms,
+                    coordinate_key(player.x, player.y),
+                    room_message,
+                    exclude=player,
+                )
+    return events
+
+
+def start_combat_tick(clock=reactor):
+    """Start the recurring combat-pulse delivery loop."""
+    global COMBAT_TICK_LOOP
+    if COMBAT_TICK_LOOP and COMBAT_TICK_LOOP.running:
+        return COMBAT_TICK_LOOP
+
+    COMBAT_TICK_LOOP = task.LoopingCall(run_combat_tick)
+    COMBAT_TICK_LOOP.clock = clock
+    COMBAT_TICK_LOOP.start(COMBAT_TICK_INTERVAL_SECONDS, now=False)
+    logging.info("Combat tick scheduled every %s second.", COMBAT_TICK_INTERVAL_SECONDS)
+    return COMBAT_TICK_LOOP
+
+
+def _combat_event_messages(event):
+    """Return player and local-room message pairs for one resolved pulse."""
+    username = event["username"]
+    npc_name = event["npc_name"]
+    if event["status"] == "out_of_range":
+        return [
+            (
+                f"{npc_name} is {event['distance']} step(s) away; your basic auto attack cannot connect.",
+                None,
+            )
+        ]
+    if event["status"] == "ended":
+        return [(f"Your engagement with {npc_name} ends.", None)]
+    messages = []
+    if event["status"] == "npc_defeated":
+        return [
+            (
+                f"You strike {npc_name} for {event['player_damage']} damage and defeat it.",
+                f"{username} strikes {npc_name} for {event['player_damage']} damage and defeats it.",
+            )
+        ]
+    if event["player_hit"]:
+        messages.append(
+            (
+                f"You strike {npc_name} for {event['player_damage']} damage. {npc_name} has {event['npc_health']} health remaining.",
+                f"{username} strikes {npc_name} for {event['player_damage']} damage. {npc_name} has {event['npc_health']} health remaining.",
+            )
+        )
+    else:
+        messages.append(
+            (
+                f"You attack {npc_name}, but miss.",
+                f"{username} attacks {npc_name}, but misses.",
+            )
+        )
+    if event["distance"] > 0:
+        return messages
+    if event["substitution"]:
+        messages.append(
+            (
+                f"You evade {npc_name} through Substitution Technique. Jutsu: {event['substitution']['proficiency']} ({event['substitution']['progress_percent']}%).",
+                f"{username} evades {npc_name} through Substitution Technique.",
+            )
+        )
+    elif not event["npc_hit"]:
+        messages.append(
+            (
+                f"{npc_name} attacks you, but misses.",
+                f"{npc_name} attacks {username}, but misses.",
+            )
+        )
+    elif event["player_defeated"]:
+        messages.append(
+            (
+                f"{npc_name} strikes you for {event['npc_damage']} damage. You are defeated, then recover here with {event['player_health']} health.",
+                f"{npc_name} strikes {username} for {event['npc_damage']} damage. {username} is defeated and recovers here.",
+            )
+        )
+    else:
+        messages.append(
+            (
+                f"{npc_name} strikes you for {event['npc_damage']} damage. You have {event['player_health']} health remaining.",
+                f"{npc_name} strikes {username} for {event['npc_damage']} damage. {username} has {event['player_health']} health remaining.",
+            )
+        )
+    return messages
 
 if __name__ == "__main__":
     run_server()

@@ -150,7 +150,9 @@ The authored `aexpanse` overlay is anchored at `(1, 1)` with two rooms and a see
 - `usejutsu <jutsu>`: activate an implemented jutsu.
 - `talk <character>`: speak with an NPC at your grid location.
 - `consider <character>`: inspect a visible character's combat details.
-- `attack <character>`: resolve one melee turn against a hostile NPC at your grid location.
+- `attack <character>`: engage a hostile NPC at your grid location for slow pulse combat.
+- `combat`: inspect your engagement, range, queued modifier, and active stance.
+- `stance [balanced|stance]`: list or change combat stance. `balanced` clears an authored stance.
 - `throw <item> at <character>`: throw a carried ranged item at a hostile NPC in your room or one cardinal step away.
 - `who`: list connected characters.
 - `say <message>`: speak to characters at your grid location.
@@ -210,7 +212,9 @@ Eve's Haven authors a Haven Map, Travel Ration, and Water Flask at its entrance,
 
 Eve's Haven is also the compact training loop. Pick up food and water at the entrance, move north into the garden for the Practice Kunai and Practice Construct, then exercise melee, `throw`, `usejutsu substitution`, `body`, and `rest`.
 
-The combat loop is command-driven and turn-based. `attack <character>` resolves player dexterity against authored NPC evasion, applies strength-based damage plus equipped-weapon metadata on a hit, then resolves a surviving hostile NPC's authored accuracy against player agility. Roommates see the exchange. Defeated NPCs disappear until their authored respawn delay elapses. A defeated player recovers to maximum health at the same grid coordinate.
+The combat loop is engagement-driven and pulse-based. `attack <character>` starts or retargets combat without dealing immediate damage. Basic auto attacks resolve slowly while the target is in the same grid room, using player dexterity, strength, equipped-weapon metadata, NPC evasion, and NPC counterattacks. Engagement remains active when a player moves away, so repositioning creates space instead of acting as a separate flee command. Defeated NPCs disappear until their authored respawn delay elapses. A defeated player recovers to maximum health at the same grid coordinate.
+
+`stance` adds the first authored pulse modifiers. Balanced stance uses a `6` second auto-attack pulse. Mongoose Stance uses a `4` second pulse with `+1` accuracy and `-1` evasion. Crane Stance uses an `8` second pulse with `-1` accuracy and `+2` evasion. The persisted combat queue can apply one-shot range, accuracy, damage, and status modifiers from future skills and jutsus; active abilities remain intentionally narrow for now.
 
 Characters also have abstract body resources: nutrition, hydration, and fatigue. Ordinary movement and hostile combat increase fatigue. `rest` reduces fatigue, consumes a small amount of nutrition and hydration, restores stamina, and restores chakra based on wisdom and current body condition. Rest is blocked at zero nutrition or hydration. `eat` and `drink` consume finite authored supplies to restore body resources.
 

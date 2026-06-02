@@ -3,6 +3,7 @@
 import json
 import os
 
+from combat import create_combat_tables, sync_stance_templates
 from items import create_item_tables
 from npcs import create_npc_tables
 from techniques import create_technique_tables, sync_jutsu_templates, sync_skill_templates
@@ -28,6 +29,7 @@ def sync_authored_content(connection, zones_directory, overlays):
     create_npc_tables(cursor)
     create_authored_content_tables(cursor)
     create_technique_tables(cursor)
+    create_combat_tables(cursor)
     coordinates_by_vnum = {
         overlay["vnum"]: coordinates
         for coordinates, overlay in overlays.items()
@@ -44,6 +46,7 @@ def sync_authored_content(connection, zones_directory, overlays):
         _sync_npc_templates(cursor, zone_data.get("npc_templates", []))
         sync_skill_templates(cursor, zone_data.get("skill_templates", []))
         sync_jutsu_templates(cursor, zone_data.get("jutsu_templates", []))
+        sync_stance_templates(cursor, zone_data.get("stance_templates", []))
         created["item_spawns"] += _sync_item_spawns(
             cursor,
             content_key,

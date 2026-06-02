@@ -50,6 +50,32 @@ class CombatSliceTests(unittest.TestCase):
         self.player.y = 499
         self.player.state = "COMMAND"
 
+    def resolve_legacy_attack(self, player, npc_name):
+        """Exercise the original atomic NPC exchange independently of pulse commands."""
+        result = attack_npc(
+            player.cursor,
+            player.username,
+            player.x,
+            player.y,
+            npc_name,
+        )
+        if result["status"] == "missing_target":
+            player.sendLine(b"You do not see that character here.")
+            return result
+        if result["status"] == "not_attackable":
+            player.sendLine(f'{result["npc_name"]} is not a combat target.'.encode("utf-8"))
+            return result
+        event = {
+            **result,
+            "username": player.username,
+            "distance": 0,
+        }
+        for message, room_message in shinobi_mud._combat_event_messages(event):
+            player.sendLine(message.encode("utf-8"))
+            if room_message:
+                general_commands._broadcast_combat(player, room_message)
+        return result
+
     def tearDown(self):
         shinobi_mud.players_in_rooms.clear()
         shinobi_mud.WORLD_OVERLAYS.clear()
@@ -57,7 +83,7 @@ class CombatSliceTests(unittest.TestCase):
 
     def test_attack_uses_strength_damage_and_enemy_counterattack(self):
         with patch("npcs.random.randint", side_effect=[1, 1]):
-            general_commands.handle_attack(self.player, "practice construct")
+            self.resolve_legacy_attack(self.player, "practice construct")
 
         npc_health = self.connection.execute(
             """
@@ -98,7 +124,7 @@ class CombatSliceTests(unittest.TestCase):
         self.connection.commit()
 
         with patch("npcs.random.randint", return_value=1):
-            general_commands.handle_attack(self.player, "Practice Construct")
+            self.resolve_legacy_attack(self.player, "Practice Construct")
 
         self.assertEqual(npcs_at(self.player.cursor, 500, 499), [])
         self.connection.execute(
@@ -132,8 +158,8 @@ class CombatSliceTests(unittest.TestCase):
         self.player.x = 500
         self.player.y = 500
 
-        general_commands.handle_attack(self.player, "Haven Guide")
-        general_commands.handle_attack(self.player, "Missing Character")
+        self.resolve_legacy_attack(self.player, "Haven Guide")
+        self.resolve_legacy_attack(self.player, "Missing Character")
 
         self.assertEqual(
             self.player.messages,
@@ -151,7 +177,7 @@ class CombatSliceTests(unittest.TestCase):
         self.connection.commit()
 
         with patch("npcs.random.randint", side_effect=[1, 1]):
-            general_commands.handle_attack(self.player, "Practice Construct")
+            self.resolve_legacy_attack(self.player, "Practice Construct")
 
         health = self.connection.execute(
             "SELECT health FROM players WHERE username=?",
@@ -169,7 +195,7 @@ class CombatSliceTests(unittest.TestCase):
         self.player.messages.clear()
 
         with patch("npcs.random.randint", side_effect=[100, 1]):
-            general_commands.handle_attack(self.player, "Practice Construct")
+            self.resolve_legacy_attack(self.player, "Practice Construct")
 
         player = self.connection.execute(
             "SELECT health, chakra FROM players WHERE username='Fighter'"
@@ -233,7 +259,7 @@ class CombatSliceTests(unittest.TestCase):
     def test_damage_persists_across_disconnect_and_reconnect(self):
         self.player.track_player()
         with patch("npcs.random.randint", side_effect=[1, 1]):
-            general_commands.handle_attack(self.player, "Practice Construct")
+            self.resolve_legacy_attack(self.player, "Practice Construct")
         self.player.connectionLost("test disconnect")
 
         returning_player = TestProtocol(shinobi_mud.cursor)
@@ -251,7 +277,7 @@ class CombatSliceTests(unittest.TestCase):
 
     def test_attack_can_miss_on_both_sides_without_changing_health(self):
         with patch("npcs.random.randint", side_effect=[100, 100]):
-            general_commands.handle_attack(self.player, "Practice Construct")
+            self.resolve_legacy_attack(self.player, "Practice Construct")
 
         npc_health = self.connection.execute(
             """
@@ -281,7 +307,7 @@ class CombatSliceTests(unittest.TestCase):
         self.player.messages.clear()
 
         with patch("npcs.random.randint", side_effect=[1, 1]):
-            general_commands.handle_attack(self.player, "Practice Construct")
+            self.resolve_legacy_attack(self.player, "Practice Construct")
 
         self.assertEqual(
             self.player.messages[0],
@@ -448,7 +474,7 @@ class CombatSliceTests(unittest.TestCase):
         observer.messages.clear()
 
         with patch("npcs.random.randint", side_effect=[1, 1]):
-            general_commands.handle_attack(self.player, "Practice Construct")
+            self.resolve_legacy_attack(self.player, "Practice Construct")
 
         self.assertEqual(
             observer.messages,
@@ -473,8 +499,8 @@ class CombatSliceTests(unittest.TestCase):
         teammate.y = 499
 
         with patch("npcs.random.randint", side_effect=[1, 100, 1, 100]):
-            general_commands.handle_attack(self.player, "Practice Construct")
-            general_commands.handle_attack(teammate, "Practice Construct")
+            self.resolve_legacy_attack(self.player, "Practice Construct")
+            self.resolve_legacy_attack(teammate, "Practice Construct")
 
         npc_health = self.connection.execute(
             """

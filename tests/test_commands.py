@@ -179,7 +179,7 @@ class CommandMetadataTests(unittest.TestCase):
         self.assertIn("== Movement ==", catalog)
         self.assertIn("== Builder ==", catalog)
         self.assertIn("== Admin ==", catalog)
-        self.assertIn("  attack <character> - Strike a hostile character at your location.", catalog)
+        self.assertIn("  attack <character> - Engage a hostile character for pulse combat.", catalog)
         self.assertIn("  commands - List every command with a brief description.", catalog)
         self.assertIn("  inventory - List the items you carry. (aliases: inv)", catalog)
         self.assertIn("  shutdown [admin] - Stop the server.", catalog)

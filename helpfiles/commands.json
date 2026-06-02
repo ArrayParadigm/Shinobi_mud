@@ -1,7 +1,7 @@
 {
     "attack": {
-        "summary": "Strike a hostile character at your location.",
-        "details": ["Combat resolves one melee exchange against a hostile NPC in your room."]
+        "summary": "Engage a hostile character for pulse combat.",
+        "details": ["Engagement persists while you reposition. Basic auto attacks pulse slowly and only connect up close."]
     },
     "body": {
         "summary": "Display your body resources and recovery readiness.",
@@ -14,6 +14,10 @@
     "color": {
         "summary": "Toggle ANSI terminal colors for this connection.",
         "details": ["Use color off if your client does not render ANSI colors cleanly."]
+    },
+    "combat": {
+        "summary": "Display your active combat engagement and stance.",
+        "details": ["Combat persists while you reposition. Basic auto attacks only connect up close; skills and jutsus can later queue range, accuracy, damage, and status modifiers."]
     },
     "commands": {
         "summary": "List every command with a brief description.",
@@ -190,6 +194,10 @@
     "south": {
         "summary": "Move south.",
         "details": []
+    },
+    "stance": {
+        "summary": "List or change your combat stance.",
+        "details": ["Use stance balanced to clear an authored stance. Mongoose speeds basic attacks; Crane slows basic attacks and improves evasion."]
     },
     "spawnnpc": {
         "summary": "Persist a spawn for an authored NPC template.",

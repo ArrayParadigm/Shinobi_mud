@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-06-02 15:36 -0500 - Fluid Pulse Combat Foundation
+
+### Added
+
+- Added migration `14` for persisted combat engagements, authored character stances, and one-shot queued combat modifiers.
+- Added `combat` for inspecting live engagement range and `stance` for listing or switching authored stances.
+- Added Mongoose Stance and Crane Stance with deliberately different accuracy, evasion, and pulse-speed tradeoffs.
+
+### Changed
+
+- Changed `attack <character>` from an immediate exchange into engagement entry or retargeting.
+- Kept basic auto attacks up close while allowing engagement to remain active across movement, avoiding a separate flee command.
+- Added a dedicated scheduler check for due combat pulses while keeping slow per-character attack timing.
+
+### Verification
+
+- Added pulse engagement, movement-range, queued-range, authored-stance, substitution, scheduler-delivery, and migration regression coverage.
+- Upgraded the preserved local database through migration `14` while retaining its `7` player rows.
+- Passed `python -m unittest discover -s tests -v` with `160` tests.
+- Passed Python syntax compilation, JSON validation, and `git diff --check`.
+- Passed an isolated temporary-database TCP smoke for stance selection, engagement entry, pulse delivery, and movement spacing.
+
 ## 2026-06-02 15:21 -0500 - Player Administration and Builder Roadmap
 
 ### Added

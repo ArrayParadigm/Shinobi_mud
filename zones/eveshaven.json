@@ -462,6 +462,24 @@
             "available": false
         }
     ],
+    "stance_templates": [
+        {
+            "key": "mongoose",
+            "name": "Mongoose Stance",
+            "description": "A quick, pressing stance that favors frequent accurate attacks over defense.",
+            "accuracy_bonus": 1,
+            "evasion_bonus": -1,
+            "pulse_seconds": 4
+        },
+        {
+            "key": "crane",
+            "name": "Crane Stance",
+            "description": "A patient defensive stance that improves evasion while slowing basic attacks.",
+            "accuracy_bonus": -1,
+            "evasion_bonus": 2,
+            "pulse_seconds": 8
+        }
+    ],
     "anchor": {
         "x": 500,
         "y": 500
