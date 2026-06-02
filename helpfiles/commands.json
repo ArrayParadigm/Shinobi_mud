@@ -1,0 +1,206 @@
+{
+    "attack": {
+        "summary": "Strike a hostile character at your location.",
+        "details": ["Combat resolves one melee exchange against a hostile NPC in your room."]
+    },
+    "body": {
+        "summary": "Display your body resources and recovery readiness.",
+        "details": ["Shows nutrition, hydration, fatigue, recovery state, and short-rest chakra recovery."]
+    },
+    "color": {
+        "summary": "Toggle ANSI terminal colors for this connection.",
+        "details": ["Use color off if your client does not render ANSI colors cleanly."]
+    },
+    "commands": {
+        "summary": "List every command with a brief description.",
+        "details": ["This catalog includes admin-only commands so the full command surface remains discoverable."]
+    },
+    "consider": {
+        "summary": "Inspect a character's combat details.",
+        "details": ["Use this before combat to review a visible NPC's health and authored combat values."]
+    },
+    "copyover": {
+        "summary": "Report the disabled soft-restart status.",
+        "details": ["Soft restarts remain intentionally disabled during private alpha."]
+    },
+    "createnpc": {
+        "summary": "Create a basic static authored NPC template.",
+        "details": ["Admin builder command. Creates editable authored JSON content in the current zone."]
+    },
+    "createzone": {
+        "summary": "Create an authored zone.",
+        "details": ["Admin builder command. Creates a JSON zone file with an available VNUM range."]
+    },
+    "dig": {
+        "summary": "Create an authored room exit.",
+        "details": ["Admin builder command. Creates a coordinate-aware overlay room and reciprocal exit."]
+    },
+    "drink": {
+        "summary": "Drink a carried beverage to restore hydration.",
+        "details": ["Consumables are finite carried items and are removed after use."]
+    },
+    "drop": {
+        "summary": "Drop a carried item at your location.",
+        "details": ["Dropped items persist at your current grid coordinate."]
+    },
+    "east": {
+        "summary": "Move east.",
+        "details": []
+    },
+    "eat": {
+        "summary": "Eat a carried food item to restore nutrition.",
+        "details": ["Consumables are finite carried items and are removed after use."]
+    },
+    "emote": {
+        "summary": "Perform an action at your location.",
+        "details": ["Characters in your room will see the authored action text."]
+    },
+    "examine": {
+        "summary": "Inspect a visible or carried item.",
+        "details": ["Item targets accept names, keywords, prefixes, and ordinals such as 2.kunai."]
+    },
+    "get": {
+        "summary": "Pick up an item at your location.",
+        "details": ["Item targets accept names, keywords, prefixes, and ordinals such as 2.kunai."]
+    },
+    "goto": {
+        "summary": "Travel to an authored room, grid location, or online player.",
+        "details": ["Admin command. Coordinates remain canonical even when teleporting to an overlay VNUM."]
+    },
+    "help": {
+        "summary": "List commands or explain one command.",
+        "details": ["Help prose is loaded from helpfiles/commands.json and can be refreshed without restarting the server."]
+    },
+    "inventory": {
+        "summary": "List the items you carry.",
+        "details": ["Equipped slots are displayed alongside carried items."]
+    },
+    "jutsu": {
+        "summary": "List available jutsus, inspect one, or show the full catalog.",
+        "details": ["Use jutsu all to include catalog placeholders that are not implemented yet."]
+    },
+    "loc": {
+        "summary": "Display your grid coordinates and area.",
+        "details": ["Coordinates are the canonical source of truth; overlay VNUMs are optional authored metadata."]
+    },
+    "look": {
+        "summary": "Display your location or inspect an item.",
+        "details": ["Use look with no arguments for the room and nearby map, or look at <item> to inspect an item."]
+    },
+    "north": {
+        "summary": "Move north.",
+        "details": []
+    },
+    "ooc": {
+        "summary": "Speak on the global out-of-character channel.",
+        "details": ["Use this for player discussion that is not spoken by your character."]
+    },
+    "placezone": {
+        "summary": "Anchor a zone file on the world grid.",
+        "details": ["Admin builder command. Reloads overlay coordinates after persisting the new anchor."]
+    },
+    "prac": {
+        "summary": "List skills or inspect usage-based proficiency.",
+        "details": ["Ordinary skill proficiency increases through valid gameplay use."]
+    },
+    "reloadcontent": {
+        "summary": "Reload authored JSON content into live state.",
+        "details": ["Admin builder command. Imports template edits and missing one-time spawns without restarting."]
+    },
+    "remove": {
+        "summary": "Unequip a carried item.",
+        "details": []
+    },
+    "rest": {
+        "summary": "Recover stamina and chakra through a short rest.",
+        "details": ["Rest consumes nutrition and hydration. Depleted nutrition or hydration blocks recovery."]
+    },
+    "roomdesc": {
+        "summary": "Replace the current authored room description.",
+        "details": ["Admin builder command. Updates the current overlay room in authored JSON."]
+    },
+    "say": {
+        "summary": "Speak to characters at your location.",
+        "details": []
+    },
+    "score": {
+        "summary": "Display your character sheet.",
+        "details": ["Shows core resources, attributes, specialty, clan, release, dojo alignment, and location."]
+    },
+    "setdojo": {
+        "summary": "Set a character dojo alignment.",
+        "details": ["Admin command."]
+    },
+    "setrole": {
+        "summary": "Set a character role.",
+        "details": ["Admin command."]
+    },
+    "setstat": {
+        "summary": "Set a character stat.",
+        "details": ["Admin command."]
+    },
+    "shout": {
+        "summary": "Speak to characters within one grid cell.",
+        "details": ["Shouts reach your room and adjacent grid coordinates."]
+    },
+    "shutdown": {
+        "summary": "Stop the server.",
+        "details": ["Admin command. Connected players are disconnected by the normal server shutdown."]
+    },
+    "skill": {
+        "summary": "List available skills, inspect one, or show the full catalog.",
+        "details": ["Use skill all to include catalog placeholders that are not implemented yet."]
+    },
+    "south": {
+        "summary": "Move south.",
+        "details": []
+    },
+    "spawnnpc": {
+        "summary": "Persist a spawn for an authored NPC template.",
+        "details": ["Admin builder command. Creates a one-time authored NPC seed in the current room."]
+    },
+    "survey": {
+        "summary": "Display a compact terrain view.",
+        "details": ["Shows a wider grid view than look."]
+    },
+    "talk": {
+        "summary": "Talk to a character at your location.",
+        "details": ["Targets a visible authored NPC in your room."]
+    },
+    "think": {
+        "summary": "Perform the built-in thinking emote.",
+        "details": []
+    },
+    "throw": {
+        "summary": "Throw a carried ranged item at a nearby hostile character.",
+        "details": ["Valid throws increase Throw proficiency and land the item at the target location, even on a miss."]
+    },
+    "train": {
+        "summary": "List jutsus or inspect usage-based proficiency.",
+        "details": ["Jutsu proficiency increases through valid gameplay use."]
+    },
+    "usejutsu": {
+        "summary": "Activate an implemented jutsu.",
+        "details": ["Substitution Technique currently spends 3 chakra, lasts 30 seconds, and has a 60 second cooldown."]
+    },
+    "west": {
+        "summary": "Move west.",
+        "details": []
+    },
+    "whisper": {
+        "summary": "Send a private message to an online character.",
+        "details": []
+    },
+    "who": {
+        "summary": "List connected characters.",
+        "details": []
+    },
+    "wield": {
+        "summary": "Equip a carried item.",
+        "details": ["The item must define an authored equipment slot."]
+    },
+    "zoneinfo": {
+        "summary": "Inspect an authored overlay room.",
+        "details": ["Admin builder command. With no VNUM, inspects the current location."]
+    }
+}

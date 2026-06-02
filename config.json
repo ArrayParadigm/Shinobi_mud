@@ -1,6 +1,7 @@
 {
     "db_file": "shinobi_mud.db",
     "motd_file": "motd.txt",
+    "help_file": "helpfiles/commands.json",
     "server_port": 4000,
     "zone_directory": "zones",
     "show_nearby_players": true,

@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-06-02 11:14 -0500 - Builder-Editable Help Files
+
+### Added
+
+- Added `helpfiles/commands.json` with editable summaries and detailed help prose for every registered command.
+- Added request-time help loading so builders and helpers can refresh prose without editing Python or restarting the server.
+
+### Changed
+
+- Kept executable usage syntax, aliases, permissions, handlers, and validation rules in Python.
+- Added safe fallback to built-in command summaries when an editable help entry is missing or the JSON file is temporarily invalid.
+
+### Verification
+
+- Added editable-catalog completeness, request-time refresh, and malformed-file fallback coverage.
+- Passed `python -m unittest discover -s tests -v` with 140 tests.
+- Passed Python syntax compilation and `git diff --check`.
+
 ## 2026-06-02 11:09 -0500 - Complete Command Catalog
 
 ### Added

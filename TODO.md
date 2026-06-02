@@ -2,7 +2,7 @@
 
 ## Current Checkpoint
 
-The private-alpha gameplay loop is covered by `137` automated tests. The current build includes:
+The private-alpha gameplay loop is covered by `140` automated tests. The current build includes:
 
 - Coordinate-first wilderness movement with Eve's Haven as a VNUM-backed overlay zone.
 - Persistent accounts, items, inventories, equipment, NPC instances, combat state, and body resources.
@@ -14,6 +14,7 @@ The private-alpha gameplay loop is covered by `137` automated tests. The current
 - A real `usejutsu substitution` action. It spends `3` chakra, prepares a `30` second defensive window, avoids the next eligible hostile NPC strike, raises Substitution proficiency on resolution, and persists a `60` second cooldown.
 - Coordinate-aware builder commands for digging rooms, editing descriptions, creating basic NPC templates, and seeding persistent NPC spawns.
 - A complete `commands` catalog generated from registered help metadata.
+- Builder-editable command summaries and detailed help prose loaded from `helpfiles/commands.json`.
 
 The next step is exercising the current loop through a private-alpha soak pass.
 

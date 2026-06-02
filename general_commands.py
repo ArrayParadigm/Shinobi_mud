@@ -2,6 +2,7 @@ import json
 import logging
 from body import body_state, body_warnings, chakra_recovery_amount, rest_character
 from command_system import CommandSpec
+from help_content import DEFAULT_HELP_FILE, command_help, load_help_catalog
 from items import (
     drop_item,
     examine_item,
@@ -23,6 +24,7 @@ from locations import (
 from npcs import attack_npc, consider_npc, talk_to_npc, throw_item_at_npc
 from techniques import activate_jutsu, jutsu_detail, list_jutsus, list_skills, proficiency_label, skill_detail
 from shinobi_mud import (
+    ACTIVE_CONFIG,
     COMMAND_REGISTRY,
     UTILITIES,
     WORLD_OVERLAYS,
@@ -677,20 +679,26 @@ def handle_help(player, raw_args):
         player.sendLine(f"No help found for: {topic}".encode("utf-8"))
         return
 
-    player.sendLine(f"{command.name}: {command.description}".encode("utf-8"))
+    help_entry = command_help(command, ACTIVE_CONFIG.get("help_file", DEFAULT_HELP_FILE))
+    player.sendLine(f"{command.name}: {help_entry['summary']}".encode("utf-8"))
     player.sendLine(f"Usage: {command.usage}".encode("utf-8"))
     if command.aliases:
         player.sendLine(f"Aliases: {', '.join(command.aliases)}".encode("utf-8"))
+    for line in help_entry["details"]:
+        player.sendLine(line.encode("utf-8"))
 
 
 def handle_commands(player):
     """Display the complete command catalog from registered metadata."""
+    help_file = ACTIVE_CONFIG.get("help_file", DEFAULT_HELP_FILE)
+    catalog = load_help_catalog(help_file)
     player.sendLine(b"Command Catalog")
     for name, command in sorted(COMMAND_REGISTRY.items()):
+        help_entry = command_help(command, help_file, catalog)
         permission = " [admin]" if command.permission == "admin" else ""
         aliases = f" (aliases: {', '.join(command.aliases)})" if command.aliases else ""
         player.sendLine(
-            f"  {command.usage}{permission} - {command.description}{aliases}".encode("utf-8")
+            f"  {command.usage}{permission} - {help_entry['summary']}{aliases}".encode("utf-8")
         )
     player.sendLine(b"Use help <command> for detailed usage.")
 

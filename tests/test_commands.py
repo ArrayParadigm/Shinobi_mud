@@ -1,6 +1,10 @@
+import json
+import tempfile
 import unittest
+from pathlib import Path
 
 from command_system import CommandSpec
+from help_content import DEFAULT_HELP_FILE
 import shinobi_mud
 from tests.test_accounts import TestProtocol
 
@@ -90,6 +94,7 @@ class CommandMetadataTests(unittest.TestCase):
     def setUp(self):
         self.original_registry = shinobi_mud.COMMAND_REGISTRY.copy()
         self.original_aliases = shinobi_mud.COMMAND_ALIASES.copy()
+        self.original_config = shinobi_mud.ACTIVE_CONFIG.copy()
         shinobi_mud.COMMAND_REGISTRY.clear()
         shinobi_mud.load_commands()
         self.player = TestProtocol(None)
@@ -100,6 +105,8 @@ class CommandMetadataTests(unittest.TestCase):
         shinobi_mud.COMMAND_REGISTRY.update(self.original_registry)
         shinobi_mud.COMMAND_ALIASES.clear()
         shinobi_mud.COMMAND_ALIASES.update(self.original_aliases)
+        shinobi_mud.ACTIVE_CONFIG.clear()
+        shinobi_mud.ACTIVE_CONFIG.update(self.original_config)
 
     def test_registered_commands_expose_metadata(self):
         for name, command in shinobi_mud.COMMAND_REGISTRY.items():
@@ -152,6 +159,7 @@ class CommandMetadataTests(unittest.TestCase):
                 "score: Display your character sheet.",
                 "Usage: score",
                 "Aliases: status",
+                "Shows core resources, attributes, specialty, clan, release, dojo alignment, and location.",
             ],
         )
 
@@ -180,6 +188,49 @@ class CommandMetadataTests(unittest.TestCase):
         for command in shinobi_mud.COMMAND_REGISTRY.values():
             with self.subTest(command=command.name):
                 self.assertIn(f"  {command.usage}", catalog)
+
+    def test_editable_help_catalog_covers_every_registered_command(self):
+        catalog = json.loads(Path(DEFAULT_HELP_FILE).read_text(encoding="utf-8"))
+
+        self.assertEqual(set(catalog), set(shinobi_mud.COMMAND_REGISTRY))
+
+    def test_help_prose_refreshes_from_disk_without_reloading_commands(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            help_file = Path(temporary_directory) / "commands.json"
+            help_file.write_text(
+                json.dumps({"score": {"summary": "First summary.", "details": ["First detail."]}}),
+                encoding="utf-8",
+            )
+            shinobi_mud.ACTIVE_CONFIG["help_file"] = str(help_file)
+
+            shinobi_mud.process_command(self.player, "help score")
+            help_file.write_text(
+                json.dumps({"score": {"summary": "Updated summary.", "details": ["Updated detail."]}}),
+                encoding="utf-8",
+            )
+            shinobi_mud.process_command(self.player, "help score")
+
+        self.assertIn("score: First summary.", self.player.messages)
+        self.assertIn("First detail.", self.player.messages)
+        self.assertIn("score: Updated summary.", self.player.messages)
+        self.assertIn("Updated detail.", self.player.messages)
+
+    def test_invalid_editable_help_falls_back_to_code_metadata(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            help_file = Path(temporary_directory) / "commands.json"
+            help_file.write_text("{ invalid json", encoding="utf-8")
+            shinobi_mud.ACTIVE_CONFIG["help_file"] = str(help_file)
+
+            shinobi_mud.process_command(self.player, "help score")
+
+        self.assertEqual(
+            self.player.messages,
+            [
+                "score: Display your character sheet.",
+                "Usage: score",
+                "Aliases: status",
+            ],
+        )
 
 
 if __name__ == "__main__":

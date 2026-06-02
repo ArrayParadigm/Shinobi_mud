@@ -164,6 +164,12 @@ Commands accept unique prefixes. The stable shortcuts `n`, `s`, `e`, `w`, and `l
 
 Item targets accept authored keywords and abbreviations. Exact names win first; otherwise the first stable matching instance is used. Use an ordinal such as `get 2.kun` when duplicate items need an explicit selection.
 
+### Editable Help Files
+
+Command summaries and longer help prose live in `helpfiles/commands.json`. Builders and helpers can update each command's `summary` and `details` without editing Python or restarting the server. Both `commands` and `help <command>` read the file when requested.
+
+Keep executable command syntax, aliases, permissions, and validation rules in Python. Missing entries or temporarily invalid JSON fall back to the built-in command summaries so command discovery remains available while a help-file edit is repaired.
+
 Admin overlay tools:
 
 - `goto <vnum>`: teleport to an authored overlay room while retaining canonical coordinates.
