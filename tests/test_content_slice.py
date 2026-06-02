@@ -3,6 +3,7 @@ import os
 import sqlite3
 import tempfile
 import unittest
+from contextlib import contextmanager
 from pathlib import Path
 
 import admin_commands
@@ -10,7 +11,9 @@ import general_commands
 import shinobi_mud
 import social_commands
 import utils
+from content import sync_authored_content
 from migrations import apply_migrations
+from npcs import npcs_at
 from tests.test_accounts import TestProtocol
 
 
@@ -52,6 +55,20 @@ class ContentSliceTests(unittest.TestCase):
         player.track_player()
         player.messages.clear()
         return player
+
+    @contextmanager
+    def temporary_zone(self, zone_data):
+        original_directory = os.getcwd()
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            os.chdir(temporary_directory)
+            try:
+                Path("zones").mkdir()
+                zone_path = Path("zones/sample.json")
+                zone_path.write_text(json.dumps(zone_data), encoding="utf-8")
+                utils.preload_zones_with_anchors(shinobi_mud.WORLD_OVERLAYS, "zones")
+                yield zone_path
+            finally:
+                os.chdir(original_directory)
 
     def test_eves_haven_loads_distinct_rooms_from_persisted_anchor(self):
         overlays = utils.preload_zones_with_anchors(
@@ -251,6 +268,110 @@ class ContentSliceTests(unittest.TestCase):
                 self.assertIn("outside the world map", self.player.messages[-1])
             finally:
                 os.chdir(original_directory)
+
+    def test_dig_and_roomdesc_persist_coordinate_overlay_edits(self):
+        zone_data = {
+            "name": "Sample",
+            "range": {"start": 7000, "end": 7002},
+            "anchor": {"x": 1, "y": 1},
+            "rooms": {
+                "7000": {
+                    "description": "Sample square.",
+                    "exits": {},
+                    "x_offset": 0,
+                    "y_offset": 0,
+                }
+            },
+        }
+        with self.temporary_zone(zone_data) as zone_path:
+            admin_commands.dig(self.player, "north", "A sparring alcove.")
+
+            persisted = json.loads(zone_path.read_text(encoding="utf-8"))
+            self.assertEqual(persisted["rooms"]["7000"]["exits"], {"north": 7001})
+            self.assertEqual(
+                persisted["rooms"]["7001"],
+                {
+                    "description": "A sparring alcove.",
+                    "exits": {"south": 7000},
+                    "x_offset": 0,
+                    "y_offset": -1,
+                },
+            )
+            self.assertEqual(shinobi_mud.WORLD_OVERLAYS[(1, 0)]["vnum"], 7001)
+
+            self.player.x, self.player.y = 1, 0
+            admin_commands.roomdesc(self.player, "A reinforced sparring alcove.")
+            shinobi_mud.WORLD_OVERLAYS.clear()
+            utils.preload_zones_with_anchors(shinobi_mud.WORLD_OVERLAYS, "zones")
+
+            self.assertEqual(
+                shinobi_mud.WORLD_OVERLAYS[(1, 0)]["room"]["description"],
+                "A reinforced sparring alcove.",
+            )
+
+    def test_dig_rejects_occupied_overlay_coordinate(self):
+        zone_data = {
+            "name": "Sample",
+            "range": {"start": 7000, "end": 7002},
+            "anchor": {"x": 1, "y": 1},
+            "rooms": {
+                "7000": {"description": "Square.", "exits": {}, "x_offset": 0, "y_offset": 0},
+                "7001": {"description": "Occupied.", "exits": {}, "x_offset": 0, "y_offset": -1},
+            },
+        }
+        with self.temporary_zone(zone_data) as zone_path:
+            admin_commands.dig(self.player, "north", "Replacement.")
+
+            persisted = json.loads(zone_path.read_text(encoding="utf-8"))
+            self.assertNotIn("7002", persisted["rooms"])
+            self.assertIn("already exists", self.player.messages[-1])
+
+    def test_spawnnpc_persists_authored_spawn_without_reload_duplication(self):
+        zone_data = {
+            "name": "Sample",
+            "content_key": "sample",
+            "range": {"start": 7000, "end": 7000},
+            "anchor": {"x": 1, "y": 1},
+            "rooms": {
+                "7000": {
+                    "description": "Sample square.",
+                    "exits": {},
+                    "x_offset": 0,
+                    "y_offset": 0,
+                }
+            },
+            "npc_templates": [],
+            "npc_spawns": [],
+        }
+        with self.temporary_zone(zone_data) as zone_path:
+            sync_authored_content(self.connection, "zones", shinobi_mud.WORLD_OVERLAYS)
+
+            admin_commands.createnpc(self.player, "practice-dummy", "Practice Dummy")
+            admin_commands.spawnnpc(self.player, "practice-dummy")
+            persisted = json.loads(zone_path.read_text(encoding="utf-8"))
+            admin_commands.reloadcontent(self.player)
+
+            self.assertEqual(
+                persisted["npc_templates"],
+                [
+                    {
+                        "key": "practice-dummy",
+                        "name": "Practice Dummy",
+                        "description": "Practice Dummy waits here.",
+                        "dialogue": "Practice Dummy has nothing to say yet.",
+                        "behavior": "static",
+                    }
+                ],
+            )
+            self.assertEqual(
+                persisted["npc_spawns"],
+                [{"key": "builder-practice-dummy-7000", "npc": "practice-dummy", "vnum": 7000}],
+            )
+            self.assertEqual(
+                [npc["name"] for npc in npcs_at(self.player.cursor, 1, 1)],
+                ["Practice Dummy"],
+            )
+            self.assertIn("Created 0 item spawns and 0 NPC spawns.", self.player.messages[-1])
 
 
 if __name__ == "__main__":

@@ -1,5 +1,24 @@
 # Changelog
 
+## 2026-06-02 11:05 -0500 - Coordinate Overlay Builder
+
+### Added
+
+- Added `dig <direction> <room_name>` for persisted coordinate-aware rooms with reciprocal exits.
+- Added `roomdesc <description>` for authored overlay room editing.
+- Added `createnpc <npc_key> <name>` and `spawnnpc <npc_key>` for basic static NPC templates and persistent seeded spawns.
+- Documented Eve's Haven entrance and garden as a compact training path for recovery, melee, Throw, and Substitution Technique.
+
+### Changed
+
+- Reloaded and validated live overlays after builder edits, rolling JSON back when an edit would leave invalid authored coordinates.
+
+### Verification
+
+- Added room-digging, coordinate-collision, description-persistence, NPC-template, spawn-seed, and reload-deduplication coverage.
+- Passed `python -m unittest discover -s tests -v` with 135 tests.
+- Passed Python syntax compilation and `git diff --check`.
+
 ## 2026-06-02 10:59 -0500 - Substitution Technique Vertical Slice
 
 ### Added

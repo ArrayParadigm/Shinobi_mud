@@ -2,7 +2,7 @@
 
 ## Current Checkpoint
 
-The private-alpha gameplay loop is covered by `132` automated tests. The current build includes:
+The private-alpha gameplay loop is covered by `135` automated tests. The current build includes:
 
 - Coordinate-first wilderness movement with Eve's Haven as a VNUM-backed overlay zone.
 - Persistent accounts, items, inventories, equipment, NPC instances, combat state, and body resources.
@@ -12,8 +12,9 @@ The private-alpha gameplay loop is covered by `132` automated tests. The current
 - `skill`, `prac`, `jutsu`, and `train` discovery commands with `[unimplemented]` catalog placeholders.
 - A real `throw <item> at <character>` action. Practice Kunai throws deal `3` damage, add `2` fatigue, land at the target location, and raise `Throw` proficiency on valid hits or misses.
 - A real `usejutsu substitution` action. It spends `3` chakra, prepares a `30` second defensive window, avoids the next eligible hostile NPC strike, raises Substitution proficiency on resolution, and persists a `60` second cooldown.
+- Coordinate-aware builder commands for digging rooms, editing descriptions, creating basic NPC templates, and seeding persistent NPC spawns.
 
-The next step is making authored encounter expansion practical through Sprint 17 builder tools.
+The next step is exercising the current loop through a private-alpha soak pass.
 
 ## Working Rules
 
@@ -39,6 +40,7 @@ Only keep one sprint active at a time. Reassess the order after each committed s
 - [x] Usage-based skill and jutsu framework with discoverable placeholder catalogs.
 - [x] First real skill action: `Throw`.
 - [x] First real jutsu action: `Substitution Technique`.
+- [x] Coordinate-overlay builder and compact training playground.
 
 ## Sprint 16: Substitution Technique
 
@@ -52,7 +54,7 @@ Implement one defensive jutsu without widening into a general ability engine pre
 - [x] Record successful Substitution resolution through the jutsu-progression helper.
 - [x] Integrate expiry and cooldown handling with the existing world scheduler where needed.
 - [x] Add tests for activation, insufficient chakra, defensive resolution, expiry, cooldowns, reconnect persistence, and rollback.
-- [ ] Run an isolated TCP smoke pass without disturbing the preserved database or an active server process.
+- [x] Run an isolated TCP smoke pass without disturbing the preserved database or an active server process.
 
 ### Done When
 
@@ -62,11 +64,11 @@ A player can spend chakra to prepare Substitution Technique, avoid one eligible 
 
 Make authored content expansion practical without editing Python.
 
-- [ ] Replace placeholder `dig` with coordinate-aware overlay editing.
-- [ ] Add room-description editing for authored zones.
-- [ ] Add a compact admin workflow for authored NPC templates and spawns.
-- [ ] Build a training area that exercises melee, recovery, Throw, and Substitution Technique.
-- [ ] Add reload and persistence tests for edited content.
+- [x] Replace placeholder `dig` with coordinate-aware overlay editing.
+- [x] Add room-description editing for authored zones.
+- [x] Add a compact admin workflow for authored NPC templates and spawns.
+- [x] Build a training area that exercises melee, recovery, Throw, and Substitution Technique.
+- [x] Add reload and persistence tests for edited content.
 
 ### Done When
 

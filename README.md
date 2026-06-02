@@ -171,6 +171,10 @@ Admin overlay tools:
 - `zoneinfo [vnum]`: inspect the current or requested overlay room.
 - `placezone <zone_file> <x> <y>`: persist a zone anchor and reload overlays.
 - `reloadcontent`: import authored JSON template changes and missing spawns into live state.
+- `dig <direction> <room_name>`: create a coordinate-aware authored room and reciprocal exit.
+- `roomdesc <description>`: replace the current authored room description.
+- `createnpc <npc_key> <name>`: create a basic static authored NPC template in the current zone.
+- `spawnnpc <npc_key>`: persist and import an authored NPC spawn in the current room.
 - `copyover`: report that soft restarts are intentionally disabled for now.
 
 The player prompt reports current and maximum health, stamina, chakra, and location after commands. Map output includes a legend. Nearby-character listings are controlled by `show_nearby_players` and `nearby_player_radius` in `config.json`.
@@ -180,6 +184,8 @@ ANSI terminal colors are enabled for new connections by default. Set `default_co
 Room items, character inventories, equipped slots, and NPC instances persist in SQLite. Authored templates, item keywords, equipment metadata, and initial VNUM placements live in zone JSON files such as `zones/eveshaven.json`. Startup imports missing spawns once, so picked-up items are not recreated on every restart.
 
 Eve's Haven authors a Haven Map, Travel Ration, and Water Flask at its entrance, a Practice Kunai in its garden, a Crystal Token in its library, a Haven Guide NPC at the entrance, and a hostile Practice Construct in the garden. `reloadcontent` lets an admin apply JSON template edits and create newly-authored spawns without restarting the server.
+
+Eve's Haven is also the compact training loop. Pick up food and water at the entrance, move north into the garden for the Practice Kunai and Practice Construct, then exercise melee, `throw`, `usejutsu substitution`, `body`, and `rest`.
 
 The combat loop is command-driven and turn-based. `attack <character>` resolves player dexterity against authored NPC evasion, applies strength-based damage plus equipped-weapon metadata on a hit, then resolves a surviving hostile NPC's authored accuracy against player agility. Roommates see the exchange. Defeated NPCs disappear until their authored respawn delay elapses. A defeated player recovers to maximum health at the same grid coordinate.
 
