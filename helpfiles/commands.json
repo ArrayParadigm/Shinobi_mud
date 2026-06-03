@@ -44,7 +44,11 @@
     },
     "contentcheck": {
         "summary": "Validate authored content references.",
-        "details": ["Admin builder command. Reports broken exits, missing spawn templates, invalid VNUMs, duplicate VNUMs, overlapping coordinates, and out-of-bounds rooms."]
+        "details": ["Builder command. Reports broken exits, missing spawn templates, invalid VNUMs, duplicate VNUMs, overlapping coordinates, out-of-bounds rooms, unsupported item metadata, and unsupported NPC behavior or AI fields."]
+    },
+    "zpublish": {
+        "summary": "Validate and publish authored zone changes.",
+        "details": ["Admin builder command. Runs zone validation, marks the zone published, reloads overlays, and records a builder audit entry."]
     },
     "copyover": {
         "summary": "Report the disabled soft-restart status.",
@@ -65,8 +69,8 @@
     "createnpc": {
         "summary": "Create a basic static authored NPC template.",
         "details": [
-            "Admin builder command. Creates an NPC template in the current authored zone; the key must be unique and builder-safe.",
-            "Follow with medit to set description, dialogue, behavior, health, damage, accuracy, evasion, and respawn timing, then spawnnpc to seed the NPC in a room."
+            "Builder command. Creates an NPC template in the current authored zone; the key must be unique and builder-safe.",
+            "Follow with medit to set description, dialogue, behavior, movement, aggression, loot, emote, health, damage, accuracy, evasion, respawn timing, and leash radius, then spawnnpc to seed the NPC in a room."
         ]
     },
     "createzone": {
@@ -143,8 +147,8 @@
     "iedit": {
         "summary": "Create or edit an authored item template.",
         "details": [
-            "Admin builder command. Use iedit create <item_key> <name> to create a template, then iedit <item_key> <field> <value> to revise it.",
-            "Supported fields include name, description, keywords, type, slot, use text, damage, throw damage, nutrition, and hydration. Use istat to inspect the result before spawning it."
+            "Builder command. Use iedit create <item_key> <name> to create a template, then iedit <item_key> <field> <value> to revise it.",
+            "Supported fields include name, description, keywords, type, slot, flags, use text, damage, throw damage, nutrition, hydration, value, weight, stack, and capacity. Use istat to inspect the result before spawning it."
         ]
     },
     "istat": {
@@ -178,8 +182,8 @@
     "medit": {
         "summary": "Edit an authored NPC template.",
         "details": [
-            "Admin builder command. Use medit <npc_key> <field> <value> after createnpc to revise authored NPC data.",
-            "Supported fields include name, description, dialogue, behavior, health, damage, accuracy, evasion, and respawn timing. Use mstat before spawning to verify the template."
+            "Builder command. Use medit <npc_key> <field> <value> after createnpc to revise authored NPC data.",
+            "Supported fields include name, description, dialogue, behavior, movement, aggression, loot, emote, health, damage, accuracy, evasion, respawn, and leash. Use mstat before spawning to verify the template."
         ]
     },
     "mlist": {
@@ -200,11 +204,15 @@
     },
     "prac": {
         "summary": "List skills or inspect usage-based proficiency.",
-        "details": ["Ordinary skill proficiency increases through valid gameplay use."]
+        "details": ["Ordinary skill proficiency increases through valid gameplay use. Active practice reports visible tier progress without raw percentages."]
+    },
+    "pedit": {
+        "summary": "Edit access and validated persistent player fields.",
+        "details": ["Admin command. Use pedit <username> builder on or pedit <username> builder off to grant or remove builder access without granting full admin power. It also accepts the same validated player fields as pset."]
     },
     "pset": {
         "summary": "Set a validated persistent player field.",
-        "details": ["Admin command. Supports admin access, specialty, dojo, clan, release, resources, attributes, nutrition, hydration, and fatigue. Passwords, usernames, and locations require separate workflows."]
+        "details": ["Admin command. Supports admin and builder access, specialty, dojo, clan, release, resources, attributes, nutrition, hydration, and fatigue. Passwords, usernames, and locations require separate workflows."]
     },
     "pstat": {
         "summary": "Inspect persistent player state.",
@@ -225,9 +233,13 @@
     "redit": {
         "summary": "Edit the current authored room.",
         "details": [
-            "Admin builder command. Supports title, description, flags, and explicit exits for the current authored room.",
-            "Use redit flag <flag> <on|off> for room flags and redit exit <direction> <vnum|none> for explicit authored links."
+            "Admin builder command. Supports title, description, flags, explicit exits, reciprocal links, and unlinking for the current authored room.",
+            "Use redit flag <flag> <on|off>, redit exit <direction> <vnum|none>, redit link <direction> <vnum> [oneway], or redit unlink <direction> [oneway]."
         ]
+    },
+    "rdelete": {
+        "summary": "Delete an unreferenced authored room.",
+        "details": ["Admin builder command. Refuses deletion while the room has exits, incoming links, or authored spawns."]
     },
     "roomdesc": {
         "summary": "Replace the current authored room description.",
@@ -323,7 +335,7 @@
     },
     "train": {
         "summary": "List jutsus or inspect usage-based proficiency.",
-        "details": ["Jutsu proficiency increases through valid gameplay use."]
+        "details": ["Jutsu proficiency increases through valid gameplay use. Active training reports visible tier progress without raw percentages."]
     },
     "usejutsu": {
         "summary": "Activate an implemented jutsu.",
@@ -352,6 +364,10 @@
     "zonelist": {
         "summary": "List authored zones and placement status.",
         "details": ["Admin builder command. Shows filenames, display names, VNUM ranges, anchors, and room counts."]
+    },
+    "zdelete": {
+        "summary": "Delete an unreferenced authored zone.",
+        "details": ["Admin builder command. Refuses deletion while external exits or authored spawns still reference the zone."]
     },
     "zstat": {
         "summary": "Inspect compact zone builder counts.",

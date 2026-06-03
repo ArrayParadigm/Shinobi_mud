@@ -363,6 +363,11 @@ class ContentSliceTests(unittest.TestCase):
                         "description": "Practice Dummy waits here.",
                         "dialogue": "Practice Dummy has nothing to say yet.",
                         "behavior": "static",
+                        "movement_policy": "static",
+                        "leash_radius": 0,
+                        "aggression_policy": "passive",
+                        "loot_table": [],
+                        "room_emote": "",
                     }
                 ],
             )
@@ -435,6 +440,102 @@ class ContentSliceTests(unittest.TestCase):
                 self.player.messages,
             )
 
+    def test_redit_link_unlink_records_reciprocal_audit(self):
+        zone_data = {
+            "name": "Sample",
+            "content_key": "sample",
+            "range": {"start": 7000, "end": 7001},
+            "anchor": {"x": 1, "y": 1},
+            "rooms": {
+                "7000": {"name": "Square", "description": "Square.", "exits": {}, "x_offset": 0, "y_offset": 0},
+                "7001": {"name": "North", "description": "North.", "exits": {}, "x_offset": 0, "y_offset": -1},
+            },
+        }
+        with self.temporary_zone(zone_data) as zone_path:
+            admin_commands.redit(self.player, "link", "north 7001")
+            linked = json.loads(zone_path.read_text(encoding="utf-8"))
+            admin_commands.redit(self.player, "unlink", "north")
+            unlinked = json.loads(zone_path.read_text(encoding="utf-8"))
+
+        audit = self.connection.execute(
+            """
+            SELECT action, target, details
+            FROM builder_audit
+            ORDER BY id
+            """
+        ).fetchall()
+
+        self.assertEqual(linked["rooms"]["7000"]["exits"], {"north": 7001})
+        self.assertEqual(linked["rooms"]["7001"]["exits"], {"south": 7000})
+        self.assertEqual(unlinked["rooms"]["7000"]["exits"], {})
+        self.assertEqual(unlinked["rooms"]["7001"]["exits"], {})
+        self.assertEqual(
+            [tuple(row) for row in audit],
+            [("redit link", "7000", "north 7001"), ("redit unlink", "7000", "north")],
+        )
+
+    def test_publish_guarded_delete_and_undo_restore_zone_json(self):
+        zone_data = {
+            "name": "Sample",
+            "content_key": "sample",
+            "range": {"start": 7000, "end": 7001},
+            "anchor": {"x": 1, "y": 1},
+            "rooms": {
+                "7000": {"name": "Square", "description": "Square.", "exits": {"north": 7001}, "x_offset": 0, "y_offset": 0},
+                "7001": {"name": "North", "description": "North.", "exits": {"south": 7000}, "x_offset": 0, "y_offset": -1},
+            },
+            "item_templates": [{"key": "ration", "name": "Field Ration", "description": "A meal.", "keywords": ["meal"], "item_type": "food"}],
+            "item_spawns": [{"key": "ration-7001", "item": "ration", "vnum": 7001}],
+            "npc_templates": [],
+            "npc_spawns": [],
+        }
+        with self.temporary_zone(zone_data) as zone_path:
+            admin_commands.rdelete(self.player, "7001")
+            admin_commands.redit(self.player, "unlink", "north")
+            admin_commands.rdelete(self.player, "7001")
+            admin_commands.despawnitem(self.player, "ration-7001")
+            admin_commands.rdelete(self.player, "7001")
+            admin_commands.zpublish(self.player, "sample")
+            published = json.loads(zone_path.read_text(encoding="utf-8"))
+            admin_commands.zdelete(self.player, "sample")
+            self.assertFalse(zone_path.exists())
+            admin_commands.bundo(self.player)
+            restored = json.loads(zone_path.read_text(encoding="utf-8"))
+
+        transcript = "\n".join(self.player.messages)
+        audit = self.connection.execute(
+            "SELECT action, target, details FROM builder_audit ORDER BY id"
+        ).fetchall()
+
+        self.assertIn("Unable to delete room: room [7001] still has exits", transcript)
+        self.assertIn("item spawn ration-7001 still references [7001]", transcript)
+        self.assertIn("Deleted room [7001].", transcript)
+        self.assertTrue(published["published"])
+        self.assertIn("Deleted zone sample.json.", transcript)
+        self.assertEqual(restored["name"], "Sample")
+        self.assertIn(("zpublish", "sample.json", "Published zone after validation."), [tuple(row) for row in audit])
+        self.assertIn(("zdelete", "sample.json", "Deleted zone Sample"), [tuple(row) for row in audit])
+
+    def test_zpublish_refuses_invalid_draft(self):
+        zone_data = {
+            "name": "Sample",
+            "content_key": "sample",
+            "range": {"start": 7000, "end": 7001},
+            "anchor": {"x": 1, "y": 1},
+            "rooms": {
+                "7000": {"name": "Square", "description": "Square.", "exits": {"north": 7999}, "x_offset": 0, "y_offset": 0},
+            },
+        }
+        with self.temporary_zone(zone_data) as zone_path:
+            admin_commands.zpublish(self.player, "sample")
+            persisted = json.loads(zone_path.read_text(encoding="utf-8"))
+
+        self.assertNotIn("published", persisted)
+        self.assertIn(
+            "Unable to publish zone: Room [7000] exit north points to missing VNUM 7999.",
+            self.player.messages,
+        )
+
     def test_medit_and_mstat_sync_authored_npc_fields(self):
         zone_data = {
             "name": "Sample",
@@ -449,17 +550,22 @@ class ContentSliceTests(unittest.TestCase):
             admin_commands.medit(self.player, "guard", "behavior", "hostile")
             admin_commands.medit(self.player, "guard", "health", "15")
             admin_commands.medit(self.player, "guard", "damage", "4")
+            admin_commands.medit(self.player, "guard", "movement", "leashed")
+            admin_commands.medit(self.player, "guard", "leash", "2")
+            admin_commands.medit(self.player, "guard", "aggression", "aggressive")
+            admin_commands.medit(self.player, "guard", "emote", "The guard watches the street.")
             admin_commands.mstat(self.player, "guard")
 
             persisted = json.loads(zone_path.read_text(encoding="utf-8"))
             template = persisted["npc_templates"][0]
             saved = self.connection.execute(
-                "SELECT behavior, max_health, attack_damage FROM npc_templates WHERE npc_key='guard'"
+                "SELECT behavior, max_health, attack_damage, movement_policy, leash_radius, aggression_policy, room_emote FROM npc_templates WHERE npc_key='guard'"
             ).fetchone()
             self.assertEqual(template["behavior"], "hostile")
             self.assertEqual(template["max_health"], 15)
-            self.assertEqual(tuple(saved), ("hostile", 15, 4))
+            self.assertEqual(tuple(saved), ("hostile", 15, 4, "leashed", 2, "aggressive", "The guard watches the street."))
             self.assertIn("NPC guard: Village Guard", self.player.messages)
+            self.assertIn("  AI: movement=leashed leash=2 aggression=aggressive", self.player.messages)
             self.assertIn("  Combat: health=15 damage=4 accuracy=5 evasion=5 respawn=60s", self.player.messages)
 
     def test_iedit_spawnitem_and_istat_keep_consumed_seed_finite(self):
@@ -477,6 +583,10 @@ class ContentSliceTests(unittest.TestCase):
             admin_commands.iedit(self.player, "create", "", "field-ration Field Ration")
             admin_commands.iedit(self.player, "field-ration", "type", "food")
             admin_commands.iedit(self.player, "field-ration", "nutrition", "30")
+            admin_commands.iedit(self.player, "field-ration", "value", "3")
+            admin_commands.iedit(self.player, "field-ration", "weight", "1")
+            admin_commands.iedit(self.player, "field-ration", "stack", "5")
+            admin_commands.iedit(self.player, "field-ration", "flags", "takeable consumable")
             admin_commands.spawnitem(self.player, "field-ration")
             admin_commands.istat(self.player, "field-ration")
 
@@ -498,6 +608,8 @@ class ContentSliceTests(unittest.TestCase):
             )
             self.assertIn("Item field-ration: Field Ration", self.player.messages)
             self.assertIn("  Type: food slot=None damage=0 throw=0 nutrition=30 hydration=0", self.player.messages)
+            self.assertIn("  Economy: value=3 weight=1 stack=5 capacity=0", self.player.messages)
+            self.assertIn("  Flags: takeable, consumable", self.player.messages)
 
     def test_builder_inventory_search_and_contentcheck_cover_zone_json(self):
         zone_data = {
@@ -529,6 +641,47 @@ class ContentSliceTests(unittest.TestCase):
         self.assertIn("  ration: Field Ration (food)", transcript)
         self.assertIn("  npc Sample guard: Village Guard", transcript)
         self.assertIn("Content Check\n  OK", transcript)
+
+    def test_contentcheck_rejects_invalid_rich_template_fields(self):
+        zone_data = {
+            "name": "Sample",
+            "content_key": "sample",
+            "range": {"start": 7000, "end": 7000},
+            "anchor": {"x": 1, "y": 1},
+            "rooms": {"7000": {"name": "Square", "description": "Square.", "exits": {}, "x_offset": 0, "y_offset": 0}},
+            "npc_templates": [{
+                "key": "guard",
+                "name": "Village Guard",
+                "description": "A guard.",
+                "dialogue": "Stay sharp.",
+                "behavior": "flying",
+                "movement_policy": "teleport",
+                "aggression_policy": "mean",
+                "loot_table": ["missing-item"],
+            }],
+            "item_templates": [{
+                "key": "ration",
+                "name": "Field Ration",
+                "description": "A meal.",
+                "keywords": ["meal"],
+                "item_type": "artifact",
+                "equipment_slot": "tail",
+                "flags": ["cursed"],
+                "stack_limit": 0,
+            }],
+        }
+        with self.temporary_zone(zone_data):
+            admin_commands.contentcheck(self.player, "sample")
+
+        transcript = "\n".join(self.player.messages)
+        self.assertIn("Item template ration has unsupported type artifact.", transcript)
+        self.assertIn("Item template ration has unsupported slot tail.", transcript)
+        self.assertIn("Item template ration has unsupported flags cursed.", transcript)
+        self.assertIn("Item template ration has stack_limit below 1.", transcript)
+        self.assertIn("NPC template guard has unsupported behavior flying.", transcript)
+        self.assertIn("NPC template guard has unsupported movement teleport.", transcript)
+        self.assertIn("NPC template guard has unsupported aggression mean.", transcript)
+        self.assertIn("NPC template guard loot references missing item missing-item.", transcript)
 
     def test_builder_clone_despawn_and_bundo_round_trip_zone_json(self):
         zone_data = {

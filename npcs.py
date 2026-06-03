@@ -29,7 +29,12 @@ def create_npc_tables(cursor):
             attack_damage INTEGER NOT NULL DEFAULT 0,
             accuracy INTEGER NOT NULL DEFAULT 5,
             evasion INTEGER NOT NULL DEFAULT 5,
-            respawn_seconds INTEGER NOT NULL DEFAULT 60
+            respawn_seconds INTEGER NOT NULL DEFAULT 60,
+            loot_table TEXT NOT NULL DEFAULT '',
+            room_emote TEXT NOT NULL DEFAULT '',
+            movement_policy TEXT NOT NULL DEFAULT 'static',
+            leash_radius INTEGER NOT NULL DEFAULT 0,
+            aggression_policy TEXT NOT NULL DEFAULT 'passive'
         )
         """
     )
@@ -66,6 +71,11 @@ def ensure_npc_combat_columns(cursor):
         ("accuracy", "INTEGER NOT NULL DEFAULT 5"),
         ("evasion", "INTEGER NOT NULL DEFAULT 5"),
         ("respawn_seconds", "INTEGER NOT NULL DEFAULT 60"),
+        ("loot_table", "TEXT NOT NULL DEFAULT ''"),
+        ("room_emote", "TEXT NOT NULL DEFAULT ''"),
+        ("movement_policy", "TEXT NOT NULL DEFAULT 'static'"),
+        ("leash_radius", "INTEGER NOT NULL DEFAULT 0"),
+        ("aggression_policy", "TEXT NOT NULL DEFAULT 'passive'"),
     ):
         if column_name not in template_columns:
             cursor.execute(f"ALTER TABLE npc_templates ADD COLUMN {column_name} {definition}")

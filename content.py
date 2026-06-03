@@ -9,6 +9,14 @@ from npcs import create_npc_tables
 from techniques import create_technique_tables, sync_jutsu_templates, sync_skill_templates
 
 
+def _words(value, default=None):
+    if value is None:
+        return default or []
+    if isinstance(value, str):
+        return value.split()
+    return list(value)
+
+
 def create_authored_content_tables(cursor):
     """Track one-time authored spawns independently of mutable instances."""
     cursor.execute(
@@ -71,9 +79,10 @@ def _sync_item_templates(cursor, templates):
             INSERT INTO item_definitions (
                 item_key, name, description, keywords, item_type,
                 equipment_slot, use_text, damage_bonus,
-                throw_damage, nutrition_restore, hydration_restore
+                throw_damage, nutrition_restore, hydration_restore,
+                value, weight, stack_limit, container_capacity, flags
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(item_key) DO UPDATE SET
                 name=excluded.name,
                 description=excluded.description,
@@ -84,13 +93,18 @@ def _sync_item_templates(cursor, templates):
                 damage_bonus=excluded.damage_bonus,
                 throw_damage=excluded.throw_damage,
                 nutrition_restore=excluded.nutrition_restore,
-                hydration_restore=excluded.hydration_restore
+                hydration_restore=excluded.hydration_restore,
+                value=excluded.value,
+                weight=excluded.weight,
+                stack_limit=excluded.stack_limit,
+                container_capacity=excluded.container_capacity,
+                flags=excluded.flags
             """,
             (
                 template["key"],
                 template["name"],
                 template["description"],
-                " ".join(template.get("keywords", [])),
+                " ".join(_words(template.get("keywords", []))),
                 template.get("item_type", "misc"),
                 template.get("equipment_slot"),
                 template.get("use_text", ""),
@@ -98,6 +112,11 @@ def _sync_item_templates(cursor, templates):
                 int(template.get("throw_damage", 0)),
                 int(template.get("nutrition_restore", 0)),
                 int(template.get("hydration_restore", 0)),
+                int(template.get("value", 0)),
+                int(template.get("weight", 0)),
+                int(template.get("stack_limit", 1)),
+                int(template.get("container_capacity", 0)),
+                " ".join(_words(template.get("flags"), ["takeable"])),
             ),
         )
 
@@ -108,9 +127,10 @@ def _sync_npc_templates(cursor, templates):
             """
             INSERT INTO npc_templates (
                 npc_key, name, description, dialogue, behavior,
-                max_health, attack_damage, accuracy, evasion, respawn_seconds
+                max_health, attack_damage, accuracy, evasion, respawn_seconds,
+                loot_table, room_emote, movement_policy, leash_radius, aggression_policy
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(npc_key) DO UPDATE SET
                 name=excluded.name,
                 description=excluded.description,
@@ -120,7 +140,12 @@ def _sync_npc_templates(cursor, templates):
                 attack_damage=excluded.attack_damage,
                 accuracy=excluded.accuracy,
                 evasion=excluded.evasion,
-                respawn_seconds=excluded.respawn_seconds
+                respawn_seconds=excluded.respawn_seconds,
+                loot_table=excluded.loot_table,
+                room_emote=excluded.room_emote,
+                movement_policy=excluded.movement_policy,
+                leash_radius=excluded.leash_radius,
+                aggression_policy=excluded.aggression_policy
             """,
             (
                 template["key"],
@@ -133,6 +158,11 @@ def _sync_npc_templates(cursor, templates):
                 int(template.get("accuracy", 5)),
                 int(template.get("evasion", 5)),
                 int(template.get("respawn_seconds", 60)),
+                " ".join(_words(template.get("loot_table", []))),
+                template.get("room_emote", ""),
+                template.get("movement_policy", "static"),
+                int(template.get("leash_radius", 0)),
+                template.get("aggression_policy", "passive"),
             ),
         )
 

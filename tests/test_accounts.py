@@ -53,6 +53,7 @@ class AccountLifecycleTests(unittest.TestCase):
         ).fetchone()
 
         self.assertEqual(row["is_admin"], 0)
+        self.assertEqual(row["is_builder"], 0)
         self.assertTrue(row["password"].startswith("scrypt$"))
         self.assertEqual(row["role_type"], "newbie")
         self.assertEqual(row["clan"], "Unaffiliated")
@@ -80,6 +81,7 @@ class AccountLifecycleTests(unittest.TestCase):
 
         self.assertEqual((player.x, player.y), (42, 84))
         self.assertTrue(player.is_admin)
+        self.assertFalse(player.is_builder)
         self.assertEqual(player.player_class, "a")
         self.assertEqual(player.state, "COMMAND")
 
@@ -229,15 +231,16 @@ class PlayerAdminTests(unittest.TestCase):
         self.connection.execute(
             """
             INSERT INTO players (
-                username, password, is_admin, role_type, clan, natural_release,
+                username, password, is_admin, is_builder, role_type, clan, natural_release,
                 dojo_alignment, health, max_health, stamina, max_stamina,
                 chakra, max_chakra, nutrition, hydration, fatigue
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 "Target",
                 "secret-hash",
+                0,
                 0,
                 "Ninjutsu",
                 "Leaf",
@@ -268,6 +271,7 @@ class PlayerAdminTests(unittest.TestCase):
 
         rendered = "\n".join(self.admin.messages)
         self.assertIn("Player Target", rendered)
+        self.assertIn("Admin: no  Builder: no", rendered)
         self.assertIn("Specialty: Ninjutsu  Clan: Leaf  Release: Fire", rendered)
         self.assertIn("Body: nutrition=100 hydration=100 fatigue=0", rendered)
         self.assertIn("Stance: S3 - Balance", rendered)
@@ -300,14 +304,26 @@ class PlayerAdminTests(unittest.TestCase):
         target.x = 500
         target.y = 500
         target.is_admin = False
+        target.is_builder = False
         target.player_class = "Ninjutsu"
         target.track_player()
 
         admin_commands.pset(self.admin, "Target", "admin", "on")
+        admin_commands.pedit(self.admin, "Target", "builder", "on")
         admin_commands.pset(self.admin, "Target", "specialty", "Taijutsu")
 
         self.assertTrue(target.is_admin)
+        self.assertTrue(target.is_builder)
         self.assertEqual(target.player_class, "Taijutsu")
+
+    def test_pedit_promotes_builder_without_admin_access(self):
+        admin_commands.pedit(self.admin, "Target", "builder", "on")
+
+        player = self.connection.execute(
+            "SELECT is_admin, is_builder FROM players WHERE username='Target'"
+        ).fetchone()
+        self.assertEqual(tuple(player), (0, 1))
+        self.assertEqual(self.admin.messages[-1], "Set is_builder of Target to 1.")
 
 
 if __name__ == "__main__":

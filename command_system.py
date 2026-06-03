@@ -29,6 +29,14 @@ class CommandSpec:
                 self.name,
             )
             return
+        if self.permission == "builder" and not (player.is_admin or getattr(player, "is_builder", False)):
+            player.sendLine(b"You do not have permission to use that command.")
+            logging.warning(
+                "Non-builder user %s attempted builder command %s.",
+                player.username,
+                self.name,
+            )
+            return
 
         if len(split_args) < self.min_args or (
             self.max_args is not None and len(split_args) > self.max_args

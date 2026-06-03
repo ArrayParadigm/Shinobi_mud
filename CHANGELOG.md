@@ -1,5 +1,66 @@
 # Changelog
 
+## 2026-06-03 09:58 -0500 - Builder Promotion and Rich Template Sprint
+
+### Added
+
+- Added explicit builder access with `is_builder`, migration `19`, and `pedit <username> builder on|off`.
+- Added `builder` command permissions so promoted builders can use build tools without admin-only player-edit or shutdown access.
+- Added migration `20` for richer item and NPC template metadata.
+- Added item value, weight, stack limit, container capacity, and flags metadata.
+- Added NPC loot table, room emote, movement policy, leash radius, and aggression policy metadata.
+
+### Changed
+
+- Updated `iedit`, `istat`, `medit`, `mstat`, and `contentcheck` for richer template fields and validation.
+- Updated help visibility and command catalog labels so builder-only commands display separately from admin-only commands.
+- Updated README and active roadmap for builder promotion and the rich template sprint.
+
+### Verification
+
+- Passed `python -m unittest tests.test_accounts tests.test_commands -q`.
+- Passed `python -m unittest tests.test_content_slice -q`.
+- Passed `python -m unittest discover -s tests -q` with `185` tests.
+- Passed `python -m compileall -q .`.
+
+## 2026-06-03 09:45 -0500 - Sprint 26 Soak Harness and Sprint 27 Builder Safety
+
+### Added
+
+- Added `soak_harness.py`, a repeatable local private-alpha harness that writes transcripts, runtime logs, and temporary database state under `.local/soak/`.
+- Added builder safety commands `zpublish`, `rdelete`, and `zdelete`.
+- Added `redit link <direction> <vnum> [oneway]` and `redit unlink <direction> [oneway]` with reciprocal behavior by default.
+- Added migration `18` to expand `builder_audit` with target and details fields.
+
+### Changed
+
+- Routed zone publish through the same content validation rules as `contentcheck`.
+- Guarded room and zone deletion so builders must clear exits, incoming links, and authored spawns before removal.
+- Expanded builder audit entries so records include who changed content, the zone file, action, target, details, and timestamp.
+- Updated command help, command categories, README, and the active roadmap for the new soak and builder-safety workflow.
+
+### Verification
+
+- Passed focused content-slice and command-metadata regression tests.
+- Passed `python soak_harness.py`, producing ignored artifacts under `.local/soak/20260603-094127`.
+- Passed `python -m unittest discover -s tests -q` with `181` tests.
+- Applied migration `18` to the local preserved database with `python update_schema.py`.
+
+## 2026-06-03 09:30 -0500 - Immediate Stabilization Queue
+
+### Changed
+
+- Restored the tracked `world.map` startup dependency so imports and tests can load the world map again.
+- Hid raw backend percentages from active `prac <skill>` and `train <jutsu>` action feedback while preserving stored progress and inspection output.
+- Updated `TODO.md` to put immediate stabilization ahead of Sprint 26 and moved combat attack-speed tuning into the post-soak backlog.
+
+### Verification
+
+- Added focused regression coverage for active `prac` and `train` output without percent signs.
+- Passed `python -m unittest tests.test_techniques -q`.
+- Passed `python -m unittest discover -s tests -q` with `178` tests.
+- Passed a temporary-database TCP smoke covering registration, `look`, movement, `body`, `rest`, `prac throw`, and `train substitution`.
+
 ## 2026-06-02 20:46 -0500 - Sprint 29 Presentation and Navigation
 
 ### Added

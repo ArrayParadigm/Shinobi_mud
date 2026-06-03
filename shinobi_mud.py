@@ -375,6 +375,7 @@ class NinjaMUDProtocol(basic.LineReceiver):
         self.character_creation_data = {}
         self.username = None
         self.is_admin = False
+        self.is_builder = False
         self.player_class = 'newbie' # Default to a basic Class
         self.STATE_HANDLERS = get_state_handlers()
         
@@ -492,6 +493,7 @@ class NinjaMUDProtocol(basic.LineReceiver):
         self.x = player["x"]
         self.y = player["y"]
         self.is_admin = bool(player["is_admin"])
+        self.is_builder = bool(player["is_builder"])
         self.player_class = player["role_type"]
         self.sendLine(b"Login successful!")
         self.state = "COMMAND"
@@ -647,11 +649,11 @@ class NinjaMUDProtocol(basic.LineReceiver):
             hashed_password = hash_password(password)
             self.cursor.execute("""
                 INSERT INTO players (
-                    username, password, x, y, is_admin,
+                    username, password, x, y, is_admin, is_builder,
                     strength, dexterity, agility, intelligence, wisdom
                 )
-                VALUES (?, ?, ?, ?, ?, 10, 10, 10, 10, 10)
-            """, (self.username, hashed_password, self.x, self.y, self.is_admin))
+                VALUES (?, ?, ?, ?, ?, ?, 10, 10, 10, 10, 10)
+            """, (self.username, hashed_password, self.x, self.y, self.is_admin, self.is_builder))
             self.cursor.connection.commit()
             del self.character_creation_data['password']
             self.sendLine(b"Account created. Default character stats are set to 10.")
@@ -880,7 +882,7 @@ def validate_server_state(config):
                 errors.append(f"Command '{cmd}' is missing metadata.")
             elif not callable(command):
                 errors.append(f"Command '{cmd}' is not callable. Check its handler.")
-            elif command.permission not in {"player", "admin"}:
+            elif command.permission not in {"player", "builder", "admin"}:
                 errors.append(f"Command '{cmd}' has an invalid permission level.")
             elif not command.usage or not command.description:
                 errors.append(f"Command '{cmd}' has incomplete help metadata.")

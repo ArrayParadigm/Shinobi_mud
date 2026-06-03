@@ -71,6 +71,7 @@
         "ilist",
         "bfind",
         "contentcheck",
+        "zpublish",
         "goto",
         "zoneinfo",
         "placezone",
@@ -79,6 +80,7 @@
         "roomdesc",
         "redit",
         "rstat",
+        "rdelete",
         "createnpc",
         "medit",
         "mstat",
@@ -92,6 +94,7 @@
         "spawnlist",
         "despawnitem",
         "despawnnpc",
+        "zdelete",
         "bundo",
         "hedit"
     ],
@@ -100,6 +103,7 @@
         "copyover",
         "pstat",
         "pset",
+        "pedit",
         "setrole",
         "setstat",
         "setdojo"

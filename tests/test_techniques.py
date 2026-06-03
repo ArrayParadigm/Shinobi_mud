@@ -157,6 +157,23 @@ class TechniqueFrameworkTests(unittest.TestCase):
         self.assertEqual((tier_result["progress_points"], tier_result["proficiency"]), (110, "Novice"))
         self.assertIn("tier", tier_result["milestones"])
 
+    def test_prac_and_train_actions_hide_backend_percentages(self):
+        general_commands.handle_practice(self.player, "throw", "skill")
+        general_commands.handle_practice(self.player, "substitution", "jutsu")
+
+        self.assertEqual(
+            self.player.messages,
+            [
+                "You practice Throw.",
+                "You feel more confident performing Throw.",
+                "Throw: Untrained",
+                "You train Substitution Technique.",
+                "You feel more confident performing Substitution Technique.",
+                "Substitution Technique: Untrained",
+            ],
+        )
+        self.assertNotIn("%", "\n".join(self.player.messages))
+
     def test_substitution_activation_spends_chakra_and_persists_cooldown(self):
         result = activate_jutsu(self.player.cursor, "Student", "sub")
 

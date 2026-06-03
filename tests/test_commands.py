@@ -119,7 +119,7 @@ class CommandMetadataTests(unittest.TestCase):
                 self.assertIsInstance(command, CommandSpec)
                 self.assertTrue(command.usage)
                 self.assertTrue(command.description)
-                self.assertIn(command.permission, {"player", "admin"})
+                self.assertIn(command.permission, {"player", "builder", "admin"})
 
     def test_semantic_alias_resolves_to_canonical_command(self):
         self.assertEqual(shinobi_mud.resolve_command_name("status"), ("score", []))
@@ -148,12 +148,32 @@ class CommandMetadataTests(unittest.TestCase):
             ["Usage: goto <vnum> | goto grid <x> <y> | goto player <name>"],
         )
 
+    def test_builder_argument_validation_returns_usage_for_builder_commands(self):
+        self.player.is_builder = True
+
+        shinobi_mud.process_command(self.player, "goto definitely-not-a-room")
+
+        self.assertEqual(
+            self.player.messages,
+            ["Usage: goto <vnum> | goto grid <x> <y> | goto player <name>"],
+        )
+
     def test_help_lists_player_commands_without_admin_commands(self):
         shinobi_mud.process_command(self.player, "help")
 
         command_list = "\n".join(self.player.messages)
         self.assertIn("look", command_list)
         self.assertIn("say", command_list)
+        self.assertNotIn("buildzone", command_list)
+        self.assertNotIn("shutdown", command_list)
+
+    def test_builder_help_includes_builder_commands_without_admin_commands(self):
+        self.player.is_builder = True
+
+        shinobi_mud.process_command(self.player, "help")
+
+        command_list = "\n".join(self.player.messages)
+        self.assertIn("buildzone", command_list)
         self.assertNotIn("shutdown", command_list)
 
     def test_help_detail_uses_metadata_and_aliases(self):
@@ -187,6 +207,7 @@ class CommandMetadataTests(unittest.TestCase):
         self.assertIn("  attack <character> - Engage a hostile character for pulse combat. (i)", catalog)
         self.assertIn("  commands - List every command with a brief description. (i)", catalog)
         self.assertIn("  inventory - List the items you carry. (i) (aliases: inv)", catalog)
+        self.assertIn("  buildzone <zone_key> <start_vnum> <end_vnum> <x> <y> <room_title> [builder] - Create, anchor, and enter a usable authored zone. (i)", catalog)
         self.assertIn("  shutdown [admin] - Stop the server. (i)", catalog)
         self.assertEqual(self.player.messages[-1], "Use help <command> for detailed usage.")
 

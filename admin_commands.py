@@ -23,6 +23,13 @@ ROOM_FLAGS = {
     "recovery-friendly",
 }
 
+ITEM_TYPES = {"misc", "weapon", "food", "drink", "container", "tool", "quest"}
+ITEM_SLOTS = {"hand", "head", "body", "feet", "none"}
+ITEM_FLAGS = {"takeable", "consumable", "throwable", "unique"}
+NPC_BEHAVIORS = {"static", "hostile", "wanderer", "vendor", "trainer"}
+NPC_MOVEMENT_POLICIES = {"static", "wander", "patrol", "leashed"}
+NPC_AGGRESSION_POLICIES = {"passive", "defensive", "aggressive"}
+
 
 def zone_directory():
     """Return the configured directory for authored zone JSON files."""
@@ -222,7 +229,7 @@ def _write_zone(zone_path, zone_data):
         file.write("\n")
 
 
-def _record_builder_undo(protocol, zone_path, original_zone_data, action):
+def _record_builder_undo(protocol, zone_path, original_zone_data, action, target="", details=""):
     """Store the previous zone JSON before a successful builder mutation."""
     protocol.cursor.execute(
         """
@@ -238,10 +245,16 @@ def _record_builder_undo(protocol, zone_path, original_zone_data, action):
     )
     protocol.cursor.execute(
         """
-        INSERT INTO builder_audit (username, zone_file, action)
-        VALUES (?, ?, ?)
+        INSERT INTO builder_audit (username, zone_file, action, target, details)
+        VALUES (?, ?, ?, ?, ?)
         """,
-        (getattr(protocol, "username", "unknown"), os.path.basename(zone_path), action),
+        (
+            getattr(protocol, "username", "unknown"),
+            os.path.basename(zone_path),
+            action,
+            target,
+            details,
+        ),
     )
 
 
@@ -318,14 +331,23 @@ def _required_text(value, label):
     return value
 
 
-def _sync_zone_edit(protocol, zone_path, zone_data, original_zone_data, reload_overlays=False):
+def _sync_zone_edit(
+    protocol,
+    zone_path,
+    zone_data,
+    original_zone_data,
+    reload_overlays=False,
+    action="zone edit",
+    target="",
+    details="",
+):
     """Persist a zone mutation and restore JSON plus overlays if validation fails."""
     _write_zone(zone_path, zone_data)
     try:
         if reload_overlays:
             _reload_valid_overlays()
         sync_authored_content(protocol.cursor.connection, zone_directory(), WORLD_OVERLAYS)
-        _record_builder_undo(protocol, zone_path, original_zone_data, "zone edit")
+        _record_builder_undo(protocol, zone_path, original_zone_data, action, target, details)
         protocol.cursor.connection.commit()
     except Exception:
         protocol.cursor.connection.rollback()
@@ -477,13 +499,147 @@ def redit(protocol, field, value):
                 room.setdefault("exits", {})[parts[0]] = int(parts[1])
             else:
                 raise ValueError("Exit target must be an existing authored VNUM or none.")
+        elif field == "link":
+            parts = value.lower().split()
+            if len(parts) not in {2, 3} or parts[0] not in DIRECTION_OFFSETS or not parts[1].isdigit():
+                raise ValueError("Usage: redit link <direction> <vnum> [oneway]")
+            target_vnum = parts[1]
+            target_zone_path, target_zone_data = _load_zone_for_vnum(target_vnum)
+            if not target_zone_data:
+                raise ValueError("Link target must be an existing authored VNUM.")
+            if target_zone_path != zone_path:
+                raise ValueError("Cross-zone links are not supported yet.")
+            room.setdefault("exits", {})[parts[0]] = int(target_vnum)
+            if len(parts) == 2 or parts[2] not in {"oneway", "one-way"}:
+                reverse = reverse_dir(parts[0])
+                if not reverse:
+                    raise ValueError("Direction has no reciprocal link.")
+                zone_data["rooms"][target_vnum].setdefault("exits", {})[reverse] = int(overlay["vnum"])
+        elif field == "unlink":
+            parts = value.lower().split()
+            if len(parts) not in {1, 2} or parts[0] not in DIRECTION_OFFSETS:
+                raise ValueError("Usage: redit unlink <direction> [oneway]")
+            existing_target = room.get("exits", {}).get(parts[0])
+            room.setdefault("exits", {}).pop(parts[0], None)
+            if existing_target is not None and (len(parts) == 1 or parts[1] not in {"oneway", "one-way"}):
+                reverse = reverse_dir(parts[0])
+                target_room = zone_data.get("rooms", {}).get(str(existing_target))
+                if target_room and reverse and target_room.get("exits", {}).get(reverse) == overlay["vnum"]:
+                    target_room.setdefault("exits", {}).pop(reverse, None)
         else:
-            raise ValueError("Room field must be title, desc, flag, or exit.")
-        _sync_zone_edit(protocol, zone_path, zone_data, original_zone_data, reload_overlays=True)
+            raise ValueError("Room field must be title, desc, flag, exit, link, or unlink.")
+        _sync_zone_edit(
+            protocol,
+            zone_path,
+            zone_data,
+            original_zone_data,
+            reload_overlays=True,
+            action=f"redit {field}",
+            target=str(overlay["vnum"]),
+            details=value,
+        )
     except (OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
         protocol.sendLine(f"Unable to edit room: {exc}".encode("utf-8"))
         return
     protocol.sendLine(f"Updated room [{overlay['vnum']}] {field}.".encode("utf-8"))
+
+
+def _room_delete_blockers(zone_data, target_vnum):
+    blockers = []
+    target = str(target_vnum)
+    room = zone_data.get("rooms", {}).get(target)
+    if not room:
+        return [f"room [{target}] does not exist"]
+    if room.get("exits"):
+        blockers.append(f"room [{target}] still has exits")
+    for vnum, candidate in zone_data.get("rooms", {}).items():
+        for direction, linked_vnum in candidate.get("exits", {}).items():
+            if str(linked_vnum) == target:
+                blockers.append(f"room [{vnum}] exit {direction} still links to [{target}]")
+    for spawn in zone_data.get("npc_spawns", []):
+        if str(spawn.get("vnum")) == target:
+            blockers.append(f"NPC spawn {spawn.get('key')} still references [{target}]")
+    for spawn in zone_data.get("item_spawns", []):
+        if str(spawn.get("vnum")) == target:
+            blockers.append(f"item spawn {spawn.get('key')} still references [{target}]")
+    return blockers
+
+
+def rdelete(protocol, vnum):
+    """Delete an authored room only after links and spawns are cleared."""
+    try:
+        zone_path, zone_data = _load_zone_for_vnum(vnum)
+        if not zone_data:
+            raise ValueError(f"Unknown room VNUM: {vnum}")
+        blockers = _room_delete_blockers(zone_data, vnum)
+        if blockers:
+            raise ValueError("; ".join(blockers))
+        original_zone_data = deepcopy(zone_data)
+        del zone_data["rooms"][str(vnum)]
+        _sync_zone_edit(
+            protocol,
+            zone_path,
+            zone_data,
+            original_zone_data,
+            reload_overlays=True,
+            action="rdelete",
+            target=str(vnum),
+            details=f"Deleted room [{vnum}]",
+        )
+        protocol.sendLine(f"Deleted room [{vnum}].".encode("utf-8"))
+    except (OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
+        protocol.sendLine(f"Unable to delete room: {exc}".encode("utf-8"))
+
+
+def _zone_delete_blockers(zone_path, zone_data):
+    blockers = []
+    room_keys = set(zone_data.get("rooms", {}))
+    for other_path, other_zone in _all_authored_zones():
+        if other_path == zone_path:
+            continue
+        for vnum, room in other_zone.get("rooms", {}).items():
+            for direction, linked_vnum in room.get("exits", {}).items():
+                if str(linked_vnum) in room_keys:
+                    blockers.append(
+                        f"{os.path.basename(other_path)} room [{vnum}] exit {direction} links into this zone"
+                    )
+    if zone_data.get("npc_spawns"):
+        blockers.append("zone still has NPC spawns")
+    if zone_data.get("item_spawns"):
+        blockers.append("zone still has item spawns")
+    return blockers
+
+
+def zdelete(protocol, zone_key):
+    """Delete an authored zone only when external links and spawns are cleared."""
+    try:
+        zone_path, zone_data = _zone_by_key(zone_key)
+        if not zone_data:
+            raise ValueError(f"Unknown zone: {zone_key}")
+        blockers = _zone_delete_blockers(zone_path, zone_data)
+        if blockers:
+            raise ValueError("; ".join(blockers))
+        original_zone_data = deepcopy(zone_data)
+        os.remove(zone_path)
+        try:
+            _reload_valid_overlays()
+            _record_builder_undo(
+                protocol,
+                zone_path,
+                original_zone_data,
+                "zdelete",
+                os.path.basename(zone_path),
+                f"Deleted zone {zone_data.get('name', zone_key)}",
+            )
+            protocol.cursor.connection.commit()
+        except Exception:
+            protocol.cursor.connection.rollback()
+            _write_zone(zone_path, original_zone_data)
+            _reload_valid_overlays()
+            raise
+        protocol.sendLine(f"Deleted zone {os.path.basename(zone_path)}.".encode("utf-8"))
+    except (OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
+        protocol.sendLine(f"Unable to delete zone: {exc}".encode("utf-8"))
 
 
 def dig(protocol, direction, room_name):
@@ -576,6 +732,14 @@ def mstat(protocol, npc_key):
     protocol.sendLine(f"  Behavior: {template.get('behavior', 'static')}".encode("utf-8"))
     protocol.sendLine(
         (
+            f"  AI: movement={template.get('movement_policy', 'static')} "
+            f"leash={template.get('leash_radius', 0)} aggression={template.get('aggression_policy', 'passive')}"
+        ).encode("utf-8")
+    )
+    protocol.sendLine(f"  Loot: {', '.join(template.get('loot_table', [])) or 'None'}".encode("utf-8"))
+    protocol.sendLine(f"  Room emote: {template.get('room_emote', '') or 'None'}".encode("utf-8"))
+    protocol.sendLine(
+        (
             f"  Combat: health={template.get('max_health', 1)} damage={template.get('attack_damage', 0)} "
             f"accuracy={template.get('accuracy', 5)} evasion={template.get('evasion', 5)} "
             f"respawn={template.get('respawn_seconds', 60)}s"
@@ -592,6 +756,7 @@ def medit(protocol, npc_key, field, value):
         "accuracy": "accuracy",
         "evasion": "evasion",
         "respawn": "respawn_seconds",
+        "leash": "leash_radius",
     }
     try:
         zone_path, zone_data, template = _find_template("npc", npc_key)
@@ -606,16 +771,28 @@ def medit(protocol, npc_key, field, value):
         elif field == "dialogue":
             template["dialogue"] = _required_text(value, "NPC dialogue")
         elif field == "behavior":
-            if value.lower() not in {"static", "hostile"}:
-                raise ValueError("NPC behavior must be static or hostile.")
+            if value.lower() not in NPC_BEHAVIORS:
+                raise ValueError(f"NPC behavior must be one of: {', '.join(sorted(NPC_BEHAVIORS))}.")
             template["behavior"] = value.lower()
+        elif field == "movement":
+            if value.lower() not in NPC_MOVEMENT_POLICIES:
+                raise ValueError(f"NPC movement must be one of: {', '.join(sorted(NPC_MOVEMENT_POLICIES))}.")
+            template["movement_policy"] = value.lower()
+        elif field == "aggression":
+            if value.lower() not in NPC_AGGRESSION_POLICIES:
+                raise ValueError(f"NPC aggression must be one of: {', '.join(sorted(NPC_AGGRESSION_POLICIES))}.")
+            template["aggression_policy"] = value.lower()
+        elif field == "loot":
+            template["loot_table"] = _parse_csv_words(value, set(_authored_item_template_keys()), "NPC loot table")
+        elif field == "emote":
+            template["room_emote"] = _required_text(value, "NPC room emote")
         elif field in integer_fields:
             numeric_value = int(value)
             if numeric_value < 0:
                 raise ValueError("NPC numeric fields cannot be negative.")
             template[integer_fields[field]] = numeric_value
         else:
-            raise ValueError("NPC field must be name, desc, dialogue, behavior, health, damage, accuracy, evasion, or respawn.")
+            raise ValueError("NPC field must be name, desc, dialogue, behavior, movement, aggression, loot, emote, health, damage, accuracy, evasion, respawn, or leash.")
         _sync_zone_edit(protocol, zone_path, zone_data, original_zone_data)
     except (OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
         protocol.sendLine(f"Unable to edit NPC template: {exc}".encode("utf-8"))
@@ -640,6 +817,11 @@ def createnpc(protocol, npc_key, npc_name):
                 "description": f"{npc_name} waits here.",
                 "dialogue": f"{npc_name} has nothing to say yet.",
                 "behavior": "static",
+                "movement_policy": "static",
+                "leash_radius": 0,
+                "aggression_policy": "passive",
+                "loot_table": [],
+                "room_emote": "",
             }
         )
         _sync_zone_edit(protocol, zone_path, zone_data, original_zone_data)
@@ -721,6 +903,13 @@ def istat(protocol, item_key):
             f"nutrition={template.get('nutrition_restore', 0)} hydration={template.get('hydration_restore', 0)}"
         ).encode("utf-8")
     )
+    protocol.sendLine(
+        (
+            f"  Economy: value={template.get('value', 0)} weight={template.get('weight', 0)} "
+            f"stack={template.get('stack_limit', 1)} capacity={template.get('container_capacity', 0)}"
+        ).encode("utf-8")
+    )
+    protocol.sendLine(f"  Flags: {', '.join(template.get('flags', ['takeable'])) or 'None'}".encode("utf-8"))
 
 
 def iedit(protocol, item_key, field, value):
@@ -730,6 +919,10 @@ def iedit(protocol, item_key, field, value):
         "throw": "throw_damage",
         "nutrition": "nutrition_restore",
         "hydration": "hydration_restore",
+        "value": "value",
+        "weight": "weight",
+        "stack": "stack_limit",
+        "capacity": "container_capacity",
     }
     try:
         if item_key == "create":
@@ -750,6 +943,11 @@ def iedit(protocol, item_key, field, value):
                     "description": f"{name} is unfinished authored content.",
                     "keywords": [new_key],
                     "item_type": "misc",
+                    "value": 0,
+                    "weight": 0,
+                    "stack_limit": 1,
+                    "container_capacity": 0,
+                    "flags": ["takeable"],
                 }
             )
             _sync_zone_edit(protocol, zone_path, zone_data, original_zone_data)
@@ -771,18 +969,26 @@ def iedit(protocol, item_key, field, value):
                 raise ValueError("Item keywords cannot be empty.")
             template["keywords"] = keywords
         elif field == "type":
+            if value.lower() not in ITEM_TYPES:
+                raise ValueError(f"Item type must be one of: {', '.join(sorted(ITEM_TYPES))}.")
             template["item_type"] = value.lower()
         elif field == "slot":
+            if value.lower() not in ITEM_SLOTS:
+                raise ValueError(f"Item slot must be one of: {', '.join(sorted(ITEM_SLOTS))}.")
             template["equipment_slot"] = None if value.lower() == "none" else value.lower()
+        elif field == "flags":
+            template["flags"] = _parse_csv_words(value, ITEM_FLAGS, "Item flags")
         elif field == "use":
             template["use_text"] = _required_text(value, "Item use text")
         elif field in integer_fields:
             numeric_value = int(value)
             if numeric_value < 0:
                 raise ValueError("Item numeric fields cannot be negative.")
+            if integer_fields[field] == "stack_limit" and numeric_value < 1:
+                raise ValueError("Item stack limit must be at least 1.")
             template[integer_fields[field]] = numeric_value
         else:
-            raise ValueError("Item field must be name, desc, keywords, type, slot, use, damage, throw, nutrition, or hydration.")
+            raise ValueError("Item field must be name, desc, keywords, type, slot, flags, use, damage, throw, nutrition, hydration, value, weight, stack, or capacity.")
         _sync_zone_edit(protocol, zone_path, zone_data, original_zone_data)
     except (OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
         protocol.sendLine(f"Unable to edit item template: {exc}".encode("utf-8"))
@@ -924,42 +1130,79 @@ def bfind(protocol, text):
         protocol.sendLine(("  " + line if not line.startswith("  ") else line).encode("utf-8"))
 
 
+def _contentcheck_errors(zones):
+    errors = []
+    all_rooms = {}
+    for zone_path, zone_data in zones:
+        room_keys = set(zone_data.get("rooms", {}))
+        npc_keys = {template["key"] for template in zone_data.get("npc_templates", [])}
+        item_keys = {template["key"] for template in zone_data.get("item_templates", [])}
+        seen_coordinates = {}
+        anchor = zone_data.get("anchor", {"x": 0, "y": 0})
+        for template in zone_data.get("item_templates", []):
+            item_type = template.get("item_type", "misc")
+            if item_type not in ITEM_TYPES:
+                errors.append(f"Item template {template.get('key')} has unsupported type {item_type}.")
+            slot = template.get("equipment_slot") or "none"
+            if slot not in ITEM_SLOTS:
+                errors.append(f"Item template {template.get('key')} has unsupported slot {slot}.")
+            flags = set(template.get("flags", ["takeable"]))
+            invalid_flags = sorted(flags - ITEM_FLAGS)
+            if invalid_flags:
+                errors.append(f"Item template {template.get('key')} has unsupported flags {', '.join(invalid_flags)}.")
+            for field in ("damage_bonus", "throw_damage", "nutrition_restore", "hydration_restore", "value", "weight", "container_capacity"):
+                if int(template.get(field, 0)) < 0:
+                    errors.append(f"Item template {template.get('key')} has negative {field}.")
+            if int(template.get("stack_limit", 1)) < 1:
+                errors.append(f"Item template {template.get('key')} has stack_limit below 1.")
+        for template in zone_data.get("npc_templates", []):
+            behavior = template.get("behavior", "static")
+            if behavior not in NPC_BEHAVIORS:
+                errors.append(f"NPC template {template.get('key')} has unsupported behavior {behavior}.")
+            movement = template.get("movement_policy", "static")
+            if movement not in NPC_MOVEMENT_POLICIES:
+                errors.append(f"NPC template {template.get('key')} has unsupported movement {movement}.")
+            aggression = template.get("aggression_policy", "passive")
+            if aggression not in NPC_AGGRESSION_POLICIES:
+                errors.append(f"NPC template {template.get('key')} has unsupported aggression {aggression}.")
+            for field in ("max_health", "attack_damage", "accuracy", "evasion", "respawn_seconds", "leash_radius"):
+                if int(template.get(field, 0 if field != "max_health" else 1)) < 0:
+                    errors.append(f"NPC template {template.get('key')} has negative {field}.")
+            for item_key in template.get("loot_table", []):
+                if item_key not in item_keys:
+                    errors.append(f"NPC template {template.get('key')} loot references missing item {item_key}.")
+        for vnum, room in zone_data.get("rooms", {}).items():
+            if vnum in all_rooms:
+                errors.append(f"Duplicate VNUM {vnum} in {os.path.basename(zone_path)} and {all_rooms[vnum]}.")
+            all_rooms[vnum] = os.path.basename(zone_path)
+            coordinates = (int(anchor["x"]) + int(room.get("x_offset", 0)), int(anchor["y"]) + int(room.get("y_offset", 0)))
+            if coordinates in seen_coordinates:
+                errors.append(f"Overlapping coordinates {coordinates} in {zone_data['name']}.")
+            seen_coordinates[coordinates] = vnum
+            if not is_within_bounds(WORLD_MAP, *coordinates):
+                errors.append(f"Room [{vnum}] falls outside the world map at {coordinates}.")
+            for direction, target in room.get("exits", {}).items():
+                if direction not in DIRECTION_OFFSETS:
+                    errors.append(f"Room [{vnum}] has invalid exit direction {direction}.")
+                if str(target) not in room_keys:
+                    errors.append(f"Room [{vnum}] exit {direction} points to missing VNUM {target}.")
+        for spawn in zone_data.get("npc_spawns", []):
+            if spawn.get("npc") not in npc_keys:
+                errors.append(f"NPC spawn {spawn.get('key')} references missing template {spawn.get('npc')}.")
+            if str(spawn.get("vnum")) not in room_keys:
+                errors.append(f"NPC spawn {spawn.get('key')} references missing VNUM {spawn.get('vnum')}.")
+        for spawn in zone_data.get("item_spawns", []):
+            if spawn.get("item") not in item_keys:
+                errors.append(f"Item spawn {spawn.get('key')} references missing template {spawn.get('item')}.")
+            if str(spawn.get("vnum")) not in room_keys:
+                errors.append(f"Item spawn {spawn.get('key')} references missing VNUM {spawn.get('vnum')}.")
+    return errors
+
+
 def contentcheck(protocol, zone_key=None):
     try:
         zones = [_zone_for_optional_arg(protocol, zone_key)] if zone_key else list(_all_authored_zones())
-        errors = []
-        all_rooms = {}
-        for zone_path, zone_data in zones:
-            room_keys = set(zone_data.get("rooms", {}))
-            npc_keys = {template["key"] for template in zone_data.get("npc_templates", [])}
-            item_keys = {template["key"] for template in zone_data.get("item_templates", [])}
-            seen_coordinates = {}
-            anchor = zone_data.get("anchor", {"x": 0, "y": 0})
-            for vnum, room in zone_data.get("rooms", {}).items():
-                if vnum in all_rooms:
-                    errors.append(f"Duplicate VNUM {vnum} in {os.path.basename(zone_path)} and {all_rooms[vnum]}.")
-                all_rooms[vnum] = os.path.basename(zone_path)
-                coordinates = (int(anchor["x"]) + int(room.get("x_offset", 0)), int(anchor["y"]) + int(room.get("y_offset", 0)))
-                if coordinates in seen_coordinates:
-                    errors.append(f"Overlapping coordinates {coordinates} in {zone_data['name']}.")
-                seen_coordinates[coordinates] = vnum
-                if not is_within_bounds(WORLD_MAP, *coordinates):
-                    errors.append(f"Room [{vnum}] falls outside the world map at {coordinates}.")
-                for direction, target in room.get("exits", {}).items():
-                    if direction not in DIRECTION_OFFSETS:
-                        errors.append(f"Room [{vnum}] has invalid exit direction {direction}.")
-                    if str(target) not in room_keys:
-                        errors.append(f"Room [{vnum}] exit {direction} points to missing VNUM {target}.")
-            for spawn in zone_data.get("npc_spawns", []):
-                if spawn.get("npc") not in npc_keys:
-                    errors.append(f"NPC spawn {spawn.get('key')} references missing template {spawn.get('npc')}.")
-                if str(spawn.get("vnum")) not in room_keys:
-                    errors.append(f"NPC spawn {spawn.get('key')} references missing VNUM {spawn.get('vnum')}.")
-            for spawn in zone_data.get("item_spawns", []):
-                if spawn.get("item") not in item_keys:
-                    errors.append(f"Item spawn {spawn.get('key')} references missing template {spawn.get('item')}.")
-                if str(spawn.get("vnum")) not in room_keys:
-                    errors.append(f"Item spawn {spawn.get('key')} references missing VNUM {spawn.get('vnum')}.")
+        errors = _contentcheck_errors(zones)
         protocol.sendLine(b"Content Check")
         if errors:
             for error in errors:
@@ -968,6 +1211,30 @@ def contentcheck(protocol, zone_key=None):
             protocol.sendLine(b"  OK")
     except (OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
         protocol.sendLine(f"Unable to check content: {exc}".encode("utf-8"))
+
+
+def zpublish(protocol, zone_key=None):
+    """Validate one zone, mark it published, and reload live authored state."""
+    try:
+        zone_path, zone_data = _zone_for_optional_arg(protocol, zone_key)
+        errors = _contentcheck_errors([(zone_path, zone_data)])
+        if errors:
+            raise ValueError(errors[0])
+        original_zone_data = deepcopy(zone_data)
+        zone_data["published"] = True
+        _sync_zone_edit(
+            protocol,
+            zone_path,
+            zone_data,
+            original_zone_data,
+            reload_overlays=True,
+            action="zpublish",
+            target=os.path.basename(zone_path),
+            details="Published zone after validation.",
+        )
+        protocol.sendLine(f"Published zone {zone_data['name']}.".encode("utf-8"))
+    except (OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
+        protocol.sendLine(f"Unable to publish zone: {exc}".encode("utf-8"))
 
 
 def _clone_key(existing_keys, source_key, new_key):
@@ -1236,6 +1503,7 @@ def _player_row(protocol, username):
     return protocol.cursor.execute(
         """
         SELECT username, is_admin, role_type, clan, natural_release, dojo_alignment,
+               is_builder,
                health, max_health, stamina, max_stamina, chakra, max_chakra,
                strength, dexterity, agility, intelligence, wisdom,
                nutrition, hydration, fatigue, recovery_state, description, x, y
@@ -1256,6 +1524,7 @@ def pstat(protocol, username):
     protocol.sendLine(
         (
             f"  Admin: {'yes' if player['is_admin'] else 'no'}  "
+            f"Builder: {'yes' if player['is_builder'] else 'no'}  "
             f"Specialty: {player['role_type']}  Clan: {player['clan']}  "
             f"Release: {player['natural_release']}"
         ).encode("utf-8")
@@ -1296,6 +1565,30 @@ def _parse_boolean(value):
     raise ValueError("Admin must be on or off.")
 
 
+def _parse_access_boolean(value, label):
+    try:
+        return _parse_boolean(value)
+    except ValueError:
+        raise ValueError(f"{label} must be on or off.")
+
+
+def _parse_csv_words(value, allowed, label):
+    if value.strip().lower() in {"none", "clear"}:
+        return []
+    words = [
+        word.strip().lower()
+        for chunk in value.split(",")
+        for word in chunk.split()
+        if word.strip()
+    ]
+    if not words:
+        raise ValueError(f"{label} cannot be empty.")
+    invalid = sorted(set(words) - allowed)
+    if invalid:
+        raise ValueError(f"{label} contains unsupported values: {', '.join(invalid)}.")
+    return words
+
+
 def _parse_bounded_integer(value, label, maximum=None):
     numeric_value = int(value)
     if numeric_value < 0 or (maximum is not None and numeric_value > maximum):
@@ -1315,7 +1608,10 @@ def pset(protocol, username, field, value):
     try:
         if requested_field == "admin":
             column = "is_admin"
-            parsed_value = _parse_boolean(value)
+            parsed_value = _parse_access_boolean(value, "Admin")
+        elif requested_field == "builder":
+            column = "is_builder"
+            parsed_value = _parse_access_boolean(value, "Builder")
         elif requested_field in PLAYER_TEXT_FIELDS:
             column = PLAYER_TEXT_FIELDS[requested_field]
             parsed_value = _required_text(value, requested_field.title())
@@ -1328,6 +1624,7 @@ def pset(protocol, username, field, value):
             if requested_field not in numeric_fields:
                 raise ValueError(
                     "Player field must be admin, specialty, dojo, clan, release, "
+                    "builder, "
                     "health, max_health, stamina, max_stamina, chakra, max_chakra, "
                     "strength, intellect, dexterity, agility, condition, nutrition, hydration, fatigue, or description."
                 )
@@ -1375,9 +1672,16 @@ def pset(protocol, username, field, value):
     if online:
         if column == "is_admin":
             online.is_admin = bool(parsed_value)
+        elif column == "is_builder":
+            online.is_builder = bool(parsed_value)
         elif column == "role_type":
             online.player_class = parsed_value
     protocol.sendLine(f"Set {column} of {player['username']} to {parsed_value}.".encode("utf-8"))
+
+
+def pedit(protocol, username, field, value):
+    """Admin-facing player editor with explicit builder promotion support."""
+    pset(protocol, username, field, value)
 
 
 def setrole(protocol, username, role_type):
@@ -1396,42 +1700,46 @@ def setdojo(protocol, username, dojo):
 
 # Command registry
 COMMANDS = {
-    "createzone": CommandSpec("createzone", lambda protocol, rooms, raw, args: create_zone(protocol, *args), "createzone <zone_name> <start_vnum> <end_vnum>", "Create an authored zone.", permission="admin", min_args=3, max_args=3),
-    "buildzone": CommandSpec("buildzone", lambda protocol, rooms, raw, args: buildzone(protocol, *args[:5], " ".join(args[5:])), "buildzone <zone_key> <start_vnum> <end_vnum> <x> <y> <room_title>", "Create, anchor, and enter a usable authored zone.", permission="admin", min_args=6),
-    "zonelist": CommandSpec("zonelist", lambda protocol, rooms, raw, args: zonelist(protocol), "zonelist", "List authored zones and placement status.", permission="admin", max_args=0),
-    "zstat": CommandSpec("zstat", lambda protocol, rooms, raw, args: zstat(protocol, args[0] if args else None), "zstat [zone]", "Inspect compact zone builder counts.", permission="admin", max_args=1),
-    "rlist": CommandSpec("rlist", lambda protocol, rooms, raw, args: rlist(protocol, args[0] if args else None), "rlist [zone]", "List authored rooms in a zone.", permission="admin", max_args=1),
-    "mlist": CommandSpec("mlist", lambda protocol, rooms, raw, args: mlist(protocol, args[0] if args else None), "mlist [zone]", "List authored NPC templates in a zone.", permission="admin", max_args=1),
-    "ilist": CommandSpec("ilist", lambda protocol, rooms, raw, args: ilist(protocol, args[0] if args else None), "ilist [zone]", "List authored item templates in a zone.", permission="admin", max_args=1),
-    "bfind": CommandSpec("bfind", lambda protocol, rooms, raw, args: bfind(protocol, raw), "bfind <text>", "Search authored rooms, templates, and spawns.", permission="admin", min_args=1),
-    "contentcheck": CommandSpec("contentcheck", lambda protocol, rooms, raw, args: contentcheck(protocol, args[0] if args else None), "contentcheck [zone]", "Validate authored content references.", permission="admin", max_args=1),
-    "goto": CommandSpec("goto", lambda protocol, rooms, raw, args: goto(protocol, *args), "goto <vnum> | goto grid <x> <y> | goto player <name>", "Travel to an authored room, grid location, or online player.", permission="admin", min_args=1, max_args=3, args_validator=lambda args: (len(args) == 1 and args[0].isdigit()) or (len(args) == 3 and args[0].lower() == "grid" and args[1].lstrip("-").isdigit() and args[2].lstrip("-").isdigit()) or (len(args) == 2 and args[0].lower() == "player")),
-    "zoneinfo": CommandSpec("zoneinfo", lambda protocol, rooms, raw, args: zoneinfo(protocol, args[0] if args else None), "zoneinfo [vnum]", "Inspect an authored overlay room.", permission="admin", max_args=1, args_validator=lambda args: not args or args[0].isdigit()),
-    "placezone": CommandSpec("placezone", lambda protocol, rooms, raw, args: placezone(protocol, *args), "placezone <zone_file> <x> <y>", "Anchor a zone file on the world grid.", permission="admin", min_args=3, max_args=3, args_validator=lambda args: args[1].lstrip("-").isdigit() and args[2].lstrip("-").isdigit()),
-    "reloadcontent": CommandSpec("reloadcontent", lambda protocol, rooms, raw, args: reloadcontent(protocol), "reloadcontent", "Reload authored JSON content into live state.", permission="admin", max_args=0),
-    "dig": CommandSpec("dig", lambda protocol, rooms, raw, args: dig(protocol, args[0], " ".join(args[1:])), "dig <direction> <room_name>", "Create an authored room exit.", permission="admin", min_args=2),
-    "roomdesc": CommandSpec("roomdesc", lambda protocol, rooms, raw, args: roomdesc(protocol, raw), "roomdesc <description>", "Replace the current authored room description.", permission="admin", min_args=1),
-    "redit": CommandSpec("redit", lambda protocol, rooms, raw, args: redit(protocol, args[0], " ".join(args[1:])), "redit <title|desc|flag|exit> <value>", "Edit the current authored room.", permission="admin", min_args=2),
-    "rstat": CommandSpec("rstat", lambda protocol, rooms, raw, args: rstat(protocol, args[0] if args else None), "rstat [vnum]", "Inspect authored room builder fields.", permission="admin", max_args=1, args_validator=lambda args: not args or args[0].isdigit()),
-    "createnpc": CommandSpec("createnpc", lambda protocol, rooms, raw, args: createnpc(protocol, args[0], " ".join(args[1:])), "createnpc <npc_key> <name>", "Create a basic static authored NPC template.", permission="admin", min_args=2),
-    "medit": CommandSpec("medit", lambda protocol, rooms, raw, args: medit(protocol, args[0], args[1], " ".join(args[2:])), "medit <npc_key> <field> <value>", "Edit an authored NPC template.", permission="admin", min_args=3),
-    "mstat": CommandSpec("mstat", lambda protocol, rooms, raw, args: mstat(protocol, args[0]), "mstat <npc_key>", "Inspect an authored NPC template.", permission="admin", min_args=1, max_args=1),
-    "spawnnpc": CommandSpec("spawnnpc", lambda protocol, rooms, raw, args: spawnnpc(protocol, args[0]), "spawnnpc <npc_key>", "Persist a spawn for an authored NPC template.", permission="admin", min_args=1, max_args=1),
-    "iedit": CommandSpec("iedit", lambda protocol, rooms, raw, args: iedit(protocol, args[0], args[1] if len(args) > 1 else "", " ".join(args[2:]) if args[0] != "create" else " ".join(args[1:])), "iedit create <item_key> <name> | iedit <item_key> <field> <value>", "Create or edit an authored item template.", permission="admin", min_args=3),
-    "istat": CommandSpec("istat", lambda protocol, rooms, raw, args: istat(protocol, args[0]), "istat <item_key>", "Inspect an authored item template.", permission="admin", min_args=1, max_args=1),
-    "spawnitem": CommandSpec("spawnitem", lambda protocol, rooms, raw, args: spawnitem(protocol, args[0]), "spawnitem <item_key>", "Persist a finite authored item seed.", permission="admin", min_args=1, max_args=1),
-    "cloneitem": CommandSpec("cloneitem", lambda protocol, rooms, raw, args: cloneitem(protocol, args[0], args[1]), "cloneitem <source_key> <new_key>", "Clone an authored item template.", permission="admin", min_args=2, max_args=2),
-    "clonenpc": CommandSpec("clonenpc", lambda protocol, rooms, raw, args: clonenpc(protocol, args[0], args[1]), "clonenpc <source_key> <new_key>", "Clone an authored NPC template.", permission="admin", min_args=2, max_args=2),
-    "cloneroom": CommandSpec("cloneroom", lambda protocol, rooms, raw, args: cloneroom(protocol, args[0], args[1]), "cloneroom <source_vnum> <new_vnum>", "Clone an authored room inside its zone.", permission="admin", min_args=2, max_args=2, args_validator=lambda args: args[0].isdigit() and args[1].isdigit()),
-    "spawnlist": CommandSpec("spawnlist", lambda protocol, rooms, raw, args: spawnlist(protocol, args[0] if args else None), "spawnlist [zone]", "List authored item and NPC spawns.", permission="admin", max_args=1),
-    "despawnitem": CommandSpec("despawnitem", lambda protocol, rooms, raw, args: despawnitem(protocol, args[0]), "despawnitem <spawn_key>", "Remove an authored item spawn.", permission="admin", min_args=1, max_args=1),
-    "despawnnpc": CommandSpec("despawnnpc", lambda protocol, rooms, raw, args: despawnnpc(protocol, args[0]), "despawnnpc <spawn_key>", "Remove an authored NPC spawn.", permission="admin", min_args=1, max_args=1),
-    "bundo": CommandSpec("bundo", lambda protocol, rooms, raw, args: bundo(protocol), "bundo", "Undo the most recent builder zone mutation.", permission="admin", max_args=0),
-    "hedit": CommandSpec("hedit", lambda protocol, rooms, raw, args: hedit(protocol, args[0], args[1] if len(args) > 1 else "", " ".join(args[2:])), "hedit <command> <summary|detail|category|publish|unpublish> [text]", "Edit command help prose and publish state.", permission="admin", min_args=2),
+    "createzone": CommandSpec("createzone", lambda protocol, rooms, raw, args: create_zone(protocol, *args), "createzone <zone_name> <start_vnum> <end_vnum>", "Create an authored zone.", permission="builder", min_args=3, max_args=3),
+    "buildzone": CommandSpec("buildzone", lambda protocol, rooms, raw, args: buildzone(protocol, *args[:5], " ".join(args[5:])), "buildzone <zone_key> <start_vnum> <end_vnum> <x> <y> <room_title>", "Create, anchor, and enter a usable authored zone.", permission="builder", min_args=6),
+    "zonelist": CommandSpec("zonelist", lambda protocol, rooms, raw, args: zonelist(protocol), "zonelist", "List authored zones and placement status.", permission="builder", max_args=0),
+    "zstat": CommandSpec("zstat", lambda protocol, rooms, raw, args: zstat(protocol, args[0] if args else None), "zstat [zone]", "Inspect compact zone builder counts.", permission="builder", max_args=1),
+    "rlist": CommandSpec("rlist", lambda protocol, rooms, raw, args: rlist(protocol, args[0] if args else None), "rlist [zone]", "List authored rooms in a zone.", permission="builder", max_args=1),
+    "mlist": CommandSpec("mlist", lambda protocol, rooms, raw, args: mlist(protocol, args[0] if args else None), "mlist [zone]", "List authored NPC templates in a zone.", permission="builder", max_args=1),
+    "ilist": CommandSpec("ilist", lambda protocol, rooms, raw, args: ilist(protocol, args[0] if args else None), "ilist [zone]", "List authored item templates in a zone.", permission="builder", max_args=1),
+    "bfind": CommandSpec("bfind", lambda protocol, rooms, raw, args: bfind(protocol, raw), "bfind <text>", "Search authored rooms, templates, and spawns.", permission="builder", min_args=1),
+    "contentcheck": CommandSpec("contentcheck", lambda protocol, rooms, raw, args: contentcheck(protocol, args[0] if args else None), "contentcheck [zone]", "Validate authored content references.", permission="builder", max_args=1),
+    "zpublish": CommandSpec("zpublish", lambda protocol, rooms, raw, args: zpublish(protocol, args[0] if args else None), "zpublish [zone]", "Validate and publish authored zone changes.", permission="builder", max_args=1),
+    "goto": CommandSpec("goto", lambda protocol, rooms, raw, args: goto(protocol, *args), "goto <vnum> | goto grid <x> <y> | goto player <name>", "Travel to an authored room, grid location, or online player.", permission="builder", min_args=1, max_args=3, args_validator=lambda args: (len(args) == 1 and args[0].isdigit()) or (len(args) == 3 and args[0].lower() == "grid" and args[1].lstrip("-").isdigit() and args[2].lstrip("-").isdigit()) or (len(args) == 2 and args[0].lower() == "player")),
+    "zoneinfo": CommandSpec("zoneinfo", lambda protocol, rooms, raw, args: zoneinfo(protocol, args[0] if args else None), "zoneinfo [vnum]", "Inspect an authored overlay room.", permission="builder", max_args=1, args_validator=lambda args: not args or args[0].isdigit()),
+    "placezone": CommandSpec("placezone", lambda protocol, rooms, raw, args: placezone(protocol, *args), "placezone <zone_file> <x> <y>", "Anchor a zone file on the world grid.", permission="builder", min_args=3, max_args=3, args_validator=lambda args: args[1].lstrip("-").isdigit() and args[2].lstrip("-").isdigit()),
+    "reloadcontent": CommandSpec("reloadcontent", lambda protocol, rooms, raw, args: reloadcontent(protocol), "reloadcontent", "Reload authored JSON content into live state.", permission="builder", max_args=0),
+    "dig": CommandSpec("dig", lambda protocol, rooms, raw, args: dig(protocol, args[0], " ".join(args[1:])), "dig <direction> <room_name>", "Create an authored room exit.", permission="builder", min_args=2),
+    "roomdesc": CommandSpec("roomdesc", lambda protocol, rooms, raw, args: roomdesc(protocol, raw), "roomdesc <description>", "Replace the current authored room description.", permission="builder", min_args=1),
+    "redit": CommandSpec("redit", lambda protocol, rooms, raw, args: redit(protocol, args[0], " ".join(args[1:])), "redit <title|desc|flag|exit|link|unlink> <value>", "Edit the current authored room.", permission="builder", min_args=2),
+    "rstat": CommandSpec("rstat", lambda protocol, rooms, raw, args: rstat(protocol, args[0] if args else None), "rstat [vnum]", "Inspect authored room builder fields.", permission="builder", max_args=1, args_validator=lambda args: not args or args[0].isdigit()),
+    "rdelete": CommandSpec("rdelete", lambda protocol, rooms, raw, args: rdelete(protocol, args[0]), "rdelete <vnum>", "Delete an unreferenced authored room.", permission="builder", min_args=1, max_args=1, args_validator=lambda args: args[0].isdigit()),
+    "createnpc": CommandSpec("createnpc", lambda protocol, rooms, raw, args: createnpc(protocol, args[0], " ".join(args[1:])), "createnpc <npc_key> <name>", "Create a basic static authored NPC template.", permission="builder", min_args=2),
+    "medit": CommandSpec("medit", lambda protocol, rooms, raw, args: medit(protocol, args[0], args[1], " ".join(args[2:])), "medit <npc_key> <field> <value>", "Edit an authored NPC template.", permission="builder", min_args=3),
+    "mstat": CommandSpec("mstat", lambda protocol, rooms, raw, args: mstat(protocol, args[0]), "mstat <npc_key>", "Inspect an authored NPC template.", permission="builder", min_args=1, max_args=1),
+    "spawnnpc": CommandSpec("spawnnpc", lambda protocol, rooms, raw, args: spawnnpc(protocol, args[0]), "spawnnpc <npc_key>", "Persist a spawn for an authored NPC template.", permission="builder", min_args=1, max_args=1),
+    "iedit": CommandSpec("iedit", lambda protocol, rooms, raw, args: iedit(protocol, args[0], args[1] if len(args) > 1 else "", " ".join(args[2:]) if args[0] != "create" else " ".join(args[1:])), "iedit create <item_key> <name> | iedit <item_key> <field> <value>", "Create or edit an authored item template.", permission="builder", min_args=3),
+    "istat": CommandSpec("istat", lambda protocol, rooms, raw, args: istat(protocol, args[0]), "istat <item_key>", "Inspect an authored item template.", permission="builder", min_args=1, max_args=1),
+    "spawnitem": CommandSpec("spawnitem", lambda protocol, rooms, raw, args: spawnitem(protocol, args[0]), "spawnitem <item_key>", "Persist a finite authored item seed.", permission="builder", min_args=1, max_args=1),
+    "cloneitem": CommandSpec("cloneitem", lambda protocol, rooms, raw, args: cloneitem(protocol, args[0], args[1]), "cloneitem <source_key> <new_key>", "Clone an authored item template.", permission="builder", min_args=2, max_args=2),
+    "clonenpc": CommandSpec("clonenpc", lambda protocol, rooms, raw, args: clonenpc(protocol, args[0], args[1]), "clonenpc <source_key> <new_key>", "Clone an authored NPC template.", permission="builder", min_args=2, max_args=2),
+    "cloneroom": CommandSpec("cloneroom", lambda protocol, rooms, raw, args: cloneroom(protocol, args[0], args[1]), "cloneroom <source_vnum> <new_vnum>", "Clone an authored room inside its zone.", permission="builder", min_args=2, max_args=2, args_validator=lambda args: args[0].isdigit() and args[1].isdigit()),
+    "spawnlist": CommandSpec("spawnlist", lambda protocol, rooms, raw, args: spawnlist(protocol, args[0] if args else None), "spawnlist [zone]", "List authored item and NPC spawns.", permission="builder", max_args=1),
+    "despawnitem": CommandSpec("despawnitem", lambda protocol, rooms, raw, args: despawnitem(protocol, args[0]), "despawnitem <spawn_key>", "Remove an authored item spawn.", permission="builder", min_args=1, max_args=1),
+    "despawnnpc": CommandSpec("despawnnpc", lambda protocol, rooms, raw, args: despawnnpc(protocol, args[0]), "despawnnpc <spawn_key>", "Remove an authored NPC spawn.", permission="builder", min_args=1, max_args=1),
+    "zdelete": CommandSpec("zdelete", lambda protocol, rooms, raw, args: zdelete(protocol, args[0]), "zdelete <zone>", "Delete an unreferenced authored zone.", permission="builder", min_args=1, max_args=1),
+    "bundo": CommandSpec("bundo", lambda protocol, rooms, raw, args: bundo(protocol), "bundo", "Undo the most recent builder zone mutation.", permission="builder", max_args=0),
+    "hedit": CommandSpec("hedit", lambda protocol, rooms, raw, args: hedit(protocol, args[0], args[1] if len(args) > 1 else "", " ".join(args[2:])), "hedit <command> <summary|detail|category|publish|unpublish> [text]", "Edit command help prose and publish state.", permission="builder", min_args=2),
     "shutdown": CommandSpec("shutdown", lambda protocol, rooms, raw, args: shutdown(protocol), "shutdown", "Stop the server.", permission="admin", max_args=0),
     "copyover": CommandSpec("copyover", lambda protocol, rooms, raw, args: copyover(protocol), "copyover", "Report the disabled soft-restart status.", permission="admin", max_args=0),
     "pstat": CommandSpec("pstat", lambda protocol, rooms, raw, args: pstat(protocol, args[0]), "pstat <username>", "Inspect persistent player state.", permission="admin", min_args=1, max_args=1),
     "pset": CommandSpec("pset", lambda protocol, rooms, raw, args: pset(protocol, args[0], args[1], " ".join(args[2:])), "pset <username> <field> <value>", "Set a validated persistent player field.", permission="admin", min_args=3),
+    "pedit": CommandSpec("pedit", lambda protocol, rooms, raw, args: pedit(protocol, args[0], args[1], " ".join(args[2:])), "pedit <username> <field> <value>", "Edit access and validated persistent player fields.", permission="admin", min_args=3),
     "setrole": CommandSpec("setrole", lambda protocol, rooms, raw, args: setrole(protocol, *args), "setrole <username> <role_type>", "Set a character role.", permission="admin", min_args=2, max_args=2),
     "setstat": CommandSpec("setstat", lambda protocol, rooms, raw, args: setstat(protocol, *args), "setstat <username> <stat> <value>", "Set a character stat.", permission="admin", min_args=3, max_args=3),
     "setdojo": CommandSpec("setdojo", lambda protocol, rooms, raw, args: setdojo(protocol, *args), "setdojo <username> <dojo>", "Set a character dojo alignment.", permission="admin", min_args=2, max_args=2),

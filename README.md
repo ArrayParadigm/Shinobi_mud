@@ -67,6 +67,16 @@ The server applies versioned SQLite migrations during startup. To apply migratio
 python update_schema.py
 ```
 
+### Soak Harness
+
+Run the local private-alpha soak harness before widening the feature surface:
+
+```bash
+python soak_harness.py
+```
+
+The harness launches a temporary local server, exercises two-client login, movement, chat, combat, reconnect takeover, `prac`, `train`, `body`, and `rest`, then runs a builder smoke path. Transcripts, runtime logs, and the throwaway SQLite database are written under `.local/soak/`.
+
 ### Promoting an Admin
 
 New accounts are non-admin by default. After creating the first local account, promote it intentionally from the server terminal:
@@ -179,7 +189,14 @@ Use `hedit <command> summary <text>`, `hedit <command> detail <text>`, `hedit <c
 
 Keep executable command syntax, aliases, permissions, and validation rules in Python. Missing entries or temporarily invalid JSON fall back to the built-in command summaries and an `Other` section so command discovery remains available while a help-file edit is repaired.
 
-Admin overlay tools:
+Admin access tools:
+
+- `pstat <username>`: inspect a player's persistent identity, access, resources, body state, and saved location without exposing password data.
+- `pedit <username> builder on|off`: grant or remove builder access without granting full admin access.
+- `pset <username> <field> <value>`: set a validated player field such as `admin`, `builder`, `specialty`, `clan`, `release`, `dojo`, description, resources, `intellect`, `condition`, other attributes, nutrition, hydration, or fatigue.
+- `copyover`: report that soft restarts are intentionally disabled for now.
+
+Builder overlay tools:
 
 - `buildzone <zone_key> <start_vnum> <end_vnum> <x> <y> <room_title>`: create an anchored zone with one usable starting room and move there.
 - `zonelist`: list authored zone filenames, ranges, anchors, and room counts.
@@ -187,6 +204,7 @@ Admin overlay tools:
 - `rlist [zone]`, `mlist [zone]`, and `ilist [zone]`: list authored rooms, NPC templates, and item templates.
 - `bfind <text>`: search authored rooms, NPC templates, item templates, spawns, keywords, names, and VNUMs.
 - `contentcheck [zone]`: validate exits, VNUM references, spawn templates, duplicate VNUMs, overlapping coordinates, and out-of-bounds overlays.
+- `zpublish [zone]`: validate a zone, mark it published, reload overlays, and record the publish in builder audit.
 - `goto <vnum>`: teleport to an authored overlay room while retaining canonical coordinates.
 - `goto grid <x> <y>`: teleport to canonical world coordinates.
 - `goto player <name>`: teleport to an online character.
@@ -195,24 +213,22 @@ Admin overlay tools:
 - `reloadcontent`: import authored JSON template changes and missing spawns into live state.
 - `dig <direction> <room_name>`: create a coordinate-aware authored room and reciprocal exit.
 - `roomdesc <description>`: replace the current authored room description.
-- `redit <title|desc|flag|exit> <value>` and `rstat [vnum]`: edit and inspect room titles, descriptions, flags, and explicit exits.
+- `redit <title|desc|flag|exit|link|unlink> <value>` and `rstat [vnum]`: edit and inspect room titles, descriptions, flags, explicit exits, reciprocal links, and unlinking.
+- `rdelete <vnum>`: delete an authored room only after exits, incoming links, and authored spawns are cleared.
 - `createnpc <npc_key> <name>`: create a basic static authored NPC template in the current zone.
-- `medit <npc_key> <field> <value>` and `mstat <npc_key>`: edit and inspect NPC prose, behavior, combat values, and respawn timing.
+- `medit <npc_key> <field> <value>` and `mstat <npc_key>`: edit and inspect NPC prose, behavior, combat values, respawn timing, loot table, room emote, movement policy, leash radius, and aggression policy.
 - `spawnnpc <npc_key>`: persist and import an authored NPC spawn in the current room.
-- `iedit create <item_key> <name>`, `iedit <item_key> <field> <value>`, and `istat <item_key>`: create, edit, and inspect authored item templates.
+- `iedit create <item_key> <name>`, `iedit <item_key> <field> <value>`, and `istat <item_key>`: create, edit, and inspect authored item templates including type, slot, flags, value, weight, stack limit, container capacity, use text, damage, throw damage, nutrition, and hydration.
 - `spawnitem <item_key>`: persist and import a finite authored item seed in the current room.
 - `cloneitem <source_key> <new_key>`, `clonenpc <source_key> <new_key>`, and `cloneroom <source_vnum> <new_vnum>`: copy authored content for fast variations.
 - `spawnlist [zone]`: list authored NPC and item spawns.
 - `despawnitem <spawn_key>` and `despawnnpc <spawn_key>`: remove authored item or NPC spawns from the current zone.
+- `zdelete <zone>`: delete an authored zone only after external links and authored spawns are cleared.
 - `bundo`: restore the most recent successful builder zone mutation snapshot.
 - `hedit <command> <summary|detail|category|publish|unpublish> [text]`: edit and publish command help.
-- `pstat <username>`: inspect a player's persistent identity, access, resources, body state, and saved location without exposing password data.
-- `pset <username> <field> <value>`: set a validated player field such as `admin`, `specialty`, `clan`, `release`, `dojo`, description, resources, `intellect`, `condition`, other attributes, nutrition, hydration, or fatigue.
-- `copyover`: report that soft restarts are intentionally disabled for now.
+For a fresh zone, start with `buildzone`, use `zstat`, `rlist`, `mlist`, `ilist`, `bfind`, and `contentcheck` to inspect it, use `dig` to expand its coordinate layout, use `redit` and `rstat` to refine rooms, then create templates with `createnpc` or `iedit` and place finite instances with `spawnnpc` or `spawnitem`. Use clone commands for variations, `spawnlist` plus despawn commands for authored seeds, `zpublish` before treating a zone as ready, and `bundo` to revert the most recent successful builder mutation. JSON remains the authored source of truth, while successful edits synchronize live SQLite template metadata immediately.
 
-For a fresh zone, start with `buildzone`, use `zstat`, `rlist`, `mlist`, `ilist`, `bfind`, and `contentcheck` to inspect it, use `dig` to expand its coordinate layout, use `redit` and `rstat` to refine rooms, then create templates with `createnpc` or `iedit` and place finite instances with `spawnnpc` or `spawnitem`. Use clone commands for variations, `spawnlist` plus despawn commands for authored seeds, and `bundo` to revert the most recent successful builder mutation. JSON remains the authored source of truth, while successful edits synchronize live SQLite template metadata immediately.
-
-`pset` deliberately excludes usernames, passwords, and saved coordinates. Those need separate audited workflows; ordinary player movement and `goto` remain the safe ways to change location. The older `setrole`, `setstat`, and `setdojo` commands remain available as compatibility wrappers.
+`pedit` and `pset` deliberately exclude usernames, passwords, and saved coordinates. Those need separate audited workflows; ordinary player movement and `goto` remain the safe ways to change location. The older `setrole`, `setstat`, and `setdojo` commands remain available as compatibility wrappers.
 
 The player prompt reports current and maximum health, stamina, chakra, and location after commands. Map output includes a legend for you, other players, NPCs, and authored areas. Nearby-character listings are controlled by `show_nearby_players` and `nearby_player_radius` in `config.json`.
 
@@ -240,7 +256,7 @@ Characters also have abstract body resources: nutrition, hydration, and fatigue.
 
 Room flags have player-visible effects. `darkness` hides survey and nearby maps, `brightness` washes the minimap, `indoor` limits map visibility, `safe` and `no-combat` block player combat commands, `vacuum` adds fatigue and can pressure health at extreme fatigue, and `recovery-friendly` improves rest.
 
-Skills and jutsus have separate authored definitions and hidden point progress. `prac <skill>` and `train <jutsu>` add practice points and report tier/percent progress, with milestone messages at 10% improvements and tier changes. `skill` and `jutsu` list available records, and `skill all` plus `jutsu all` expose the wider authored catalog with future records marked `[unimplemented]`. Visible tiers are `Untrained`, `Unlearned`, `Novice`, `Adept`, `Trained`, `Master`, and capped `Grandmaster`.
+Skills and jutsus have separate authored definitions and hidden point progress. `prac <skill>` and `train <jutsu>` add practice points and report visible tier progress without raw percentages, with milestone messages at meaningful improvements and tier changes. `skill` and `jutsu` list available records, and `skill all` plus `jutsu all` expose the wider authored catalog with future records marked `[unimplemented]`. Visible tiers are `Untrained`, `Unlearned`, `Novice`, `Adept`, `Trained`, `Master`, and capped `Grandmaster`.
 
 `throw <item> at <character>` is the first real skill action. A valid throw accepts a carried authored item with ranged damage, targets a hostile NPC in the current room or one cardinal step away, adds `2` fatigue, lands the item at the target location, and raises `Throw` proficiency even when the attack misses. The Practice Kunai deals `3` thrown damage.
 

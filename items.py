@@ -20,7 +20,12 @@ def create_item_tables(cursor):
             damage_bonus INTEGER NOT NULL DEFAULT 0,
             throw_damage INTEGER NOT NULL DEFAULT 0,
             nutrition_restore INTEGER NOT NULL DEFAULT 0,
-            hydration_restore INTEGER NOT NULL DEFAULT 0
+            hydration_restore INTEGER NOT NULL DEFAULT 0,
+            value INTEGER NOT NULL DEFAULT 0,
+            weight INTEGER NOT NULL DEFAULT 0,
+            stack_limit INTEGER NOT NULL DEFAULT 1,
+            container_capacity INTEGER NOT NULL DEFAULT 0,
+            flags TEXT NOT NULL DEFAULT 'takeable'
         )
         """
     )
@@ -81,6 +86,11 @@ def ensure_item_metadata(cursor):
         ("throw_damage", "INTEGER NOT NULL DEFAULT 0"),
         ("nutrition_restore", "INTEGER NOT NULL DEFAULT 0"),
         ("hydration_restore", "INTEGER NOT NULL DEFAULT 0"),
+        ("value", "INTEGER NOT NULL DEFAULT 0"),
+        ("weight", "INTEGER NOT NULL DEFAULT 0"),
+        ("stack_limit", "INTEGER NOT NULL DEFAULT 1"),
+        ("container_capacity", "INTEGER NOT NULL DEFAULT 0"),
+        ("flags", "TEXT NOT NULL DEFAULT 'takeable'"),
     ):
         if column_name not in definition_columns:
             cursor.execute(f"ALTER TABLE item_definitions ADD COLUMN {column_name} {definition}")
@@ -102,7 +112,10 @@ def room_items(cursor, x, y):
                item_definitions.equipment_slot, item_definitions.use_text,
                item_definitions.damage_bonus, item_definitions.throw_damage,
                item_definitions.nutrition_restore,
-               item_definitions.hydration_restore
+               item_definitions.hydration_restore,
+               item_definitions.value, item_definitions.weight,
+               item_definitions.stack_limit, item_definitions.container_capacity,
+               item_definitions.flags
         FROM room_items
         JOIN item_definitions ON item_definitions.id = room_items.item_definition_id
         WHERE room_items.x=? AND room_items.y=?
@@ -123,7 +136,10 @@ def inventory_items(cursor, username):
                item_definitions.equipment_slot, item_definitions.use_text,
                item_definitions.damage_bonus, item_definitions.throw_damage,
                item_definitions.nutrition_restore,
-               item_definitions.hydration_restore, character_inventory.equipped_slot
+               item_definitions.hydration_restore,
+               item_definitions.value, item_definitions.weight,
+               item_definitions.stack_limit, item_definitions.container_capacity,
+               item_definitions.flags, character_inventory.equipped_slot
         FROM character_inventory
         JOIN item_definitions
           ON item_definitions.id = character_inventory.item_definition_id
@@ -189,7 +205,7 @@ def pickup_item(cursor, username, x, y, item_name):
     visible_items = cursor.execute(
         """
         SELECT room_items.id, room_items.item_definition_id, room_items.seed_key,
-               item_definitions.name, item_definitions.keywords
+               item_definitions.name, item_definitions.keywords, item_definitions.flags
         FROM room_items
         JOIN item_definitions ON item_definitions.id = room_items.item_definition_id
         WHERE room_items.x=? AND room_items.y=?
@@ -200,6 +216,8 @@ def pickup_item(cursor, username, x, y, item_name):
     item = resolve_item(visible_items, item_name)
     if not item:
         return None
+    if "takeable" not in (item["flags"] or "").split():
+        return {"status": "not_takeable", "name": item["name"]}
 
     player = cursor.execute(
         "SELECT id FROM players WHERE username=?",
@@ -221,7 +239,7 @@ def pickup_item(cursor, username, x, y, item_name):
     except Exception:
         cursor.connection.rollback()
         raise
-    return item["name"]
+    return {"status": "taken", "name": item["name"]}
 
 
 def drop_item(cursor, username, x, y, item_name):

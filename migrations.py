@@ -20,6 +20,7 @@ PLAYER_COLUMNS = (
     "x",
     "y",
     "is_admin",
+    "is_builder",
     "role_type",
     "health",
     "stamina",
@@ -53,6 +54,7 @@ def create_players_table(cursor, table_name="players"):
             x INTEGER DEFAULT 500,
             y INTEGER DEFAULT 500,
             is_admin BOOLEAN DEFAULT 0,
+            is_builder BOOLEAN DEFAULT 0,
             role_type TEXT DEFAULT 'newbie',
             health INTEGER DEFAULT 10,
             stamina INTEGER DEFAULT 10,
@@ -140,6 +142,16 @@ def ensure_player_foundation_columns(cursor):
         cursor.execute("UPDATE players SET role_type='Ninjutsu' WHERE role_type='a'")
         cursor.execute("UPDATE players SET role_type='Genjutsu' WHERE role_type='b'")
         cursor.execute("UPDATE players SET role_type='Taijutsu' WHERE role_type='c'")
+
+
+def ensure_builder_access_column(cursor):
+    """Add an explicit builder-access flag separate from admin access."""
+    columns = {
+        column[1]
+        for column in cursor.execute("PRAGMA table_info(players)")
+    }
+    if "is_builder" not in columns:
+        cursor.execute("ALTER TABLE players ADD COLUMN is_builder BOOLEAN DEFAULT 0")
 
 
 def migration_005_inventory_and_character_foundation(cursor):
@@ -238,10 +250,20 @@ def create_builder_tables(cursor):
             username TEXT NOT NULL,
             zone_file TEXT NOT NULL,
             action TEXT NOT NULL,
+            target TEXT NOT NULL DEFAULT '',
+            details TEXT NOT NULL DEFAULT '',
             created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
         )
         """
     )
+    columns = {
+        column[1]
+        for column in cursor.execute("PRAGMA table_info(builder_audit)")
+    }
+    if "target" not in columns:
+        cursor.execute("ALTER TABLE builder_audit ADD COLUMN target TEXT NOT NULL DEFAULT ''")
+    if "details" not in columns:
+        cursor.execute("ALTER TABLE builder_audit ADD COLUMN details TEXT NOT NULL DEFAULT ''")
 
 
 def ensure_technique_point_columns(cursor):
@@ -279,6 +301,22 @@ def migration_017_technique_progress_points(cursor):
     ensure_technique_point_columns(cursor)
 
 
+def migration_018_builder_publish_audit_columns(cursor):
+    """Expand builder audit records for publish and destructive-edit tracking."""
+    create_builder_tables(cursor)
+
+
+def migration_019_builder_access_flag(cursor):
+    """Add in-game builder access delegation separate from admin access."""
+    ensure_builder_access_column(cursor)
+
+
+def migration_020_rich_item_npc_templates(cursor):
+    """Add richer authored item and NPC template metadata."""
+    create_item_tables(cursor)
+    create_npc_tables(cursor)
+
+
 MIGRATIONS = (
     (1, migration_001_non_admin_default),
     (2, migration_002_persistent_items),
@@ -297,6 +335,9 @@ MIGRATIONS = (
     (15, migration_015_stance_profiles),
     (16, migration_016_character_identity_and_builder_safety),
     (17, migration_017_technique_progress_points),
+    (18, migration_018_builder_publish_audit_columns),
+    (19, migration_019_builder_access_flag),
+    (20, migration_020_rich_item_npc_templates),
 )
 
 

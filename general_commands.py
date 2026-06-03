@@ -416,7 +416,11 @@ def handle_get(player, item_name):
             player.y,
             item_name.strip(),
         )
-        if picked_up:
+        if isinstance(picked_up, dict) and picked_up.get("status") == "not_takeable":
+            player.sendLine(f"You cannot pick up {picked_up['name']}.".encode("utf-8"))
+        elif isinstance(picked_up, dict) and picked_up.get("status") == "taken":
+            player.sendLine(f"You pick up {picked_up['name']}.".encode("utf-8"))
+        elif picked_up:
             player.sendLine(f"You pick up {picked_up}.".encode("utf-8"))
         else:
             player.sendLine(b"You do not see that item here.")
@@ -594,7 +598,7 @@ def handle_practice(player, target, kind):
             elif milestone == "ten_percent":
                 player.sendLine(f"You feel more confident performing {result['name']}.".encode("utf-8"))
         player.sendLine(
-            f"{result['name']}: {result['proficiency']} ({result['progress_percent']}%)".encode("utf-8")
+            f"{result['name']}: {result['proficiency']}".encode("utf-8")
         )
     except Exception as exc:
         logging.error("Unable to practice %s for %s: %s", kind, player.username, exc, exc_info=True)
@@ -847,7 +851,7 @@ def handle_help(player, raw_args):
                 name for name in command_names
                 if name in COMMAND_REGISTRY
                 and name not in listed_commands
-                and (COMMAND_REGISTRY[name].permission == "player" or player.is_admin)
+                and _can_see_command(player, COMMAND_REGISTRY[name])
             ]
             if not visible:
                 continue
@@ -873,7 +877,7 @@ def handle_help(player, raw_args):
         return
 
     command = COMMAND_REGISTRY[command_name]
-    if command.permission == "admin" and not player.is_admin:
+    if not _can_see_command(player, command):
         player.sendLine(f"No help found for: {topic}".encode("utf-8"))
         return
 
@@ -918,13 +922,24 @@ def handle_commands(player):
         for name in command_names:
             command = COMMAND_REGISTRY[name]
             help_entry = command_help(command, help_file, catalog)
-            permission = " [admin]" if command.permission == "admin" else ""
+            permission = f" [{command.permission}]" if command.permission in {"admin", "builder"} else ""
             aliases = f" (aliases: {', '.join(command.aliases)})" if command.aliases else ""
             rendered_usage = presentation.command_usage(command.usage, getattr(player, "color_enabled", False))
             player.sendLine(
                 f"  {rendered_usage}{permission} - {help_entry['summary']}{aliases}".encode("utf-8")
             )
     player.sendLine(b"Use help <command> for detailed usage.")
+
+
+def _can_see_command(player, command):
+    """Return whether a player may see focused help for a command."""
+    if command.permission == "player":
+        return True
+    if command.permission == "builder":
+        return player.is_admin or getattr(player, "is_builder", False)
+    if command.permission == "admin":
+        return player.is_admin
+    return False
 
 
 COMMANDS = {
