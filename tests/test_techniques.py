@@ -16,8 +16,10 @@ from techniques import (
     list_skills,
     activate_jutsu,
     proficiency_label,
+    practice_skill,
     record_jutsu_use,
     record_skill_use,
+    train_jutsu,
     tick_jutsu_states,
 )
 from tests.test_accounts import TestProtocol
@@ -78,12 +80,12 @@ class TechniqueFrameworkTests(unittest.TestCase):
             self.player.messages,
             [
                 "Skills",
-                "  Throw: Novice (0%)",
+                "  Throw: Untrained (0%)",
                 "Jutsus",
-                "  Substitution Technique: Novice (0%)",
+                "  Substitution Technique: Untrained (0%)",
                 "Throw",
                 "Training for thrown kunai, shuriken, and similar ranged weapons.",
-                "Proficiency: Novice (0%)",
+                "Proficiency: Untrained (0%)",
             ],
         )
 
@@ -93,14 +95,14 @@ class TechniqueFrameworkTests(unittest.TestCase):
         general_commands.handle_progression(self.player, "", "jutsu", allow_all=True)
         general_commands.handle_progression(self.player, "all", "jutsu", allow_all=True)
 
-        self.assertEqual(self.player.messages[0:2], ["Skills", "  Throw: Novice (0%)"])
+        self.assertEqual(self.player.messages[0:2], ["Skills", "  Throw: Untrained (0%)"])
         self.assertIn("All Skills", self.player.messages)
-        self.assertIn("  Chakra Control: Novice (0%) [unimplemented]", self.player.messages)
-        self.assertIn("  Stealth: Novice (0%) [unimplemented]", self.player.messages)
+        self.assertIn("  Chakra Control: Untrained (0%) [unimplemented]", self.player.messages)
+        self.assertIn("  Stealth: Untrained (0%) [unimplemented]", self.player.messages)
         self.assertIn("Jutsus", self.player.messages)
-        self.assertIn("  Substitution Technique: Novice (0%)", self.player.messages)
+        self.assertIn("  Substitution Technique: Untrained (0%)", self.player.messages)
         self.assertIn("All Jutsus", self.player.messages)
-        self.assertIn("  Clone Technique: Novice (0%) [unimplemented]", self.player.messages)
+        self.assertIn("  Clone Technique: Untrained (0%) [unimplemented]", self.player.messages)
 
     def test_unimplemented_catalog_placeholders_cannot_record_use(self):
         self.assertEqual(
@@ -125,11 +127,35 @@ class TechniqueFrameworkTests(unittest.TestCase):
             returning_player.messages,
             [
                 "Skills",
-                "  Throw: Novice (1%)",
+                "  Throw: Untrained (10%)",
                 "Jutsus",
-                "  Substitution Technique: Novice (1%)",
+                "  Substitution Technique: Untrained (10%)",
             ],
         )
+
+    def test_practice_and_train_advance_point_progress_with_milestones(self):
+        skill_result = practice_skill(self.player.cursor, "Student", "throw")
+        jutsu_result = train_jutsu(self.player.cursor, "Student", "sub")
+
+        self.assertEqual(
+            (skill_result["progress_points"], skill_result["progress_percent"], skill_result["proficiency"]),
+            (10, 100, "Untrained"),
+        )
+        self.assertEqual(
+            (jutsu_result["progress_points"], jutsu_result["progress_percent"], jutsu_result["proficiency"]),
+            (10, 100, "Untrained"),
+        )
+
+        for _ in range(9):
+            skill_result = practice_skill(self.player.cursor, "Student", "throw")
+
+        self.assertEqual(skill_result["progress_points"], 100)
+        self.assertEqual(skill_result["progress_percent"], 100)
+        self.assertIn("ten_percent", skill_result["milestones"])
+
+        tier_result = practice_skill(self.player.cursor, "Student", "throw")
+        self.assertEqual((tier_result["progress_points"], tier_result["proficiency"]), (110, "Novice"))
+        self.assertIn("tier", tier_result["milestones"])
 
     def test_substitution_activation_spends_chakra_and_persists_cooldown(self):
         result = activate_jutsu(self.player.cursor, "Student", "sub")
@@ -189,8 +215,12 @@ class TechniqueFrameworkTests(unittest.TestCase):
             "SELECT id FROM players WHERE username='Student'"
         ).fetchone()["id"]
         self.connection.execute(
-            "INSERT INTO character_skills (player_id, skill_definition_id, progress_percent) VALUES (?, ?, ?)",
-            (player_id, skill_id, 99),
+            """
+            INSERT INTO character_skills
+                (player_id, skill_definition_id, progress_percent, progress_points)
+            VALUES (?, ?, ?, ?)
+            """,
+            (player_id, skill_id, 99, 99999),
         )
         self.connection.commit()
 
@@ -202,8 +232,19 @@ class TechniqueFrameworkTests(unittest.TestCase):
 
     def test_proficiency_tier_boundaries(self):
         self.assertEqual(
-            [proficiency_label(value) for value in (0, 24, 25, 49, 50, 74, 75, 99, 100)],
-            ["Novice", "Novice", "Adept", "Adept", "Skilled", "Skilled", "Master", "Master", "Grandmaster"],
+            [proficiency_label(value) for value in (0, 10, 11, 100, 101, 1000, 1001, 5001, 25001, 100000)],
+            [
+                "Untrained",
+                "Untrained",
+                "Unlearned",
+                "Unlearned",
+                "Novice",
+                "Novice",
+                "Adept",
+                "Trained",
+                "Master",
+                "Grandmaster",
+            ],
         )
 
     def test_usage_based_migration_preserves_existing_rank_progress(self):

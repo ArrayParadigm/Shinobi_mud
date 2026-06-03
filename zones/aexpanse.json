@@ -19,7 +19,8 @@
                 "north": 1000
             },
             "x_offset": 0,
-            "y_offset": 1
+            "y_offset": 1,
+            "name": "First Step"
         }
     },
     "anchor": {

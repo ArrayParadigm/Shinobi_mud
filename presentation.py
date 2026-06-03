@@ -45,6 +45,26 @@ def command_header(label, enabled=False):
     return style(f"== {label} ==", BOLD, BRIGHT_CYAN, enabled=enabled)
 
 
+def divider(label="Nearby", enabled=False):
+    """Render a readable divider without changing plain-text clients."""
+    return style(f"-- {label} --", DIM, enabled=enabled)
+
+
+def command_name(name, enabled=False):
+    """Style a command token while leaving argument text separate."""
+    return style(name, BOLD, BRIGHT_CYAN, enabled=enabled)
+
+
+def command_usage(usage, enabled=False):
+    """Style command names and arguments distinctly in usage strings."""
+    parts = str(usage).split(maxsplit=1)
+    if not parts:
+        return ""
+    if len(parts) == 1:
+        return command_name(parts[0], enabled)
+    return f"{command_name(parts[0], enabled)} {style(parts[1], DIM, enabled=enabled)}"
+
+
 def prompt(health, max_health, stamina, max_stamina, chakra, max_chakra, location, enabled=False):
     """Render a compact resource prompt."""
     health_text = style(f"HP:{health}/{max_health}", BRIGHT_RED, enabled=enabled)
@@ -58,6 +78,10 @@ def map_symbol(symbol, enabled=False):
     """Color only map symbols with strong gameplay meaning."""
     if symbol == "P":
         return style(symbol, BOLD, BRIGHT_YELLOW, enabled=enabled)
+    if symbol == "@":
+        return style(symbol, BOLD, YELLOW, enabled=enabled)
+    if symbol == "N":
+        return style(symbol, BOLD, MAGENTA, enabled=enabled)
     if symbol == "#":
         return style(symbol, CYAN, enabled=enabled)
     if symbol == "?":
@@ -67,8 +91,10 @@ def map_symbol(symbol, enabled=False):
 
 def legend(enabled=False):
     player = map_symbol("P", enabled)
+    other_player = map_symbol("@", enabled)
+    npc = map_symbol("N", enabled)
     authored_area = map_symbol("#", enabled)
-    return f"Legend: {player}=you  {authored_area}=authored area"
+    return f"Legend: {player}=you  {other_player}=player  {npc}=NPC  {authored_area}=authored area"
 
 
 def ooc_message(username, message, enabled=False):

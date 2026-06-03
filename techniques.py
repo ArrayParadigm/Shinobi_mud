@@ -1,12 +1,27 @@
 """Authored skill and jutsu definitions with usage-based character progress."""
 
 
-PROFICIENCY_TIERS = (
-    (100, "Grandmaster"),
-    (75, "Master"),
-    (50, "Skilled"),
-    (25, "Adept"),
-    (0, "Novice"),
+MAX_PROGRESS_POINTS = 100000
+PRACTICE_POINT_GAIN = 10
+
+PROFICIENCY_THRESHOLDS = (
+    (100000, "Grandmaster"),
+    (25001, "Master"),
+    (5001, "Trained"),
+    (1001, "Adept"),
+    (101, "Novice"),
+    (11, "Unlearned"),
+    (0, "Untrained"),
+)
+
+PROFICIENCY_RANGES = (
+    ("Untrained", 0, 10),
+    ("Unlearned", 11, 100),
+    ("Novice", 101, 1000),
+    ("Adept", 1001, 5000),
+    ("Trained", 5001, 25000),
+    ("Master", 25001, 99999),
+    ("Grandmaster", 100000, 100000),
 )
 
 
@@ -46,6 +61,7 @@ def create_technique_tables(cursor):
             player_id INTEGER NOT NULL,
             skill_definition_id INTEGER NOT NULL,
             progress_percent INTEGER NOT NULL DEFAULT 0,
+            progress_points INTEGER NOT NULL DEFAULT 0,
             PRIMARY KEY (player_id, skill_definition_id),
             FOREIGN KEY (player_id) REFERENCES players(id),
             FOREIGN KEY (skill_definition_id) REFERENCES skill_definitions(id)
@@ -58,6 +74,7 @@ def create_technique_tables(cursor):
             player_id INTEGER NOT NULL,
             jutsu_definition_id INTEGER NOT NULL,
             progress_percent INTEGER NOT NULL DEFAULT 0,
+            progress_points INTEGER NOT NULL DEFAULT 0,
             PRIMARY KEY (player_id, jutsu_definition_id),
             FOREIGN KEY (player_id) REFERENCES players(id),
             FOREIGN KEY (jutsu_definition_id) REFERENCES jutsu_definitions(id)
@@ -107,6 +124,23 @@ def ensure_usage_progress_columns(cursor):
                 cursor.execute(
                     f"UPDATE {table_name} SET progress_percent=MIN(100, MAX(0, rank))"
                 )
+        columns = {
+            column[1]
+            for column in cursor.execute(f"PRAGMA table_info({table_name})")
+        }
+        if "progress_points" not in columns:
+            cursor.execute(
+                f"ALTER TABLE {table_name} ADD COLUMN progress_points INTEGER NOT NULL DEFAULT 0"
+            )
+            cursor.execute(
+                f"""
+                UPDATE {table_name}
+                SET progress_points=CASE
+                    WHEN progress_percent >= 100 THEN {MAX_PROGRESS_POINTS}
+                    ELSE MAX(0, progress_percent * 1000)
+                END
+                """
+            )
 
 
 def ensure_catalog_availability_columns(cursor):
@@ -274,6 +308,30 @@ def record_jutsu_use(cursor, username, jutsu_key, commit=True):
     )
 
 
+def practice_skill(cursor, username, target):
+    """Advance one available skill through deliberate practice."""
+    return _practice(
+        cursor,
+        username,
+        target,
+        definitions_table="skill_definitions",
+        definition_id="skill_definition_id",
+        progress_table="character_skills",
+    )
+
+
+def train_jutsu(cursor, username, target):
+    """Advance one available jutsu through deliberate training."""
+    return _practice(
+        cursor,
+        username,
+        target,
+        definitions_table="jutsu_definitions",
+        definition_id="jutsu_definition_id",
+        progress_table="character_jutsus",
+    )
+
+
 def activate_jutsu(cursor, username, target):
     """Spend chakra and persist one authored jutsu activation window."""
     connection = cursor.connection
@@ -414,12 +472,23 @@ def tick_jutsu_states(connection):
     return cursor.rowcount
 
 
-def proficiency_label(progress_percent):
-    """Return the visible tier for a bounded usage percentage."""
-    progress_percent = max(0, min(100, int(progress_percent)))
-    for threshold, label in PROFICIENCY_TIERS:
-        if progress_percent >= threshold:
+def proficiency_label(progress_points):
+    """Return the visible tier for point-based progress."""
+    progress_points = max(0, min(MAX_PROGRESS_POINTS, int(progress_points)))
+    for threshold, label in PROFICIENCY_THRESHOLDS:
+        if progress_points >= threshold:
             return label
+
+
+def progress_percent_for_points(progress_points):
+    """Return visible percentage through the current proficiency band."""
+    points = max(0, min(MAX_PROGRESS_POINTS, int(progress_points)))
+    for label, start, end in PROFICIENCY_RANGES:
+        if start <= points <= end:
+            if start == end:
+                return 100
+            return int(((points - start) / (end - start)) * 100)
+    return 0
 
 
 def _list_progress(
@@ -430,11 +499,11 @@ def _list_progress(
     progress_table,
     include_unavailable,
 ):
-    return cursor.execute(
+    rows = cursor.execute(
         f"""
         SELECT definitions.id, definitions.name, definitions.description,
                definitions.is_available,
-               COALESCE(progress.progress_percent, 0) AS progress_percent
+               COALESCE(progress.progress_points, progress.progress_percent, 0) AS progress_points
         FROM players
         CROSS JOIN {definitions_table} AS definitions
         LEFT JOIN {progress_table} AS progress
@@ -445,6 +514,17 @@ def _list_progress(
         """,
         (username, include_unavailable),
     ).fetchall()
+    return [
+        {
+            "id": row["id"],
+            "name": row["name"],
+            "description": row["description"],
+            "is_available": row["is_available"],
+            "progress_points": row["progress_points"],
+            "progress_percent": progress_percent_for_points(row["progress_points"]),
+        }
+        for row in rows
+    ]
 
 
 def _progress_detail(rows, target):
@@ -455,7 +535,8 @@ def _progress_detail(rows, target):
         "name": definition["name"],
         "description": definition["description"],
         "progress_percent": definition["progress_percent"],
-        "proficiency": proficiency_label(definition["progress_percent"]),
+        "progress_points": definition["progress_points"],
+        "proficiency": proficiency_label(definition["progress_points"]),
     }
 
 
@@ -486,20 +567,23 @@ def _record_use(
     if not definition:
         return {"status": "missing"}
     progress = cursor.execute(
-        f"SELECT progress_percent FROM {progress_table} WHERE player_id=? AND {definition_id}=?",
+        f"SELECT progress_percent, progress_points FROM {progress_table} WHERE player_id=? AND {definition_id}=?",
         (player["id"], definition["id"]),
     ).fetchone()
-    previous = progress["progress_percent"] if progress else 0
-    updated = max(0, min(100, previous + definition["usage_gain"]))
+    previous = _progress_points_from_row(progress)
+    updated = max(0, min(MAX_PROGRESS_POINTS, previous + definition["usage_gain"]))
+    updated_percent = progress_percent_for_points(updated)
     try:
         cursor.execute(
             f"""
-            INSERT INTO {progress_table} (player_id, {definition_id}, progress_percent)
-            VALUES (?, ?, ?)
+            INSERT INTO {progress_table} (player_id, {definition_id}, progress_percent, progress_points)
+            VALUES (?, ?, ?, ?)
             ON CONFLICT(player_id, {definition_id})
-            DO UPDATE SET progress_percent=excluded.progress_percent
+            DO UPDATE SET
+                progress_percent=excluded.progress_percent,
+                progress_points=excluded.progress_points
             """,
-            (player["id"], definition["id"], updated),
+            (player["id"], definition["id"], updated_percent, updated),
         )
         if commit:
             cursor.connection.commit()
@@ -509,9 +593,77 @@ def _record_use(
     return {
         "status": "recorded",
         "name": definition["name"],
-        "progress_percent": updated,
+        "progress_points": updated,
+        "progress_percent": updated_percent,
         "proficiency": proficiency_label(updated),
     }
+
+
+def _practice(cursor, username, target, definitions_table, definition_id, progress_table):
+    player = cursor.execute(
+        "SELECT id FROM players WHERE username=?",
+        (username,),
+    ).fetchone()
+    if not player:
+        return {"status": "missing_player"}
+    definition = _resolve_named(
+        cursor.execute(
+            f"""
+            SELECT id, name, description, is_available
+            FROM {definitions_table}
+            WHERE is_available=1
+            ORDER BY name COLLATE NOCASE
+            """
+        ).fetchall(),
+        target,
+    )
+    if not definition:
+        return {"status": "missing"}
+    progress = cursor.execute(
+        f"SELECT progress_percent, progress_points FROM {progress_table} WHERE player_id=? AND {definition_id}=?",
+        (player["id"], definition["id"]),
+    ).fetchone()
+    previous_points = _progress_points_from_row(progress)
+    previous_percent = progress_percent_for_points(previous_points)
+    previous_label = proficiency_label(previous_points)
+    updated_points = min(MAX_PROGRESS_POINTS, previous_points + PRACTICE_POINT_GAIN)
+    updated_percent = progress_percent_for_points(updated_points)
+    updated_label = proficiency_label(updated_points)
+    cursor.execute(
+        f"""
+        INSERT INTO {progress_table} (player_id, {definition_id}, progress_percent, progress_points)
+        VALUES (?, ?, ?, ?)
+        ON CONFLICT(player_id, {definition_id})
+        DO UPDATE SET
+            progress_percent=excluded.progress_percent,
+            progress_points=excluded.progress_points
+        """,
+        (player["id"], definition["id"], updated_percent, updated_points),
+    )
+    cursor.connection.commit()
+    milestones = []
+    if updated_label != previous_label:
+        milestones.append("tier")
+    elif updated_percent // 10 > previous_percent // 10:
+        milestones.append("ten_percent")
+    return {
+        "status": "practiced",
+        "name": definition["name"],
+        "progress_points": updated_points,
+        "progress_percent": updated_percent,
+        "proficiency": updated_label,
+        "milestones": milestones,
+    }
+
+
+def _progress_points_from_row(progress):
+    if not progress:
+        return 0
+    if "progress_points" in progress.keys():
+        points = progress["progress_points"]
+        if points or progress["progress_percent"] <= 0:
+            return points
+    return min(MAX_PROGRESS_POINTS, max(0, progress["progress_percent"] * 1000))
 
 
 def _resolve_named(definitions, target):

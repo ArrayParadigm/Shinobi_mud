@@ -280,7 +280,10 @@
             "key": "haven-map",
             "name": "Haven Map",
             "description": "A softly glowing map of Eve's Haven.",
-            "keywords": ["map", "haven"],
+            "keywords": [
+                "map",
+                "haven"
+            ],
             "item_type": "reference",
             "use_text": "Examine it to study the shape of Eve's Haven."
         },
@@ -288,7 +291,13 @@
             "key": "practice-kunai",
             "name": "Practice Kunai",
             "description": "A dulled kunai balanced for training drills.",
-            "keywords": ["kunai", "kun", "knife", "weapon", "practice"],
+            "keywords": [
+                "kunai",
+                "kun",
+                "knife",
+                "weapon",
+                "practice"
+            ],
             "item_type": "weapon",
             "equipment_slot": "hand",
             "use_text": "Wield it for melee training, or throw it at a nearby target.",
@@ -299,7 +308,10 @@
             "key": "crystal-token",
             "name": "Crystal Token",
             "description": "A small crystalline token pulsing with a faint inner light.",
-            "keywords": ["token", "crystal"],
+            "keywords": [
+                "token",
+                "crystal"
+            ],
             "item_type": "curio",
             "use_text": "It has no active use yet."
         },
@@ -307,7 +319,11 @@
             "key": "travel-ration",
             "name": "Travel Ration",
             "description": "A compact ration packed for a shinobi on the move.",
-            "keywords": ["ration", "food", "travel"],
+            "keywords": [
+                "ration",
+                "food",
+                "travel"
+            ],
             "item_type": "food",
             "use_text": "Eat it to restore nutrition.",
             "nutrition_restore": 25
@@ -316,7 +332,11 @@
             "key": "water-flask",
             "name": "Water Flask",
             "description": "A small flask filled with clear drinking water.",
-            "keywords": ["water", "flask", "drink"],
+            "keywords": [
+                "water",
+                "flask",
+                "drink"
+            ],
             "item_type": "drink",
             "use_text": "Drink it to restore hydration.",
             "hydration_restore": 25
@@ -380,6 +400,11 @@
             "key": "practice-construct",
             "npc": "practice-construct",
             "vnum": 3001
+        },
+        {
+            "key": "builder-haven-guide-3002",
+            "npc": "haven-guide",
+            "vnum": 3002
         }
     ],
     "skill_templates": [

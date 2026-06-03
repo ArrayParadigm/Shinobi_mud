@@ -79,13 +79,9 @@ Restart the MUD or reconnect that character after promotion.
 
 ### Creating a Character
 
-New characters choose a specialty, clan, and natural release after setting a password. Stat allocation is entered once as five named bonuses totaling exactly 10:
+New characters enter the game immediately after username and password setup. Specialty, clan, release, and descriptive character work are intentionally left blank/default for later systems. Core attributes start at `10` for now.
 
-```text
-strength=2 dexterity=2 agility=2 intelligence=2 wisdom=2
-```
-
-Every attribute starts at 5 before those bonuses are applied.
+If the same character logs in again while already connected, the new session takes over the body and the old session is disconnected from active play.
 
 ### Testing
 
@@ -130,9 +126,10 @@ The authored `aexpanse` overlay is anchored at `(1, 1)` with two rooms and a see
 - `look [at <item>]`: display a compact local terrain view or inspect an item.
 - `survey`: display the larger terrain view.
 - `color <on|off>`: toggle ANSI terminal colors for the current connection.
-- `north`, `south`, `east`, `west`: move across the world grid.
+- `north`, `south`, `east`, `west`, `northeast`, `northwest`, `southeast`, `southwest`: move across the world grid. Diagonal aliases are `ne`, `nw`, `se`, and `sw`.
 - `loc`: display your grid coordinates and optional overlay area.
-- `score`: display your character sheet. `status` remains available as an alias.
+- `score`: display vertical resources, qualitative fatigue, horizontal stats, description, identity, stance, and location. `status` remains available as an alias.
+- `description [text]`: view or update your public character description. `desc` remains available as an alias.
 - `body`: display nutrition, hydration, fatigue, and short-rest chakra recovery.
 - `rest`: recover stamina and chakra while reducing fatigue.
 - `inventory`: list persistent carried and equipped items. `inv` remains available as an alias.
@@ -143,8 +140,8 @@ The authored `aexpanse` overlay is anchored at `(1, 1)` with two rooms and a see
 - `remove <item>`: unequip a carried item.
 - `eat <item>`: consume a carried food item to restore nutrition.
 - `drink <item>`: consume a carried beverage to restore hydration.
-- `prac [skill]`: list ordinary skills or inspect one skill's proficiency.
-- `train [jutsu]`: list jutsus or inspect one jutsu's proficiency.
+- `prac [skill]`: list ordinary skills or practice one skill for point-based progression.
+- `train [jutsu]`: list jutsus or train one jutsu for point-based progression.
 - `skill [all|skill]`: list available skills, inspect one, or show the full skill catalog.
 - `jutsu [all|jutsu]`: list available jutsus, inspect one, or show the full jutsu catalog.
 - `usejutsu <jutsu>`: activate an implemented jutsu.
@@ -161,18 +158,24 @@ The authored `aexpanse` overlay is anchored at `(1, 1)` with two rooms and a see
 - `emote <action>`: perform an action at your grid location.
 - `think`: perform the built-in thinking emote at your grid location.
 - `ooc <message>`: speak on the global out-of-character channel.
+- `suggest <message>`: append a timestamped player suggestion to `suggestions.md`.
+- `bug <message>`: append a timestamped bug report to `bugs.md`.
 - `help [command]`: list available commands or display usage details.
 - `commands`: list every player and admin command with its usage and a brief description.
 
-Commands accept unique prefixes. The stable shortcuts `n`, `s`, `e`, `w`, and `l` always mean `north`, `south`, `east`, `west`, and `look`. Ambiguous prefixes list their possible matches instead of guessing.
+Commands accept unique prefixes. The stable shortcuts `n`, `s`, `e`, `w`, `ne`, `nw`, `se`, `sw`, and `l` always mean their matching movement command or `look`. Ambiguous prefixes list their possible matches instead of guessing.
 
 Item targets accept authored keywords and abbreviations. Exact names win first; otherwise the first stable matching instance is used. Use an ordinal such as `get 2.kun` when duplicate items need an explicit selection.
 
+NPC targets for `talk`, `consider`, `attack`, and `throw` accept name prefixes and ordinals such as `talk guard` or `consider 2.guard`, which keeps long builder-authored names usable from the command line.
+
 ### Editable Help Files
 
-Command summaries and longer help prose live in `helpfiles/commands.json`. Builders and helpers can update each command's `summary` and `details` without editing Python or restarting the server. Both `commands` and `help <command>` read the file when requested.
+Command summaries, longer help prose, and publish state live in `helpfiles/commands.json`. Builders and helpers can update each command's `summary`, `details`, and `published` state without editing Python or restarting the server. Both `commands` and `help <command>` read the file when requested. Unpublished help shows `(i)`.
 
 Command-catalog sections live in `helpfiles/command_categories.json`. Builders can reorder commands or move them between headings such as `Movement`, `Builder`, and `Admin`. Section headings receive ANSI color when the player's color setting is enabled.
+
+Use `hedit <command> summary <text>`, `hedit <command> detail <text>`, `hedit <command> category <section>`, `hedit <command> publish`, and `hedit <command> unpublish` to manage command help in-game.
 
 Keep executable command syntax, aliases, permissions, and validation rules in Python. Missing entries or temporarily invalid JSON fall back to the built-in command summaries and an `Other` section so command discovery remains available while a help-file edit is repaired.
 
@@ -180,6 +183,10 @@ Admin overlay tools:
 
 - `buildzone <zone_key> <start_vnum> <end_vnum> <x> <y> <room_title>`: create an anchored zone with one usable starting room and move there.
 - `zonelist`: list authored zone filenames, ranges, anchors, and room counts.
+- `zstat [zone]`: show compact zone counts for rooms, templates, spawns, range, and anchor.
+- `rlist [zone]`, `mlist [zone]`, and `ilist [zone]`: list authored rooms, NPC templates, and item templates.
+- `bfind <text>`: search authored rooms, NPC templates, item templates, spawns, keywords, names, and VNUMs.
+- `contentcheck [zone]`: validate exits, VNUM references, spawn templates, duplicate VNUMs, overlapping coordinates, and out-of-bounds overlays.
 - `goto <vnum>`: teleport to an authored overlay room while retaining canonical coordinates.
 - `goto grid <x> <y>`: teleport to canonical world coordinates.
 - `goto player <name>`: teleport to an online character.
@@ -194,15 +201,20 @@ Admin overlay tools:
 - `spawnnpc <npc_key>`: persist and import an authored NPC spawn in the current room.
 - `iedit create <item_key> <name>`, `iedit <item_key> <field> <value>`, and `istat <item_key>`: create, edit, and inspect authored item templates.
 - `spawnitem <item_key>`: persist and import a finite authored item seed in the current room.
+- `cloneitem <source_key> <new_key>`, `clonenpc <source_key> <new_key>`, and `cloneroom <source_vnum> <new_vnum>`: copy authored content for fast variations.
+- `spawnlist [zone]`: list authored NPC and item spawns.
+- `despawnitem <spawn_key>` and `despawnnpc <spawn_key>`: remove authored item or NPC spawns from the current zone.
+- `bundo`: restore the most recent successful builder zone mutation snapshot.
+- `hedit <command> <summary|detail|category|publish|unpublish> [text]`: edit and publish command help.
 - `pstat <username>`: inspect a player's persistent identity, access, resources, body state, and saved location without exposing password data.
-- `pset <username> <field> <value>`: set a validated player field such as `admin`, `specialty`, `clan`, `release`, `dojo`, resources, attributes, nutrition, hydration, or fatigue.
+- `pset <username> <field> <value>`: set a validated player field such as `admin`, `specialty`, `clan`, `release`, `dojo`, description, resources, `intellect`, `condition`, other attributes, nutrition, hydration, or fatigue.
 - `copyover`: report that soft restarts are intentionally disabled for now.
 
-For a fresh zone, start with `buildzone`, use `dig` to expand its coordinate layout, use `redit` and `rstat` to refine rooms, then create templates with `createnpc` or `iedit` and place finite instances with `spawnnpc` or `spawnitem`. JSON remains the authored source of truth, while successful edits synchronize live SQLite template metadata immediately.
+For a fresh zone, start with `buildzone`, use `zstat`, `rlist`, `mlist`, `ilist`, `bfind`, and `contentcheck` to inspect it, use `dig` to expand its coordinate layout, use `redit` and `rstat` to refine rooms, then create templates with `createnpc` or `iedit` and place finite instances with `spawnnpc` or `spawnitem`. Use clone commands for variations, `spawnlist` plus despawn commands for authored seeds, and `bundo` to revert the most recent successful builder mutation. JSON remains the authored source of truth, while successful edits synchronize live SQLite template metadata immediately.
 
 `pset` deliberately excludes usernames, passwords, and saved coordinates. Those need separate audited workflows; ordinary player movement and `goto` remain the safe ways to change location. The older `setrole`, `setstat`, and `setdojo` commands remain available as compatibility wrappers.
 
-The player prompt reports current and maximum health, stamina, chakra, and location after commands. Map output includes a legend. Nearby-character listings are controlled by `show_nearby_players` and `nearby_player_radius` in `config.json`.
+The player prompt reports current and maximum health, stamina, chakra, and location after commands. Map output includes a legend for you, other players, NPCs, and authored areas. Nearby-character listings are controlled by `show_nearby_players` and `nearby_player_radius` in `config.json`.
 
 ANSI terminal colors are enabled for new connections by default. Set `default_color_enabled` in `config.json` to change the server default, or use `color off` for clients that do not render ANSI colors cleanly.
 
@@ -224,9 +236,11 @@ The combat loop is engagement-driven and pulse-based. `attack <character>` start
 
 Accuracy and evasion are opposing values. An S1 attacker facing an S2 defender has an easier hit check because the attacker contributes `+2` accuracy while the defender contributes `-1` evasion. NPC pulse combat applies the same player-side stance fields now; player-versus-player engagement can reuse the opposed calculation when it is introduced. The persisted combat queue can still apply one-shot range, accuracy, damage, and status modifiers from future skills and jutsus.
 
-Characters also have abstract body resources: nutrition, hydration, and fatigue. Ordinary movement and hostile combat increase fatigue. `rest` reduces fatigue, consumes a small amount of nutrition and hydration, restores stamina, and restores chakra based on wisdom and current body condition. Rest is blocked at zero nutrition or hydration. `eat` and `drink` consume finite authored supplies to restore body resources.
+Characters also have abstract body resources: nutrition, hydration, and fatigue. Ordinary movement and hostile combat increase fatigue. `rest` reduces fatigue, consumes a small amount of nutrition and hydration, restores stamina, and restores chakra based on intellect and current body condition. Condition improves short-rest recovery, and recovery-friendly rooms add a room bonus. Rest is blocked at zero nutrition or hydration. `eat` and `drink` consume finite authored supplies to restore body resources.
 
-Skills and jutsus have separate authored definitions and persistent `0-100%` proficiency. `prac`, `train`, `skill`, and `jutsu` list available records. `skill all` and `jutsu all` expose the wider authored catalog, with future records marked `[unimplemented]`. Valid gameplay use raises proficiency through an authored usage gain; the visible tiers are `Novice`, `Adept`, `Skilled`, `Master`, and `Grandmaster`.
+Room flags have player-visible effects. `darkness` hides survey and nearby maps, `brightness` washes the minimap, `indoor` limits map visibility, `safe` and `no-combat` block player combat commands, `vacuum` adds fatigue and can pressure health at extreme fatigue, and `recovery-friendly` improves rest.
+
+Skills and jutsus have separate authored definitions and hidden point progress. `prac <skill>` and `train <jutsu>` add practice points and report tier/percent progress, with milestone messages at 10% improvements and tier changes. `skill` and `jutsu` list available records, and `skill all` plus `jutsu all` expose the wider authored catalog with future records marked `[unimplemented]`. Visible tiers are `Untrained`, `Unlearned`, `Novice`, `Adept`, `Trained`, `Master`, and capped `Grandmaster`.
 
 `throw <item> at <character>` is the first real skill action. A valid throw accepts a carried authored item with ranged damage, targets a hostile NPC in the current room or one cardinal step away, adds `2` fatigue, lands the item at the target location, and raises `Throw` proficiency even when the attack misses. The Practice Kunai deals `3` thrown damage.
 

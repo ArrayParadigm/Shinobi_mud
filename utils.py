@@ -143,7 +143,16 @@ def reverse_dir(direction):
     Returns:
         str: The opposite direction (e.g., "south"), or an empty string if invalid.
     """
-    return {"north": "south", "south": "north", "east": "west", "west": "east"}.get(direction, "")
+    return {
+        "north": "south",
+        "south": "north",
+        "east": "west",
+        "west": "east",
+        "northeast": "southwest",
+        "northwest": "southeast",
+        "southeast": "northwest",
+        "southwest": "northeast",
+    }.get(direction, "")
 
 def render_open_land(
     player_x,
@@ -153,12 +162,17 @@ def render_open_land(
     width_radius=20,
     height_radius=10,
     color_enabled=False,
+    bright_mode=False,
+    player_locations=None,
+    npc_locations=None,
 ):
     """Renders a portion of the world map centered around the player's position."""
     if world_map is None:
         raise ValueError("A valid world_map must be provided.")
     
     visible_map = []
+    player_locations = {tuple(location) for location in (player_locations or [])}
+    npc_locations = {tuple(location) for location in (npc_locations or [])}
 
     for y in range(player_y - height_radius, player_y + height_radius + 1):
         row = ""
@@ -166,6 +180,12 @@ def render_open_land(
             if 0 <= y < len(world_map) and 0 <= x < len(world_map[0]):
                 if x == player_x and y == player_y:
                     row += presentation.map_symbol("P", color_enabled)  # Mark the player
+                elif (x, y) in player_locations:
+                    row += presentation.map_symbol("@", color_enabled)
+                elif (x, y) in npc_locations:
+                    row += presentation.map_symbol("N", color_enabled)
+                elif bright_mode:
+                    row += presentation.map_symbol(".", color_enabled)
                 elif overlays and (x, y) in overlays:
                     row += presentation.map_symbol("#", color_enabled)  # Mark authored content without mutating terrain
                 else:

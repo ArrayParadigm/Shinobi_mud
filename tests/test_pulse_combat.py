@@ -232,7 +232,7 @@ class PulseCombatTests(unittest.TestCase):
 
         self.assertIsNotNone(event["substitution"])
         self.assertEqual(event["player_health"], 10)
-        self.assertEqual(event["substitution"]["progress_percent"], 1)
+        self.assertEqual(event["substitution"]["progress_percent"], 10)
 
     def test_runtime_tick_delivers_pulse_feedback_to_online_player(self):
         self.player.track_player()

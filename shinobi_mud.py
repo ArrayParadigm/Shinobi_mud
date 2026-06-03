@@ -12,10 +12,11 @@ from auth import hash_password, validate_username, verify_password
 from command_system import CommandSpec
 from combat import clear_engagement, tick_combat
 from content import sync_authored_content
-from locations import broadcast_at, coordinate_key, is_within_bounds, nearby_players, players_at, track_player, untrack_player
+from locations import broadcast_at, coordinate_key, is_within_bounds, nearby_players, online_players, players_at, track_player, untrack_player
 from migrations import apply_migrations, create_players_table
-from npcs import tick_npcs
+from npcs import npc_locations, tick_npcs
 from techniques import tick_jutsu_states
+import presentation
 from presentation import prompt
 from twisted.internet import task
 
@@ -66,6 +67,10 @@ COMMAND_SHORTCUTS = {
     "e": "east",
     "w": "west",
     "l": "look",
+    "ne": "northeast",
+    "nw": "northwest",
+    "se": "southeast",
+    "sw": "southwest",
 }
 UTILITIES = {}
 players_in_rooms = {}
@@ -78,8 +83,8 @@ WORLD_TICK_LOOP = None
 COMBAT_TICK_INTERVAL_SECONDS = 1
 COMBAT_TICK_LOOP = None
 NORMAL_MAP_WIDTH_RADIUS = 5
-NORMAL_MAP_HEIGHT_RADIUS = 2
-BASE_ATTRIBUTE_SCORE = 5
+NORMAL_MAP_HEIGHT_RADIUS = 5
+BASE_ATTRIBUTE_SCORE = 10
 ATTRIBUTE_ALLOCATION_POINTS = 10
 ATTRIBUTE_NAMES = ("strength", "dexterity", "agility", "intelligence", "wisdom")
 SPECIALTIES = {
@@ -280,7 +285,7 @@ def process_command(player, command):
 def is_username_active(username, exclude=None):
     """Return True when a username is already attached to an active protocol."""
     return any(
-        player is not exclude and player.username == username
+        player is not exclude and getattr(player, "username", None) == username
         for room_players in players_in_rooms.values()
         for player in room_players
     )
@@ -328,6 +333,34 @@ def get_state_handlers():
         "COMMAND": "handle_command",
     }
 
+
+def broadcast_global(message, exclude=None):
+    """Send a server-wide message to every tracked online character."""
+    seen = set()
+    for bucket in players_in_rooms.values():
+        for recipient in bucket:
+            if id(recipient) in seen:
+                continue
+            seen.add(id(recipient))
+            if recipient is not exclude and getattr(recipient, "username", None):
+                recipient.sendLine(message.encode("utf-8"))
+
+
+def active_session_for(username, exclude=None):
+    """Return one tracked protocol for an already-online username."""
+    target = username.casefold()
+    seen = set()
+    for bucket in players_in_rooms.values():
+        for player in bucket:
+            if id(player) in seen:
+                continue
+            seen.add(id(player))
+            player_username = getattr(player, "username", None)
+            if player is not exclude and player_username and player_username.casefold() == target:
+                return player
+    return None
+
+
 class NinjaMUDProtocol(basic.LineReceiver):
     delimiter = b"\n"
 
@@ -371,6 +404,8 @@ class NinjaMUDProtocol(basic.LineReceiver):
             except sqlite3.Error:
                 logging.warning("Unable to clear combat engagement for %s.", self.username)
         self.untrack_player()
+        if self.username:
+            broadcast_global(f"{self.username} has disconnected.", exclude=self)
         self.close_connection()
 
     def close_connection(self):
@@ -436,9 +471,15 @@ class NinjaMUDProtocol(basic.LineReceiver):
             self.sendLine(b"Incorrect password. Try again.")
             return
 
-        if is_username_active(self.username, exclude=self):
-            self.sendLine(b"That character is already logged in.")
-            return
+        active_session = active_session_for(self.username, exclude=self)
+        if active_session:
+            active_session.sendLine(b"Another connection has taken over this character.")
+            active_session.untrack_player()
+            if getattr(active_session, "transport", None):
+                active_session.transport.loseConnection()
+            active_session.close_connection()
+            active_session.username = None
+            active_session.state = "DISCONNECTED"
 
         if needs_upgrade:
             self.cursor.execute(
@@ -455,6 +496,7 @@ class NinjaMUDProtocol(basic.LineReceiver):
         self.sendLine(b"Login successful!")
         self.state = "COMMAND"
         self.track_player()
+        broadcast_global(f"{self.username} has connected.", exclude=self)
         self.display_room()
         self.display_prompt()
             
@@ -514,8 +556,11 @@ class NinjaMUDProtocol(basic.LineReceiver):
                 width_radius=NORMAL_MAP_WIDTH_RADIUS,
                 height_radius=NORMAL_MAP_HEIGHT_RADIUS,
                 color_enabled=self.color_enabled,
+                player_locations=self._visible_player_locations(NORMAL_MAP_WIDTH_RADIUS, NORMAL_MAP_HEIGHT_RADIUS),
+                npc_locations=npc_locations(self.cursor, self.x, self.y, NORMAL_MAP_WIDTH_RADIUS, NORMAL_MAP_HEIGHT_RADIUS),
             )
             self.sendLine(map_view.encode("utf-8"))
+            self.sendLine(presentation.divider("Nearby", self.color_enabled).encode("utf-8"))
             self.list_players_in_room()
             self.list_nearby_players()
         except KeyError:
@@ -523,6 +568,15 @@ class NinjaMUDProtocol(basic.LineReceiver):
         except Exception as e:
             logging.error(f"Error rendering map: {e}", exc_info=True)
             self.sendLine(b"An error occurred while rendering the map.")
+
+    def _visible_player_locations(self, width_radius, height_radius):
+        locations = set()
+        for other_player in online_players(players_in_rooms):
+            if other_player is self:
+                continue
+            if abs(other_player.x - self.x) <= width_radius and abs(other_player.y - self.y) <= height_radius:
+                locations.add((other_player.x, other_player.y))
+        return locations
         
     def track_player(self):
         broadcast_at(
@@ -592,14 +646,21 @@ class NinjaMUDProtocol(basic.LineReceiver):
         if self.character_creation_data['password'] == password:
             hashed_password = hash_password(password)
             self.cursor.execute("""
-                INSERT INTO players (username, password, x, y, is_admin) 
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO players (
+                    username, password, x, y, is_admin,
+                    strength, dexterity, agility, intelligence, wisdom
+                )
+                VALUES (?, ?, ?, ?, ?, 10, 10, 10, 10, 10)
             """, (self.username, hashed_password, self.x, self.y, self.is_admin))
             self.cursor.connection.commit()
             del self.character_creation_data['password']
-            self.sendLine(b"Account created! Let's shape your shinobi.")
-            self.sendLine(b"Choose a specialty: 1) Ninjutsu  2) Genjutsu  3) Taijutsu")
-            self.state = "CHOOSE_SPECIALTY"
+            self.sendLine(b"Account created. Default character stats are set to 10.")
+            self.sendLine(b"Character is ready! Entering the game...")
+            self.state = "COMMAND"
+            self.track_player()
+            broadcast_global(f"{self.username} has connected.", exclude=self)
+            self.display_room()
+            self.display_prompt()
         else:
             self.sendLine(b"Passwords do not match. Try again.")
             self.state = "REGISTER_PASSWORD"

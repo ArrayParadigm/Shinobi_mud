@@ -88,6 +88,52 @@ class NPCFoundationTests(unittest.TestCase):
             ],
         )
 
+    def test_npc_targets_accept_prefixes_and_ordinals(self):
+        self.connection.execute(
+            """
+            INSERT INTO npc_templates (
+                npc_key, name, description, dialogue, behavior,
+                max_health, attack_damage, accuracy, evasion
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            ("guard-one", "Village Guard", "The first guard.", "First post.", "static", 10, 0, 5, 5),
+        )
+        self.connection.execute(
+            """
+            INSERT INTO npc_templates (
+                npc_key, name, description, dialogue, behavior,
+                max_health, attack_damage, accuracy, evasion
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            ("guard-two", "Village Guard Trainee", "The second guard.", "Second post.", "static", 10, 0, 5, 5),
+        )
+        first_id = self.connection.execute(
+            "SELECT id FROM npc_templates WHERE npc_key='guard-one'"
+        ).fetchone()["id"]
+        second_id = self.connection.execute(
+            "SELECT id FROM npc_templates WHERE npc_key='guard-two'"
+        ).fetchone()["id"]
+        self.connection.executemany(
+            """
+            INSERT INTO npc_instances (npc_template_id, x, y, home_x, home_y, health, seed_key)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                (first_id, 500, 500, 500, 500, 10, "guard-one"),
+                (second_id, 500, 500, 500, 500, 10, "guard-two"),
+            ),
+        )
+        self.connection.commit()
+
+        general_commands.handle_talk(self.player, "2.village guard")
+        general_commands.handle_consider(self.player, "village guard tr")
+
+        self.assertIn('Village Guard Trainee says, "Second post."', self.player.messages)
+        self.assertIn("Village Guard Trainee", self.player.messages)
+        self.assertIn("The second guard.", self.player.messages)
+
     def test_admin_reloadcontent_imports_without_duplicate_spawns(self):
         admin_commands.reloadcontent(self.player)
 

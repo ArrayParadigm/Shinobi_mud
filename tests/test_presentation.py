@@ -81,7 +81,7 @@ class PresentationTests(unittest.TestCase):
         self.assertIn("\x1b[", rendered)
         self.assertEqual(
             ANSI_SEQUENCE.sub("", rendered).splitlines(),
-            ["...", ".P#", "...", "Legend: P=you  #=authored area"],
+            ["...", ".P#", "...", "Legend: P=you  @=player  N=NPC  #=authored area"],
         )
 
     def test_chat_strips_terminal_control_characters(self):

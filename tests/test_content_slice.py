@@ -499,6 +499,154 @@ class ContentSliceTests(unittest.TestCase):
             self.assertIn("Item field-ration: Field Ration", self.player.messages)
             self.assertIn("  Type: food slot=None damage=0 throw=0 nutrition=30 hydration=0", self.player.messages)
 
+    def test_builder_inventory_search_and_contentcheck_cover_zone_json(self):
+        zone_data = {
+            "name": "Sample",
+            "content_key": "sample",
+            "range": {"start": 7000, "end": 7001},
+            "anchor": {"x": 1, "y": 1},
+            "rooms": {
+                "7000": {"name": "Square", "description": "Square.", "exits": {"north": 7001}, "x_offset": 0, "y_offset": 0},
+                "7001": {"name": "North", "description": "North.", "exits": {"south": 7000}, "x_offset": 0, "y_offset": -1},
+            },
+            "npc_templates": [{"key": "guard", "name": "Village Guard", "description": "A guard.", "dialogue": "Stay sharp.", "behavior": "static"}],
+            "item_templates": [{"key": "ration", "name": "Field Ration", "description": "A meal.", "keywords": ["meal"], "item_type": "food"}],
+            "npc_spawns": [{"key": "guard-7000", "npc": "guard", "vnum": 7000}],
+            "item_spawns": [{"key": "ration-7000", "item": "ration", "vnum": 7000}],
+        }
+        with self.temporary_zone(zone_data):
+            admin_commands.zstat(self.player, "sample")
+            admin_commands.rlist(self.player, "sample")
+            admin_commands.mlist(self.player, "sample")
+            admin_commands.ilist(self.player, "sample")
+            admin_commands.bfind(self.player, "guard")
+            admin_commands.contentcheck(self.player, "sample")
+
+        transcript = "\n".join(self.player.messages)
+        self.assertIn("Zone Sample (sample.json)", transcript)
+        self.assertIn("  [7000] Square (0, 0)", transcript)
+        self.assertIn("  guard: Village Guard (static)", transcript)
+        self.assertIn("  ration: Field Ration (food)", transcript)
+        self.assertIn("  npc Sample guard: Village Guard", transcript)
+        self.assertIn("Content Check\n  OK", transcript)
+
+    def test_builder_clone_despawn_and_bundo_round_trip_zone_json(self):
+        zone_data = {
+            "name": "Sample",
+            "content_key": "sample",
+            "range": {"start": 7000, "end": 7002},
+            "anchor": {"x": 1, "y": 1},
+            "rooms": {"7000": {"name": "Square", "description": "Square.", "exits": {}, "x_offset": 0, "y_offset": 0}},
+            "npc_templates": [{"key": "guard", "name": "Village Guard", "description": "A guard.", "dialogue": "Stay sharp.", "behavior": "static"}],
+            "item_templates": [{"key": "ration", "name": "Field Ration", "description": "A meal.", "keywords": ["meal"], "item_type": "food"}],
+            "npc_spawns": [{"key": "guard-7000", "npc": "guard", "vnum": 7000}],
+            "item_spawns": [{"key": "ration-7000", "item": "ration", "vnum": 7000}],
+        }
+        with self.temporary_zone(zone_data) as zone_path:
+            sync_authored_content(self.connection, "zones", shinobi_mud.WORLD_OVERLAYS)
+
+            admin_commands.cloneitem(self.player, "ration", "ration-copy")
+            admin_commands.clonenpc(self.player, "guard", "guard-copy")
+            admin_commands.cloneroom(self.player, "7000", "7001")
+            admin_commands.despawnitem(self.player, "ration-7000")
+            persisted = json.loads(zone_path.read_text(encoding="utf-8"))
+            self.assertNotIn("ration-7000", [spawn["key"] for spawn in persisted["item_spawns"]])
+
+            admin_commands.bundo(self.player)
+            restored = json.loads(zone_path.read_text(encoding="utf-8"))
+
+        self.assertIn("ration-copy", [item["key"] for item in restored["item_templates"]])
+        self.assertIn("guard-copy", [npc["key"] for npc in restored["npc_templates"]])
+        self.assertIn("7001", restored["rooms"])
+        self.assertIn("ration-7000", [spawn["key"] for spawn in restored["item_spawns"]])
+        self.assertIn("Undid builder action: zone edit.", self.player.messages)
+
+    def test_hedit_updates_help_category_and_publish_state(self):
+        original_help = shinobi_mud.ACTIVE_CONFIG.get("help_file")
+        original_categories = shinobi_mud.ACTIVE_CONFIG.get("command_categories_file")
+        original_admin_help = admin_commands.ACTIVE_CONFIG.get("help_file")
+        original_admin_categories = admin_commands.ACTIVE_CONFIG.get("command_categories_file")
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            help_path = Path(temporary_directory) / "commands.json"
+            category_path = Path(temporary_directory) / "command_categories.json"
+            help_path.write_text(
+                json.dumps({"look": {"summary": "Old look.", "details": [], "published": False}}),
+                encoding="utf-8",
+            )
+            category_path.write_text(json.dumps({"Other": ["look"]}), encoding="utf-8")
+            shinobi_mud.ACTIVE_CONFIG["help_file"] = str(help_path)
+            shinobi_mud.ACTIVE_CONFIG["command_categories_file"] = str(category_path)
+            admin_commands.ACTIVE_CONFIG["help_file"] = str(help_path)
+            admin_commands.ACTIVE_CONFIG["command_categories_file"] = str(category_path)
+
+            admin_commands.hedit(self.player, "look", "summary", "Updated look.")
+            admin_commands.hedit(self.player, "look", "detail", "Use this to read a room.")
+            admin_commands.hedit(self.player, "look", "category", "Exploration")
+            admin_commands.hedit(self.player, "look", "publish")
+            catalog = json.loads(help_path.read_text(encoding="utf-8"))
+            categories = json.loads(category_path.read_text(encoding="utf-8"))
+
+        if original_help is None:
+            shinobi_mud.ACTIVE_CONFIG.pop("help_file", None)
+        else:
+            shinobi_mud.ACTIVE_CONFIG["help_file"] = original_help
+        if original_categories is None:
+            shinobi_mud.ACTIVE_CONFIG.pop("command_categories_file", None)
+        else:
+            shinobi_mud.ACTIVE_CONFIG["command_categories_file"] = original_categories
+        if original_admin_help is None:
+            admin_commands.ACTIVE_CONFIG.pop("help_file", None)
+        else:
+            admin_commands.ACTIVE_CONFIG["help_file"] = original_admin_help
+        if original_admin_categories is None:
+            admin_commands.ACTIVE_CONFIG.pop("command_categories_file", None)
+        else:
+            admin_commands.ACTIVE_CONFIG["command_categories_file"] = original_admin_categories
+
+        self.assertEqual(catalog["look"]["summary"], "Updated look.")
+        self.assertEqual(catalog["look"]["details"], ["Use this to read a room."])
+        self.assertTrue(catalog["look"]["published"])
+        self.assertEqual(categories["Exploration"], ["look"])
+
+    def test_room_flags_have_visible_player_consequences(self):
+        shinobi_mud.WORLD_OVERLAYS[(1, 1)] = {
+            "zone_name": "Flag Lab",
+            "vnum": 7000,
+            "room": {"name": "Dark Safe Room", "description": "Dark.", "flags": ["darkness", "safe"], "exits": {"east": 7001}},
+        }
+        shinobi_mud.WORLD_OVERLAYS[(2, 1)] = {
+            "zone_name": "Flag Lab",
+            "vnum": 7001,
+            "room": {"name": "Vacuum Room", "description": "Thin air.", "flags": ["vacuum", "recovery-friendly"], "exits": {"west": 7000}},
+        }
+
+        general_commands.handle_survey(self.player)
+        general_commands.handle_attack(self.player, "anything")
+        before_move_messages = list(self.player.messages)
+        general_commands.handle_movement(self.player, "east")
+        movement_messages = list(self.player.messages)
+        fatigue = self.connection.execute(
+            "SELECT fatigue FROM players WHERE username='Explorer'"
+        ).fetchone()["fatigue"]
+        self.connection.execute(
+            "UPDATE players SET stamina=2, chakra=1, fatigue=30 WHERE username='Explorer'"
+        )
+        self.connection.commit()
+        self.player.messages.clear()
+        general_commands.handle_rest(self.player)
+        saved = self.connection.execute(
+            "SELECT stamina, chakra, fatigue FROM players WHERE username='Explorer'"
+        ).fetchone()
+
+        self.assertIn("It is too dark to survey the area.", before_move_messages)
+        self.assertIn("Combat is not allowed here.", before_move_messages)
+        self.assertIn("Vacuum strains your body.", "\n".join(movement_messages))
+        self.assertGreater(fatigue, 0)
+        self.assertIn("This room supports recovery.", self.player.messages)
+        self.assertGreater(saved["stamina"], 2)
+        self.assertGreater(saved["chakra"], 1)
+        self.assertLess(saved["fatigue"], 30)
+
 
 if __name__ == "__main__":
     unittest.main()

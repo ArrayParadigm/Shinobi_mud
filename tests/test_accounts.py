@@ -43,10 +43,6 @@ class AccountLifecycleTests(unittest.TestCase):
         player.handle_username(username)
         player.register_password(password)
         player.confirm_password(password)
-        player.choose_specialty("1")
-        player.choose_clan("2")
-        player.choose_release("1")
-        player.allocate_stats("strength=2 dexterity=2 agility=2 intelligence=2 wisdom=2")
         return player
 
     def test_registration_creates_non_admin_scrypt_account(self):
@@ -58,10 +54,14 @@ class AccountLifecycleTests(unittest.TestCase):
 
         self.assertEqual(row["is_admin"], 0)
         self.assertTrue(row["password"].startswith("scrypt$"))
-        self.assertEqual(row["role_type"], "Ninjutsu")
-        self.assertEqual(row["clan"], "Leaf")
-        self.assertEqual(row["natural_release"], "Fire")
-        self.assertEqual(row["strength"], 7)
+        self.assertEqual(row["role_type"], "newbie")
+        self.assertEqual(row["clan"], "Unaffiliated")
+        self.assertEqual(row["natural_release"], "Undeclared")
+        self.assertEqual(row["strength"], 10)
+        self.assertEqual(row["dexterity"], 10)
+        self.assertEqual(row["agility"], 10)
+        self.assertEqual(row["intelligence"], 10)
+        self.assertEqual(row["wisdom"], 10)
         self.assertEqual(player.state, "COMMAND")
 
     def test_login_restores_saved_character_fields(self):
@@ -109,15 +109,18 @@ class AccountLifecycleTests(unittest.TestCase):
         self.assertIsNone(player.username)
         self.assertIn("Usernames must be", player.messages[0])
 
-    def test_duplicate_active_session_is_rejected(self):
+    def test_duplicate_active_session_takes_over_existing_body(self):
         first = self.create_character()
         duplicate = TestProtocol(shinobi_mud.cursor)
 
         duplicate.handle_username(first.username)
         duplicate.handle_password("secret pass")
 
-        self.assertEqual(duplicate.state, "GET_PASSWORD")
-        self.assertIn("already logged in", duplicate.messages[-1])
+        self.assertEqual(duplicate.state, "COMMAND")
+        self.assertEqual(first.state, "DISCONNECTED")
+        self.assertNotIn(first, shinobi_mud.players_in_rooms.get(first.location_key, []))
+        self.assertIn("Another connection has taken over this character.", first.messages)
+        self.assertIn(duplicate, shinobi_mud.players_in_rooms[duplicate.location_key])
 
     def test_stat_allocation_rejects_invalid_values(self):
         player = TestProtocol(shinobi_mud.cursor)

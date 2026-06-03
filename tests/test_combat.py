@@ -212,7 +212,7 @@ class CombatSliceTests(unittest.TestCase):
         ).fetchone()["progress_percent"]
 
         self.assertEqual((player["health"], player["chakra"]), (10, 7))
-        self.assertEqual(progress, 1)
+        self.assertEqual(progress, 10)
         self.assertEqual(
             activate_jutsu(self.player.cursor, "Fighter", "sub")["status"],
             "cooldown",
@@ -221,7 +221,7 @@ class CombatSliceTests(unittest.TestCase):
             self.player.messages,
             [
                 "You attack Practice Construct, but miss.",
-                "You evade Practice Construct through Substitution Technique. Jutsu: Novice (1%).",
+                "You evade Practice Construct through Substitution Technique. Jutsu: Untrained (10%).",
             ],
         )
 
@@ -345,7 +345,7 @@ class CombatSliceTests(unittest.TestCase):
         ).fetchone()["fatigue"]
 
         self.assertEqual(npc_health, 9)
-        self.assertEqual(progress, 1)
+        self.assertEqual(progress, 10)
         self.assertEqual(fatigue, 2)
         self.assertEqual(inventory_items(self.player.cursor, "Fighter"), [])
         self.assertEqual(
@@ -356,7 +356,7 @@ class CombatSliceTests(unittest.TestCase):
             self.player.messages,
             [
                 "You throw Practice Kunai at Practice Construct for 3 damage. "
-                "Practice Construct has 9 health remaining. Throw: Novice (1%)."
+                "Practice Construct has 9 health remaining. Throw: Untrained (10%)."
             ],
         )
 
@@ -369,7 +369,7 @@ class CombatSliceTests(unittest.TestCase):
 
         self.assertEqual(
             self.player.messages,
-            ["You throw Practice Kunai at Practice Construct, but miss. Throw: Novice (1%)."],
+            ["You throw Practice Kunai at Practice Construct, but miss. Throw: Untrained (10%)."],
         )
         self.assertEqual(inventory_items(self.player.cursor, "Fighter"), [])
 

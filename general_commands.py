@@ -1,9 +1,10 @@
 import json
 import logging
 import presentation
-from body import body_state, body_warnings, chakra_recovery_amount, rest_character
+from body import apply_vacuum_exposure, body_state, body_warnings, chakra_recovery_amount, rest_character
 from combat import combat_status, engage_npc, list_stances, set_stance
 from command_system import CommandSpec
+from feedback import DEFAULT_BUGS_FILE, DEFAULT_SUGGESTIONS_FILE, append_feedback
 from help_content import (
     DEFAULT_CATEGORY_FILE,
     DEFAULT_HELP_FILE,
@@ -29,8 +30,17 @@ from locations import (
     move_player,
     online_players,
 )
-from npcs import consider_npc, talk_to_npc, throw_item_at_npc
-from techniques import activate_jutsu, jutsu_detail, list_jutsus, list_skills, proficiency_label, skill_detail
+from npcs import consider_npc, npc_locations, talk_to_npc, throw_item_at_npc
+from techniques import (
+    activate_jutsu,
+    jutsu_detail,
+    list_jutsus,
+    list_skills,
+    practice_skill,
+    proficiency_label,
+    skill_detail,
+    train_jutsu,
+)
 from shinobi_mud import (
     ACTIVE_CONFIG,
     COMMAND_REGISTRY,
@@ -41,6 +51,11 @@ from shinobi_mud import (
 )
 
 logging.info("general_commands imported")
+
+NORMAL_MAP_WIDTH_RADIUS = 5
+NORMAL_MAP_HEIGHT_RADIUS = 5
+SURVEY_MAP_WIDTH_RADIUS = 16
+SURVEY_MAP_HEIGHT_RADIUS = 8
 
 
 def handle_look(player, players_in_rooms=None, raw_args=""):
@@ -58,18 +73,26 @@ def handle_look(player, players_in_rooms=None, raw_args=""):
         return
 
     try:
+        flags = _current_room_flags(player)
         render_open_land = UTILITIES["render_open_land"]
         UTILITIES["render_room"](player, WORLD_OVERLAYS)
+        if "darkness" in flags:
+            player.sendLine(b"It is too dark to read the nearby map.")
+            return
         map_view = render_open_land(
             player.x,
             player.y,
             world_map=WORLD_MAP,
             overlays=WORLD_OVERLAYS,
-            width_radius=5,
-            height_radius=2,
+            width_radius=2 if "indoor" in flags else NORMAL_MAP_WIDTH_RADIUS,
+            height_radius=2 if "indoor" in flags else NORMAL_MAP_HEIGHT_RADIUS,
             color_enabled=getattr(player, "color_enabled", False),
+            bright_mode="brightness" in flags,
+            player_locations=_other_player_locations(player, NORMAL_MAP_WIDTH_RADIUS, NORMAL_MAP_HEIGHT_RADIUS),
+            npc_locations=_npc_locations(player, NORMAL_MAP_WIDTH_RADIUS, NORMAL_MAP_HEIGHT_RADIUS),
         )
         player.sendLine(map_view.encode("utf-8"))
+        player.sendLine(presentation.divider("Nearby", getattr(player, "color_enabled", False)).encode("utf-8"))
         player.list_players_in_room()
         player.list_nearby_players()
     except KeyError:
@@ -88,16 +111,30 @@ def handle_movement(player, direction):
     try:
         if move_player(player, direction, world_map, players_in_rooms):
             UTILITIES["render_room"](player, WORLD_OVERLAYS)
+            flags = _current_room_flags(player)
+            if "vacuum" in flags:
+                vacuum = apply_vacuum_exposure(player.cursor, player.username)
+                if vacuum:
+                    player.sendLine(
+                        f"Vacuum strains your body. Fatigue: {vacuum['fatigue']}/100  Health: {vacuum['health']}/{vacuum['max_health']}".encode("utf-8")
+                    )
             map_view = UTILITIES["render_open_land"](
                 player.x,
                 player.y,
                 world_map=world_map,
                 overlays=WORLD_OVERLAYS,
-                width_radius=5,
-                height_radius=2,
+                width_radius=2 if "indoor" in flags else NORMAL_MAP_WIDTH_RADIUS,
+                height_radius=2 if "indoor" in flags else NORMAL_MAP_HEIGHT_RADIUS,
                 color_enabled=getattr(player, "color_enabled", False),
+                bright_mode="brightness" in flags,
+                player_locations=_other_player_locations(player, NORMAL_MAP_WIDTH_RADIUS, NORMAL_MAP_HEIGHT_RADIUS),
+                npc_locations=_npc_locations(player, NORMAL_MAP_WIDTH_RADIUS, NORMAL_MAP_HEIGHT_RADIUS),
             )
-            player.sendLine(map_view.encode("utf-8"))
+            if "darkness" in flags:
+                player.sendLine(b"It is too dark to read the nearby map.")
+            else:
+                player.sendLine(map_view.encode("utf-8"))
+            player.sendLine(presentation.divider("Nearby", getattr(player, "color_enabled", False)).encode("utf-8"))
             player.list_players_in_room()
             player.list_nearby_players()
             status = combat_status(player.cursor, player.username)
@@ -121,7 +158,7 @@ def handle_score(player, players_in_rooms=None):
         player.cursor.execute(
             "SELECT health, max_health, stamina, max_stamina, chakra, max_chakra, "
             "strength, dexterity, agility, intelligence, wisdom, dojo_alignment, "
-            "role_type, clan, natural_release "
+            "role_type, clan, natural_release, fatigue, description "
             "FROM players WHERE username=?",
             (player.username,)
         )
@@ -129,9 +166,17 @@ def handle_score(player, players_in_rooms=None):
         if stats:
             player.sendLine(f"Score for {player.username}".encode("utf-8"))
             player.sendLine(b"--------------------")
-            player.sendLine(f"Health: {stats[0]}/{stats[1]}  Stamina: {stats[2]}/{stats[3]}  Chakra: {stats[4]}/{stats[5]}".encode("utf-8"))
-            player.sendLine(f"Strength: {stats[6]}  Dexterity: {stats[7]}  Agility: {stats[8]}".encode("utf-8"))
-            player.sendLine(f"Intelligence: {stats[9]}  Wisdom: {stats[10]}".encode("utf-8"))
+            player.sendLine(f"Health: {stats[0]}/{stats[1]}".encode("utf-8"))
+            player.sendLine(f"Stamina: {stats[2]}/{stats[3]}".encode("utf-8"))
+            player.sendLine(f"Chakra: {stats[4]}/{stats[5]}".encode("utf-8"))
+            player.sendLine(f"Fatigue: {_fatigue_label(stats[15])}".encode("utf-8"))
+            player.sendLine(
+                (
+                    f"Strength: {stats[6]}  Intellect: {stats[9]}  "
+                    f"Dexterity: {stats[7]}  Agility: {stats[8]}  Condition: {stats[10]}"
+                ).encode("utf-8")
+            )
+            player.sendLine(f"Description: {stats[16]}".encode("utf-8"))
             player.sendLine(f"Specialty: {stats[12]}  Clan: {stats[13]}  Release: {stats[14]}".encode("utf-8"))
             player.sendLine(f"Dojo Alignment: {stats[11]}".encode("utf-8"))
             stance = combat_status(player.cursor, player.username)
@@ -148,6 +193,62 @@ def handle_score(player, players_in_rooms=None):
     except Exception as e:
         logging.error(f"Error retrieving stats for {player.username}: {e}", exc_info=True)
         player.sendLine(f"Error retrieving stats: {e}".encode('utf-8'))
+
+
+def _fatigue_label(value):
+    value = int(value)
+    if value >= 90:
+        return "depleted"
+    if value >= 70:
+        return "exhausted"
+    if value >= 50:
+        return "tired"
+    if value >= 25:
+        return "ready"
+    return "fresh"
+
+
+def _current_room_flags(player):
+    overlay = WORLD_OVERLAYS.get((player.x, player.y))
+    if not overlay:
+        return {"outdoor"}
+    return set(overlay["room"].get("flags", []) or ["outdoor"])
+
+
+def _other_player_locations(player, width_radius, height_radius):
+    locations = set()
+    for other_player in online_players(players_in_rooms):
+        if other_player is player:
+            continue
+        if abs(other_player.x - player.x) <= width_radius and abs(other_player.y - player.y) <= height_radius:
+            locations.add((other_player.x, other_player.y))
+    return locations
+
+
+def _npc_locations(player, width_radius, height_radius):
+    try:
+        return npc_locations(player.cursor, player.x, player.y, width_radius, height_radius)
+    except Exception as exc:
+        logging.warning("Unable to gather NPC map markers for %s: %s", player.username, exc)
+        return []
+
+
+def handle_description(player, raw_args):
+    """View or edit the character's public description."""
+    text = raw_args.strip()
+    if not text:
+        row = player.cursor.execute(
+            "SELECT description FROM players WHERE username=?",
+            (player.username,),
+        ).fetchone()
+        player.sendLine(f"Description: {row['description']}".encode("utf-8"))
+        return
+    player.cursor.execute(
+        "UPDATE players SET description=? WHERE username=?",
+        (presentation.sanitize_player_text(text), player.username),
+    )
+    player.cursor.connection.commit()
+    player.sendLine(b"Description updated.")
 
 
 def handle_loc(player):
@@ -181,15 +282,22 @@ def handle_survey(player):
     if not world_map:
         player.sendLine(b"Error: World map is unavailable.")
         return
+    flags = _current_room_flags(player)
+    if "darkness" in flags:
+        player.sendLine(b"It is too dark to survey the area.")
+        return
     player.sendLine(
         UTILITIES["render_open_land"](
             player.x,
             player.y,
             world_map=world_map,
             overlays=WORLD_OVERLAYS,
-            width_radius=20,
-            height_radius=10,
+            width_radius=2 if "indoor" in flags else SURVEY_MAP_WIDTH_RADIUS,
+            height_radius=2 if "indoor" in flags else SURVEY_MAP_HEIGHT_RADIUS,
             color_enabled=getattr(player, "color_enabled", False),
+            bright_mode="brightness" in flags,
+            player_locations=_other_player_locations(player, SURVEY_MAP_WIDTH_RADIUS, SURVEY_MAP_HEIGHT_RADIUS),
+            npc_locations=_npc_locations(player, SURVEY_MAP_WIDTH_RADIUS, SURVEY_MAP_HEIGHT_RADIUS),
         ).encode("utf-8")
     )
 
@@ -202,6 +310,29 @@ def handle_color(player, setting):
         return
     player.color_enabled = requested == "on"
     player.sendLine(f"Color is now {requested}.".encode("utf-8"))
+
+
+def handle_feedback(player, raw_args, file_config_key, default_file, command_name, label, confirmation):
+    """Capture one player-authored suggestion or bug report."""
+    message = raw_args.strip()
+    if not message:
+        player.sendLine(f"Usage: {command_name} <message>".encode("utf-8"))
+        return
+    try:
+        line = append_feedback(
+            player.username,
+            message,
+            ACTIVE_CONFIG.get(file_config_key, default_file),
+            label,
+        )
+        if not line:
+            player.sendLine(f"Usage: {command_name} <message>".encode("utf-8"))
+            return
+        logging.info("Player %s submitted %s feedback.", player.username, label.lower())
+        player.sendLine(confirmation.encode("utf-8"))
+    except Exception as exc:
+        logging.error("Unable to record %s feedback for %s: %s", label, player.username, exc, exc_info=True)
+        player.sendLine(b"Unable to record that right now.")
 
 
 def handle_body(player):
@@ -229,7 +360,12 @@ def handle_body(player):
 def handle_rest(player):
     """Take one deliberate short rest to recover stamina and chakra."""
     try:
-        result = rest_character(player.cursor, player.username)
+        flags = _current_room_flags(player)
+        result = rest_character(
+            player.cursor,
+            player.username,
+            recovery_bonus=2 if "recovery-friendly" in flags else 0,
+        )
         if not result:
             player.sendLine(b"Your body state is unavailable right now.")
             return
@@ -244,6 +380,8 @@ def handle_rest(player):
                 f"{result['chakra_restored']} chakra."
             ).encode("utf-8")
         )
+        if "recovery-friendly" in flags:
+            player.sendLine(b"This room supports recovery.")
         player.sendLine(
             (
                 f"Stamina: {result['stamina']}/{result['max_stamina']}  "
@@ -410,7 +548,7 @@ def handle_progression(player, target, kind, allow_all=False):
             for row in rows:
                 player.sendLine(
                     (
-                        f"  {row['name']}: {proficiency_label(row['progress_percent'])} "
+                        f"  {row['name']}: {proficiency_label(row['progress_points'])} "
                         f"({row['progress_percent']}%)"
                         f"{' [unimplemented]' if not row['is_available'] else ''}"
                     ).encode("utf-8")
@@ -429,6 +567,38 @@ def handle_progression(player, target, kind, allow_all=False):
     except Exception as exc:
         logging.error("Unable to display %s progress for %s: %s", kind, player.username, exc, exc_info=True)
         player.sendLine(b"Unable to display your technique progress right now.")
+
+
+def handle_practice(player, target, kind):
+    """Advance one skill or jutsu through deliberate practice."""
+    if not target.strip():
+        handle_progression(player, "", kind)
+        return
+    try:
+        if kind == "skill":
+            result = practice_skill(player.cursor, player.username, target)
+            verb = "practice"
+        else:
+            result = train_jutsu(player.cursor, player.username, target)
+            verb = "train"
+        if result["status"] == "missing":
+            player.sendLine(f"You do not know that {kind}.".encode("utf-8"))
+            return
+        if result["status"] == "missing_player":
+            player.sendLine(b"Your character is unavailable right now.")
+            return
+        player.sendLine(f"You {verb} {result['name']}.".encode("utf-8"))
+        for milestone in result["milestones"]:
+            if milestone == "tier":
+                player.sendLine(f"You feel more comfortable performing {result['name']}.".encode("utf-8"))
+            elif milestone == "ten_percent":
+                player.sendLine(f"You feel more confident performing {result['name']}.".encode("utf-8"))
+        player.sendLine(
+            f"{result['name']}: {result['proficiency']} ({result['progress_percent']}%)".encode("utf-8")
+        )
+    except Exception as exc:
+        logging.error("Unable to practice %s for %s: %s", kind, player.username, exc, exc_info=True)
+        player.sendLine(b"Unable to practice right now.")
 
 
 def handle_talk(player, npc_name):
@@ -480,6 +650,9 @@ def _broadcast_combat(player, message):
 def handle_attack(player, npc_name):
     """Enter or retarget slow pulse combat against a hostile NPC."""
     try:
+        if _current_room_flags(player) & {"safe", "no-combat"}:
+            player.sendLine(b"Combat is not allowed here.")
+            return
         result = engage_npc(
             player.cursor,
             player.username,
@@ -663,13 +836,29 @@ def handle_help(player, raw_args):
     """Display available commands or detailed help for one command."""
     topic = raw_args.strip().lower()
     if not topic:
-        visible_commands = [
-            name
-            for name, command in COMMAND_REGISTRY.items()
-            if command.permission == "player" or player.is_admin
-        ]
-        player.sendLine(b"Available commands:")
-        player.sendLine(", ".join(sorted(visible_commands)).encode("utf-8"))
+        categories = load_command_categories(
+            ACTIVE_CONFIG.get("command_categories_file", DEFAULT_CATEGORY_FILE)
+        )
+        catalog = load_help_catalog(ACTIVE_CONFIG.get("help_file", DEFAULT_HELP_FILE))
+        player.sendLine(b"Available Commands")
+        listed_commands = set()
+        for label, command_names in categories.items():
+            visible = [
+                name for name in command_names
+                if name in COMMAND_REGISTRY
+                and name not in listed_commands
+                and (COMMAND_REGISTRY[name].permission == "player" or player.is_admin)
+            ]
+            if not visible:
+                continue
+            player.sendLine(
+                presentation.command_header(label, getattr(player, "color_enabled", False)).encode("utf-8")
+            )
+            listed_commands.update(visible)
+            for name in visible:
+                entry = command_help(COMMAND_REGISTRY[name], ACTIVE_CONFIG.get("help_file", DEFAULT_HELP_FILE), catalog)
+                rendered_name = presentation.command_name(name, getattr(player, "color_enabled", False))
+                player.sendLine(f"  {rendered_name}: {entry['summary']}".encode("utf-8"))
         player.sendLine(b"Use help <command> for details.")
         return
 
@@ -689,8 +878,10 @@ def handle_help(player, raw_args):
         return
 
     help_entry = command_help(command, ACTIVE_CONFIG.get("help_file", DEFAULT_HELP_FILE))
-    player.sendLine(f"{command.name}: {help_entry['summary']}".encode("utf-8"))
-    player.sendLine(f"Usage: {command.usage}".encode("utf-8"))
+    rendered_name = presentation.command_name(command.name, getattr(player, "color_enabled", False))
+    rendered_usage = presentation.command_usage(command.usage, getattr(player, "color_enabled", False))
+    player.sendLine(f"{rendered_name}: {help_entry['summary']}".encode("utf-8"))
+    player.sendLine(f"Usage: {rendered_usage}".encode("utf-8"))
     if command.aliases:
         player.sendLine(f"Aliases: {', '.join(command.aliases)}".encode("utf-8"))
     for line in help_entry["details"]:
@@ -729,8 +920,9 @@ def handle_commands(player):
             help_entry = command_help(command, help_file, catalog)
             permission = " [admin]" if command.permission == "admin" else ""
             aliases = f" (aliases: {', '.join(command.aliases)})" if command.aliases else ""
+            rendered_usage = presentation.command_usage(command.usage, getattr(player, "color_enabled", False))
             player.sendLine(
-                f"  {command.usage}{permission} - {help_entry['summary']}{aliases}".encode("utf-8")
+                f"  {rendered_usage}{permission} - {help_entry['summary']}{aliases}".encode("utf-8")
             )
     player.sendLine(b"Use help <command> for detailed usage.")
 
@@ -738,10 +930,13 @@ def handle_commands(player):
 COMMANDS = {
     "look": CommandSpec("look", lambda player, rooms, raw, args: handle_look(player, rooms, raw), "look [at <item>]", "Display your location or inspect an item.", args_validator=lambda args: not args or (len(args) >= 2 and args[0].lower() == "at")),
     "score": CommandSpec("score", lambda player, rooms, raw, args: handle_score(player, rooms), "score", "Display your character sheet.", aliases=("status",), max_args=0),
+    "description": CommandSpec("description", lambda player, rooms, raw, args: handle_description(player, raw), "description [text]", "View or update your character description.", aliases=("desc",)),
     "loc": CommandSpec("loc", lambda player, rooms, raw, args: handle_loc(player), "loc", "Display your grid coordinates and area.", max_args=0),
     "who": CommandSpec("who", lambda player, rooms, raw, args: handle_who(player, rooms), "who", "List connected characters.", max_args=0),
-    "survey": CommandSpec("survey", lambda player, rooms, raw, args: handle_survey(player), "survey", "Display a compact terrain view.", max_args=0),
+    "survey": CommandSpec("survey", lambda player, rooms, raw, args: handle_survey(player), "survey", "Display a wide terrain view.", max_args=0),
     "color": CommandSpec("color", lambda player, rooms, raw, args: handle_color(player, raw), "color <on|off>", "Toggle ANSI terminal colors for this connection.", min_args=1, max_args=1),
+    "suggest": CommandSpec("suggest", lambda player, rooms, raw, args: handle_feedback(player, raw, "suggestions_file", DEFAULT_SUGGESTIONS_FILE, "suggest", "Suggested", "Suggestion recorded."), "suggest <message>", "Record a player suggestion for builders and maintainers.", min_args=1),
+    "bug": CommandSpec("bug", lambda player, rooms, raw, args: handle_feedback(player, raw, "bugs_file", DEFAULT_BUGS_FILE, "bug", "Reported", "Bug report recorded."), "bug <message>", "Record a player-visible bug report.", min_args=1),
     "body": CommandSpec("body", lambda player, rooms, raw, args: handle_body(player), "body", "Display your body resources and recovery readiness.", max_args=0),
     "rest": CommandSpec("rest", lambda player, rooms, raw, args: handle_rest(player), "rest", "Recover stamina and chakra through a short rest.", max_args=0),
     "inventory": CommandSpec("inventory", lambda player, rooms, raw, args: handle_inventory(player), "inventory", "List the items you carry.", aliases=("inv",), max_args=0),
@@ -752,8 +947,8 @@ COMMANDS = {
     "remove": CommandSpec("remove", lambda player, rooms, raw, args: handle_remove(player, raw), "remove <item>", "Unequip a carried item.", min_args=1),
     "eat": CommandSpec("eat", lambda player, rooms, raw, args: handle_consume(player, raw, "food", "nutrition", "eat"), "eat <item>", "Eat a carried food item to restore nutrition.", min_args=1),
     "drink": CommandSpec("drink", lambda player, rooms, raw, args: handle_consume(player, raw, "drink", "hydration", "drink"), "drink <item>", "Drink a carried beverage to restore hydration.", min_args=1),
-    "prac": CommandSpec("prac", lambda player, rooms, raw, args: handle_progression(player, raw, "skill"), "prac [skill]", "List skills or inspect usage-based proficiency.", max_args=2),
-    "train": CommandSpec("train", lambda player, rooms, raw, args: handle_progression(player, raw, "jutsu"), "train [jutsu]", "List jutsus or inspect usage-based proficiency.", max_args=3),
+    "prac": CommandSpec("prac", lambda player, rooms, raw, args: handle_practice(player, raw, "skill"), "prac [skill]", "Practice a skill or list available skills.", max_args=2),
+    "train": CommandSpec("train", lambda player, rooms, raw, args: handle_practice(player, raw, "jutsu"), "train [jutsu]", "Train a jutsu or list available jutsus.", max_args=3),
     "skill": CommandSpec("skill", lambda player, rooms, raw, args: handle_progression(player, raw, "skill", allow_all=True), "skill [all|skill]", "List available skills, inspect one, or show the full catalog.", max_args=2),
     "jutsu": CommandSpec("jutsu", lambda player, rooms, raw, args: handle_progression(player, raw, "jutsu", allow_all=True), "jutsu [all|jutsu]", "List available jutsus, inspect one, or show the full catalog.", max_args=3),
     "usejutsu": CommandSpec("usejutsu", lambda player, rooms, raw, args: handle_usejutsu(player, raw), "usejutsu <jutsu>", "Activate an implemented jutsu.", min_args=1, max_args=3),
@@ -767,6 +962,10 @@ COMMANDS = {
     "south": CommandSpec("south", lambda player, rooms, raw, args: handle_movement(player, "south"), "south", "Move south.", max_args=0),
     "east": CommandSpec("east", lambda player, rooms, raw, args: handle_movement(player, "east"), "east", "Move east.", max_args=0),
     "west": CommandSpec("west", lambda player, rooms, raw, args: handle_movement(player, "west"), "west", "Move west.", max_args=0),
+    "northeast": CommandSpec("northeast", lambda player, rooms, raw, args: handle_movement(player, "northeast"), "northeast", "Move northeast.", aliases=("ne",), max_args=0),
+    "northwest": CommandSpec("northwest", lambda player, rooms, raw, args: handle_movement(player, "northwest"), "northwest", "Move northwest.", aliases=("nw",), max_args=0),
+    "southeast": CommandSpec("southeast", lambda player, rooms, raw, args: handle_movement(player, "southeast"), "southeast", "Move southeast.", aliases=("se",), max_args=0),
+    "southwest": CommandSpec("southwest", lambda player, rooms, raw, args: handle_movement(player, "southwest"), "southwest", "Move southwest.", aliases=("sw",), max_args=0),
     "help": CommandSpec("help", lambda player, rooms, raw, args: handle_help(player, raw), "help [command]", "List commands or explain one command.", max_args=1),
     "commands": CommandSpec("commands", lambda player, rooms, raw, args: handle_commands(player), "commands", "List every command with a brief description.", max_args=0),
 }

@@ -3,7 +3,11 @@
         "north",
         "south",
         "east",
-        "west"
+        "west",
+        "northeast",
+        "northwest",
+        "southeast",
+        "southwest"
     ],
     "Exploration": [
         "look",
@@ -15,7 +19,10 @@
         "score",
         "body",
         "rest",
-        "color"
+        "color",
+        "suggest",
+        "bug",
+        "description"
     ],
     "Items": [
         "inventory",
@@ -58,6 +65,12 @@
         "buildzone",
         "createzone",
         "zonelist",
+        "zstat",
+        "rlist",
+        "mlist",
+        "ilist",
+        "bfind",
+        "contentcheck",
         "goto",
         "zoneinfo",
         "placezone",
@@ -72,7 +85,15 @@
         "spawnnpc",
         "iedit",
         "istat",
-        "spawnitem"
+        "spawnitem",
+        "cloneitem",
+        "clonenpc",
+        "cloneroom",
+        "spawnlist",
+        "despawnitem",
+        "despawnnpc",
+        "bundo",
+        "hedit"
     ],
     "Admin": [
         "shutdown",

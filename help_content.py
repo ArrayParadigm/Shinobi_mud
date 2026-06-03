@@ -39,7 +39,10 @@ def command_help(command, help_file=DEFAULT_HELP_FILE, catalog=None):
             isinstance(line, str) and line.strip() for line in details
         ):
             raise ValueError(f"Help details for {command.name} must be text lines.")
-        return {"summary": summary.strip(), "details": [line.strip() for line in details]}
+        summary = summary.strip()
+        if not bool(entry.get("published", False)):
+            summary = f"{summary} (i)"
+        return {"summary": summary, "details": [line.strip() for line in details]}
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         logging.warning("Unable to use editable help for %s: %s", command.name, exc)
         return fallback

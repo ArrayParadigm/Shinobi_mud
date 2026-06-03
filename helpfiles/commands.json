@@ -7,9 +7,24 @@
         "summary": "Display your body resources and recovery readiness.",
         "details": ["Shows nutrition, hydration, fatigue, recovery state, and short-rest chakra recovery."]
     },
+    "bfind": {
+        "summary": "Search authored rooms, templates, and spawns.",
+        "details": ["Admin builder command. Searches room VNUMs, titles, descriptions, template keys, names, keywords, and spawn references."]
+    },
+    "bug": {
+        "summary": "Record a player-visible bug report.",
+        "details": ["Use bug <message> to append a timestamped report to bugs.md for later triage."]
+    },
+    "bundo": {
+        "summary": "Undo the most recent builder zone mutation.",
+        "details": ["Admin builder command. Restores the previous zone JSON snapshot recorded before the latest successful builder edit."]
+    },
     "buildzone": {
         "summary": "Create, anchor, and enter a usable authored zone.",
-        "details": ["Admin builder command. Creates an anchored zone with one starting room so editing can begin immediately."]
+        "details": [
+            "Admin builder command. Creates an anchored zone file, assigns its VNUM range, places the starting room at the given grid coordinate, and moves you into it.",
+            "Use zonelist afterward to confirm placement, then use redit, dig, createnpc, iedit, spawnnpc, and spawnitem to author the first playable slice."
+        ]
     },
     "color": {
         "summary": "Toggle ANSI terminal colors for this connection.",
@@ -27,21 +42,55 @@
         "summary": "Inspect a character's combat details.",
         "details": ["Use this before combat to review a visible NPC's health and authored combat values."]
     },
+    "contentcheck": {
+        "summary": "Validate authored content references.",
+        "details": ["Admin builder command. Reports broken exits, missing spawn templates, invalid VNUMs, duplicate VNUMs, overlapping coordinates, and out-of-bounds rooms."]
+    },
     "copyover": {
         "summary": "Report the disabled soft-restart status.",
         "details": ["Soft restarts remain intentionally disabled during private alpha."]
     },
+    "cloneitem": {
+        "summary": "Clone an authored item template.",
+        "details": ["Admin builder command. Copies an existing item template under a new builder key for fast variations."]
+    },
+    "clonenpc": {
+        "summary": "Clone an authored NPC template.",
+        "details": ["Admin builder command. Copies an existing NPC template under a new builder key for fast variations."]
+    },
+    "cloneroom": {
+        "summary": "Clone an authored room inside its zone.",
+        "details": ["Admin builder command. Copies a room into a free VNUM in the same zone with exits cleared."]
+    },
     "createnpc": {
         "summary": "Create a basic static authored NPC template.",
-        "details": ["Admin builder command. Creates editable authored JSON content in the current zone."]
+        "details": [
+            "Admin builder command. Creates an NPC template in the current authored zone; the key must be unique and builder-safe.",
+            "Follow with medit to set description, dialogue, behavior, health, damage, accuracy, evasion, and respawn timing, then spawnnpc to seed the NPC in a room."
+        ]
     },
     "createzone": {
         "summary": "Create an authored zone.",
-        "details": ["Admin builder command. Creates a JSON zone file with an available VNUM range."]
+        "details": ["Admin builder command. Creates a JSON zone file with an available VNUM range. Use buildzone for the faster one-step anchored workflow."]
     },
     "dig": {
         "summary": "Create an authored room exit.",
-        "details": ["Admin builder command. Creates a coordinate-aware overlay room and reciprocal exit."]
+        "details": [
+            "Admin builder command. Creates a new authored room in the requested cardinal direction from the current overlay room.",
+            "The command writes a reciprocal exit, assigns the next VNUM in the zone range, and refuses to overwrite an occupied overlay coordinate."
+        ]
+    },
+    "description": {
+        "summary": "View or update your character description.",
+        "details": ["Use description with no text to view your current description, or description <text> to replace it."]
+    },
+    "despawnitem": {
+        "summary": "Remove an authored item spawn.",
+        "details": ["Admin builder command. Removes a finite item spawn from the current authored zone JSON."]
+    },
+    "despawnnpc": {
+        "summary": "Remove an authored NPC spawn.",
+        "details": ["Admin builder command. Removes an NPC spawn from the current authored zone JSON."]
     },
     "drink": {
         "summary": "Drink a carried beverage to restore hydration.",
@@ -79,13 +128,24 @@
         "summary": "List commands or explain one command.",
         "details": ["Help prose is loaded from helpfiles/commands.json and can be refreshed without restarting the server."]
     },
+    "hedit": {
+        "summary": "Edit command help prose and publish state.",
+        "details": ["Admin builder command. Supports summary, detail, category, publish, and unpublish edits for command help."]
+    },
+    "ilist": {
+        "summary": "List authored item templates in a zone.",
+        "details": ["Admin builder command. Shows item keys, names, and types for the current or named zone."]
+    },
     "inventory": {
         "summary": "List the items you carry.",
         "details": ["Equipped slots are displayed alongside carried items."]
     },
     "iedit": {
         "summary": "Create or edit an authored item template.",
-        "details": ["Admin builder command. Supports name, description, keywords, type, slot, use text, damage, throw damage, nutrition, and hydration fields."]
+        "details": [
+            "Admin builder command. Use iedit create <item_key> <name> to create a template, then iedit <item_key> <field> <value> to revise it.",
+            "Supported fields include name, description, keywords, type, slot, use text, damage, throw damage, nutrition, and hydration. Use istat to inspect the result before spawning it."
+        ]
     },
     "istat": {
         "summary": "Inspect an authored item template.",
@@ -107,9 +167,24 @@
         "summary": "Move north.",
         "details": []
     },
+    "northeast": {
+        "summary": "Move northeast.",
+        "details": ["Alias: ne."]
+    },
+    "northwest": {
+        "summary": "Move northwest.",
+        "details": ["Alias: nw."]
+    },
     "medit": {
         "summary": "Edit an authored NPC template.",
-        "details": ["Admin builder command. Supports prose, behavior, combat values, and respawn timing."]
+        "details": [
+            "Admin builder command. Use medit <npc_key> <field> <value> after createnpc to revise authored NPC data.",
+            "Supported fields include name, description, dialogue, behavior, health, damage, accuracy, evasion, and respawn timing. Use mstat before spawning to verify the template."
+        ]
+    },
+    "mlist": {
+        "summary": "List authored NPC templates in a zone.",
+        "details": ["Admin builder command. Shows NPC keys, names, and behavior for the current or named zone."]
     },
     "mstat": {
         "summary": "Inspect an authored NPC template.",
@@ -149,15 +224,22 @@
     },
     "redit": {
         "summary": "Edit the current authored room.",
-        "details": ["Admin builder command. Supports room title, description, flags, and explicit exits."]
+        "details": [
+            "Admin builder command. Supports title, description, flags, and explicit exits for the current authored room.",
+            "Use redit flag <flag> <on|off> for room flags and redit exit <direction> <vnum|none> for explicit authored links."
+        ]
     },
     "roomdesc": {
         "summary": "Replace the current authored room description.",
-        "details": ["Admin builder command. Updates the current overlay room in authored JSON."]
+        "details": ["Admin builder command. Updates the current overlay room description in authored JSON. Use redit desc <text> when working inside the broader editing suite."]
     },
     "rstat": {
         "summary": "Inspect authored room builder fields.",
         "details": ["Admin builder command. Displays room title, description, offsets, flags, and exits."]
+    },
+    "rlist": {
+        "summary": "List authored rooms in a zone.",
+        "details": ["Admin builder command. Shows VNUMs, room titles, and coordinate offsets for the current or named zone."]
     },
     "say": {
         "summary": "Speak to characters at your location.",
@@ -195,21 +277,37 @@
         "summary": "Move south.",
         "details": []
     },
+    "southeast": {
+        "summary": "Move southeast.",
+        "details": ["Alias: se."]
+    },
+    "southwest": {
+        "summary": "Move southwest.",
+        "details": ["Alias: sw."]
+    },
     "stance": {
         "summary": "List or change your combat stance.",
         "details": ["Use stance with no argument to list the neutral S1-S5 placeholder profiles. S1 favors accuracy, S2 damage, S3 balance, S4 evasion, and S5 damage reduction."]
     },
     "spawnnpc": {
         "summary": "Persist a spawn for an authored NPC template.",
-        "details": ["Admin builder command. Creates a one-time authored NPC seed in the current room."]
+        "details": ["Admin builder command. Creates a persistent authored NPC seed in the current overlay room. Use mstat first to confirm the template and reloadcontent if live state needs to be refreshed."]
     },
     "spawnitem": {
         "summary": "Persist a finite authored item seed.",
-        "details": ["Admin builder command. Places one finite item seed in the current authored room."]
+        "details": ["Admin builder command. Places one finite authored item seed in the current overlay room. Use istat first to confirm keywords, type, and use fields."]
+    },
+    "spawnlist": {
+        "summary": "List authored item and NPC spawns.",
+        "details": ["Admin builder command. Shows item and NPC spawn keys, template references, and target VNUMs."]
+    },
+    "suggest": {
+        "summary": "Record a player suggestion for builders and maintainers.",
+        "details": ["Use suggest <message> to append a timestamped entry to suggestions.md."]
     },
     "survey": {
-        "summary": "Display a compact terrain view.",
-        "details": ["Shows a wider grid view than look."]
+        "summary": "Display a wide terrain view.",
+        "details": ["Shows a wider grid view than look, including nearby player and NPC map markers."]
     },
     "talk": {
         "summary": "Talk to a character at your location.",
@@ -254,5 +352,9 @@
     "zonelist": {
         "summary": "List authored zones and placement status.",
         "details": ["Admin builder command. Shows filenames, display names, VNUM ranges, anchors, and room counts."]
+    },
+    "zstat": {
+        "summary": "Inspect compact zone builder counts.",
+        "details": ["Admin builder command. Shows range, anchor, room count, template counts, and spawn counts for one zone."]
     }
 }

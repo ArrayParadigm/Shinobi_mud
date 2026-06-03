@@ -1,6 +1,7 @@
 """Persistent NPC templates, live instances, and lightweight combat."""
 
 import random
+import re
 
 from body import add_fatigue
 from items import inventory_items, resolve_item
@@ -96,26 +97,40 @@ def npcs_at(cursor, x, y):
     ).fetchall()
 
 
+def npc_locations(cursor, x, y, width_radius, height_radius):
+    """Return coordinates for living NPCs in a rectangular map window."""
+    rows = cursor.execute(
+        """
+        SELECT DISTINCT x, y
+        FROM npc_instances
+        WHERE health > 0
+          AND x BETWEEN ? AND ?
+          AND y BETWEEN ? AND ?
+        """,
+        (x - width_radius, x + width_radius, y - height_radius, y + height_radius),
+    ).fetchall()
+    return [(row["x"], row["y"]) for row in rows]
+
+
 def talk_to_npc(cursor, x, y, npc_name):
     """Return dialogue for one NPC at a location."""
-    return cursor.execute(
+    npcs = cursor.execute(
         """
         SELECT npc_templates.name, npc_templates.dialogue
         FROM npc_instances
         JOIN npc_templates ON npc_templates.id = npc_instances.npc_template_id
         WHERE npc_instances.x=? AND npc_instances.y=?
           AND npc_instances.health > 0
-          AND npc_templates.name=? COLLATE NOCASE
         ORDER BY npc_instances.id
-        LIMIT 1
         """,
-        (x, y, npc_name),
-    ).fetchone()
+        (x, y),
+    ).fetchall()
+    return _resolve_named_npc(npcs, npc_name)
 
 
 def consider_npc(cursor, x, y, npc_name):
     """Return visible NPC combat details for player inspection."""
-    return cursor.execute(
+    npcs = cursor.execute(
         """
         SELECT npc_templates.name, npc_templates.description,
                npc_templates.behavior, npc_instances.health,
@@ -125,12 +140,11 @@ def consider_npc(cursor, x, y, npc_name):
         JOIN npc_templates ON npc_templates.id = npc_instances.npc_template_id
         WHERE npc_instances.x=? AND npc_instances.y=?
           AND npc_instances.health > 0
-          AND npc_templates.name=? COLLATE NOCASE
         ORDER BY npc_instances.id
-        LIMIT 1
         """,
-        (x, y, npc_name),
-    ).fetchone()
+        (x, y),
+    ).fetchall()
+    return _resolve_named_npc(npcs, npc_name)
 
 
 def hit_chance(attacker_accuracy, defender_evasion):
@@ -172,7 +186,7 @@ def attack_npc(cursor, username, x, y, npc_name):
             connection.rollback()
             return {"status": "missing_player"}
 
-        npc = cursor.execute(
+        nearby_npcs = cursor.execute(
             """
             SELECT npc_instances.id, npc_instances.health,
                    npc_templates.name, npc_templates.behavior,
@@ -182,12 +196,11 @@ def attack_npc(cursor, username, x, y, npc_name):
             JOIN npc_templates ON npc_templates.id = npc_instances.npc_template_id
             WHERE npc_instances.x=? AND npc_instances.y=?
               AND npc_instances.health > 0
-              AND npc_templates.name=? COLLATE NOCASE
             ORDER BY npc_instances.id
-            LIMIT 1
             """,
-            (x, y, npc_name),
-        ).fetchone()
+            (x, y),
+        ).fetchall()
+        npc = _resolve_named_npc(nearby_npcs, npc_name)
         if not npc:
             connection.rollback()
             return {"status": "missing_target"}
@@ -355,16 +368,27 @@ def throw_item_at_npc(cursor, username, x, y, item_name, npc_name):
 
 
 def _resolve_named_npc(npcs, target):
-    query = target.strip().casefold()
+    match = re.fullmatch(r"(?:(\d+)\.)?(.+)", target.strip())
+    if not match:
+        return None
+    ordinal_text = match.group(1)
+    ordinal = int(ordinal_text or "1")
+    query = match.group(2).strip().casefold()
     if not query:
         return None
-    exact = [npc for npc in npcs if npc["name"].casefold() == query]
-    matches = exact or [
+    prefix_matches = [
         npc
         for npc in npcs
         if npc["name"].casefold().startswith(query)
     ]
-    return matches[0] if len(matches) == 1 else None
+    if ordinal_text:
+        matches = prefix_matches
+    else:
+        exact = [npc for npc in npcs if npc["name"].casefold() == query]
+        matches = exact or prefix_matches
+    if 0 < ordinal <= len(matches):
+        return matches[ordinal - 1]
+    return None
 
 
 def tick_npcs(connection):

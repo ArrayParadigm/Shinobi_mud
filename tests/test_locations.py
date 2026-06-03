@@ -56,6 +56,17 @@ class LocationTests(unittest.TestCase):
         ).fetchone()
         self.assertEqual(tuple(saved), (2, 1, 1))
 
+    def test_move_accepts_subcardinal_directions(self):
+        moved = move_player(
+            self.player,
+            "northeast",
+            self.world_map,
+            shinobi_mud.players_in_rooms,
+        )
+
+        self.assertTrue(moved)
+        self.assertEqual((self.player.x, self.player.y), (2, 0))
+
     def test_login_restores_coordinates_saved_by_movement(self):
         self.connection.execute(
             "UPDATE players SET password=? WHERE username=?",
@@ -182,7 +193,24 @@ class LocationTests(unittest.TestCase):
 
         self.assertEqual(
             rendered.splitlines(),
-            ["...", ".P#", "...", "Legend: P=you  #=authored area"],
+            ["...", ".P#", "...", "Legend: P=you  @=player  N=NPC  #=authored area"],
+        )
+
+    def test_render_open_land_marks_players_and_npcs(self):
+        rendered = utils.render_open_land(
+            1,
+            1,
+            world_map=self.world_map,
+            overlays={(2, 1): {"zone_name": "Test Town", "vnum": 3000, "room": {}}},
+            width_radius=1,
+            height_radius=1,
+            player_locations={(0, 1)},
+            npc_locations={(1, 0)},
+        )
+
+        self.assertEqual(
+            rendered.splitlines(),
+            [".N.", "@P#", "...", "Legend: P=you  @=player  N=NPC  #=authored area"],
         )
 
     def test_survey_uses_supported_renderer_arguments(self):
@@ -193,7 +221,7 @@ class LocationTests(unittest.TestCase):
         finally:
             general_commands.UTILITIES["WORLD_MAP"] = original_map
 
-        self.assertEqual(len(self.player.messages[-1].splitlines()), 22)
+        self.assertEqual(len(self.player.messages[-1].splitlines()), 18)
 
 
 if __name__ == "__main__":

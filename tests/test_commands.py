@@ -23,6 +23,10 @@ class CommandResolutionTests(unittest.TestCase):
             "south",
             "east",
             "west",
+            "northeast",
+            "northwest",
+            "southeast",
+            "southwest",
             "say",
             "score",
             "status",
@@ -67,12 +71,12 @@ class CommandResolutionTests(unittest.TestCase):
         self.assertEqual(self.calls, [("say", "hello there", ["hello", "there"])])
 
     def test_reserved_shortcuts_win_even_when_prefix_is_ambiguous(self):
-        for command in ("n", "s", "e", "w", "l"):
+        for command in ("n", "s", "e", "w", "ne", "nw", "se", "sw", "l"):
             shinobi_mud.process_command(self.player, command)
 
         self.assertEqual(
             [call[0] for call in self.calls],
-            ["north", "south", "east", "west", "look"],
+            ["north", "south", "east", "west", "northeast", "northwest", "southeast", "southwest", "look"],
         )
 
     def test_ambiguous_prefix_reports_matches_without_running_command(self):
@@ -120,6 +124,7 @@ class CommandMetadataTests(unittest.TestCase):
     def test_semantic_alias_resolves_to_canonical_command(self):
         self.assertEqual(shinobi_mud.resolve_command_name("status"), ("score", []))
         self.assertEqual(shinobi_mud.resolve_command_name("stat"), ("score", []))
+        self.assertEqual(shinobi_mud.resolve_command_name("ne"), ("northeast", []))
 
     def test_usage_validation_happens_before_handler(self):
         shinobi_mud.process_command(self.player, "say")
@@ -146,7 +151,7 @@ class CommandMetadataTests(unittest.TestCase):
     def test_help_lists_player_commands_without_admin_commands(self):
         shinobi_mud.process_command(self.player, "help")
 
-        command_list = self.player.messages[1]
+        command_list = "\n".join(self.player.messages)
         self.assertIn("look", command_list)
         self.assertIn("say", command_list)
         self.assertNotIn("shutdown", command_list)
@@ -157,7 +162,7 @@ class CommandMetadataTests(unittest.TestCase):
         self.assertEqual(
             self.player.messages,
             [
-                "score: Display your character sheet.",
+                "score: Display your character sheet. (i)",
                 "Usage: score",
                 "Aliases: status",
                 "Shows core resources, attributes, specialty, clan, release, dojo alignment, and location.",
@@ -169,7 +174,7 @@ class CommandMetadataTests(unittest.TestCase):
 
         shinobi_mud.process_command(self.player, "help")
 
-        self.assertIn("shutdown", self.player.messages[1])
+        self.assertIn("shutdown", "\n".join(self.player.messages))
 
     def test_commands_catalog_lists_every_command_with_descriptions(self):
         shinobi_mud.process_command(self.player, "commands")
@@ -179,10 +184,10 @@ class CommandMetadataTests(unittest.TestCase):
         self.assertIn("== Movement ==", catalog)
         self.assertIn("== Builder ==", catalog)
         self.assertIn("== Admin ==", catalog)
-        self.assertIn("  attack <character> - Engage a hostile character for pulse combat.", catalog)
-        self.assertIn("  commands - List every command with a brief description.", catalog)
-        self.assertIn("  inventory - List the items you carry. (aliases: inv)", catalog)
-        self.assertIn("  shutdown [admin] - Stop the server.", catalog)
+        self.assertIn("  attack <character> - Engage a hostile character for pulse combat. (i)", catalog)
+        self.assertIn("  commands - List every command with a brief description. (i)", catalog)
+        self.assertIn("  inventory - List the items you carry. (i) (aliases: inv)", catalog)
+        self.assertIn("  shutdown [admin] - Stop the server. (i)", catalog)
         self.assertEqual(self.player.messages[-1], "Use help <command> for detailed usage.")
 
     def test_commands_catalog_is_complete_for_registered_metadata(self):
@@ -227,7 +232,26 @@ class CommandMetadataTests(unittest.TestCase):
             shinobi_mud.process_command(self.player, "commands")
 
         self.assertEqual(self.player.messages[1], "== Other ==")
-        self.assertIn("  commands - List every command with a brief description.", self.player.messages)
+        self.assertIn("  commands - List every command with a brief description. (i)", self.player.messages)
+
+    def test_suggest_and_bug_append_timestamped_feedback_files(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            suggestions_file = Path(temporary_directory) / "suggestions.md"
+            bugs_file = Path(temporary_directory) / "bugs.md"
+            shinobi_mud.ACTIVE_CONFIG["suggestions_file"] = str(suggestions_file)
+            shinobi_mud.ACTIVE_CONFIG["bugs_file"] = str(bugs_file)
+
+            shinobi_mud.process_command(self.player, "suggest add more builder signs")
+            shinobi_mud.process_command(self.player, "bug look map overlaps")
+            suggestions_text = suggestions_file.read_text(encoding="utf-8")
+            bugs_text = bugs_file.read_text(encoding="utf-8")
+
+        self.assertIn("Suggestion recorded.", self.player.messages)
+        self.assertIn("Bug report recorded.", self.player.messages)
+        self.assertIn('MetadataUser Suggested at ', suggestions_text)
+        self.assertIn('"add more builder signs"', suggestions_text)
+        self.assertIn('MetadataUser Reported at ', bugs_text)
+        self.assertIn('"look map overlaps"', bugs_text)
 
     def test_help_prose_refreshes_from_disk_without_reloading_commands(self):
         with tempfile.TemporaryDirectory() as temporary_directory:
@@ -245,9 +269,9 @@ class CommandMetadataTests(unittest.TestCase):
             )
             shinobi_mud.process_command(self.player, "help score")
 
-        self.assertIn("score: First summary.", self.player.messages)
+        self.assertIn("score: First summary. (i)", self.player.messages)
         self.assertIn("First detail.", self.player.messages)
-        self.assertIn("score: Updated summary.", self.player.messages)
+        self.assertIn("score: Updated summary. (i)", self.player.messages)
         self.assertIn("Updated detail.", self.player.messages)
 
     def test_invalid_editable_help_falls_back_to_code_metadata(self):
@@ -261,7 +285,7 @@ class CommandMetadataTests(unittest.TestCase):
         self.assertEqual(
             self.player.messages,
             [
-                "score: Display your character sheet.",
+                "score: Display your character sheet. (i)",
                 "Usage: score",
                 "Aliases: status",
             ],

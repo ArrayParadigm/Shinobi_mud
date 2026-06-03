@@ -1,6 +1,7 @@
 import sqlite3
 import unittest
 
+import admin_commands
 import general_commands
 import shinobi_mud
 from body import add_fatigue, body_state, chakra_recovery_amount, rest_character
@@ -49,13 +50,33 @@ class BodyFoundationTests(unittest.TestCase):
     def test_rest_recovers_resources_and_updates_body_costs(self):
         result = rest_character(self.player.cursor, "RestingUser")
 
-        self.assertEqual(result["stamina_restored"], 3)
+        self.assertEqual(result["stamina_restored"], 4)
         self.assertEqual(result["chakra_restored"], 4)
         self.assertEqual(result["fatigue"], 20)
         self.assertEqual(result["nutrition"], 79)
         self.assertEqual(result["hydration"], 59)
         saved = body_state(self.player.cursor, "RestingUser")
-        self.assertEqual((saved["stamina"], saved["chakra"]), (5, 5))
+        self.assertEqual((saved["stamina"], saved["chakra"]), (6, 5))
+
+    def test_description_score_and_admin_player_stats_use_identity_fields(self):
+        general_commands.handle_description(self.player, "A quiet academy student.")
+        general_commands.handle_description(self.player, "")
+        general_commands.handle_score(self.player)
+        admin_commands.pset(self.player, "RestingUser", "intellect", "14")
+        admin_commands.pset(self.player, "RestingUser", "condition", "12")
+        admin_commands.pset(self.player, "RestingUser", "description", "A focused trainee.")
+        admin_commands.pstat(self.player, "RestingUser")
+
+        transcript = "\n".join(self.player.messages)
+        self.assertIn("Description updated.", transcript)
+        self.assertIn("Description: A quiet academy student.", transcript)
+        self.assertIn("Health: 10/10", transcript)
+        self.assertIn("Fatigue: ready", transcript)
+        self.assertIn("Strength: 10  Intellect: 10  Dexterity: 10  Agility: 10  Condition: 10", transcript)
+        self.assertIn("Set intelligence of RestingUser to 14.", transcript)
+        self.assertIn("Set wisdom of RestingUser to 12.", transcript)
+        self.assertIn("  Description: A focused trainee.", transcript)
+        self.assertIn("  Stats: strength=10 intellect=14 dexterity=10 agility=10 condition=12", transcript)
 
     def test_rest_caps_resources_and_fatigue_reduces_recovery(self):
         self.connection.execute(

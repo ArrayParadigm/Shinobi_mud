@@ -29,7 +29,8 @@ def body_state(cursor, username):
     return cursor.execute(
         """
         SELECT health, max_health, stamina, max_stamina, chakra, max_chakra,
-               nutrition, hydration, fatigue, recovery_state, wisdom
+               nutrition, hydration, fatigue, recovery_state, wisdom, strength,
+               intelligence, dexterity, agility
         FROM players
         WHERE username=?
         """,
@@ -42,7 +43,7 @@ def chakra_recovery_amount(state):
     return max(
         1,
         1
-        + state["wisdom"] // 5
+        + state["intelligence"] // 5
         + state["hydration"] // 50
         + state["nutrition"] // 50
         - state["fatigue"] // 25,
@@ -65,7 +66,7 @@ def add_fatigue(cursor, username, amount):
     )
 
 
-def rest_character(cursor, username):
+def rest_character(cursor, username, recovery_bonus=0):
     """Apply one short rest and return the resulting resource changes."""
     state = body_state(cursor, username)
     if not state:
@@ -75,8 +76,9 @@ def rest_character(cursor, username):
     if state["hydration"] <= MIN_BODY_RESOURCE:
         return {"status": "blocked", "reason": "hydration"}
 
-    stamina_gain = max(1, 3 - state["fatigue"] // 40)
-    chakra_gain = chakra_recovery_amount(state)
+    condition_bonus = state["wisdom"] // 10
+    stamina_gain = max(1, 3 + condition_bonus + recovery_bonus - state["fatigue"] // 40)
+    chakra_gain = chakra_recovery_amount(state) + recovery_bonus
     stamina = min(state["max_stamina"], state["stamina"] + stamina_gain)
     chakra = min(state["max_chakra"], state["chakra"] + chakra_gain)
     nutrition = max(MIN_BODY_RESOURCE, state["nutrition"] - 1)
@@ -106,6 +108,29 @@ def rest_character(cursor, username):
         "fatigue": fatigue,
         "recovery_state": recovery_state,
     }
+
+
+def apply_vacuum_exposure(cursor, username):
+    """Apply one room tick of vacuum strain."""
+    state = body_state(cursor, username)
+    if not state:
+        return None
+    fatigue_gain = max(5, 15 - state["wisdom"] // 2 - state["strength"] // 4)
+    fatigue = min(MAX_BODY_RESOURCE, state["fatigue"] + fatigue_gain)
+    health = state["health"]
+    if fatigue >= MAX_BODY_RESOURCE:
+        health = max(0, health - 1)
+    recovery_state = "ready" if fatigue < 50 else "strained"
+    cursor.execute(
+        """
+        UPDATE players
+        SET fatigue=?, health=?, recovery_state=?
+        WHERE username=?
+        """,
+        (fatigue, health, recovery_state, username),
+    )
+    cursor.connection.commit()
+    return {"fatigue": fatigue, "health": health, "max_health": state["max_health"]}
 
 
 def body_warnings(state):

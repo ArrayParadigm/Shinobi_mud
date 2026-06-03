@@ -39,6 +39,7 @@ PLAYER_COLUMNS = (
     "hydration",
     "fatigue",
     "recovery_state",
+    "description",
 )
 
 
@@ -56,11 +57,11 @@ def create_players_table(cursor, table_name="players"):
             health INTEGER DEFAULT 10,
             stamina INTEGER DEFAULT 10,
             chakra INTEGER DEFAULT 10,
-            strength INTEGER DEFAULT 5,
-            dexterity INTEGER DEFAULT 5,
-            agility INTEGER DEFAULT 5,
-            intelligence INTEGER DEFAULT 5,
-            wisdom INTEGER DEFAULT 5,
+            strength INTEGER DEFAULT 10,
+            dexterity INTEGER DEFAULT 10,
+            agility INTEGER DEFAULT 10,
+            intelligence INTEGER DEFAULT 10,
+            wisdom INTEGER DEFAULT 10,
             dojo_alignment TEXT DEFAULT 'None',
             max_health INTEGER DEFAULT 10,
             max_stamina INTEGER DEFAULT 10,
@@ -70,7 +71,8 @@ def create_players_table(cursor, table_name="players"):
             nutrition INTEGER NOT NULL DEFAULT 100,
             hydration INTEGER NOT NULL DEFAULT 100,
             fatigue INTEGER NOT NULL DEFAULT 0,
-            recovery_state TEXT NOT NULL DEFAULT 'ready'
+            recovery_state TEXT NOT NULL DEFAULT 'ready',
+            description TEXT NOT NULL DEFAULT 'An undescribed shinobi stands here.'
         )
         """
     )
@@ -202,6 +204,81 @@ def migration_015_stance_profiles(cursor):
     retire_initial_stance_placeholders(cursor)
 
 
+def ensure_character_identity_columns(cursor):
+    """Add character identity fields that belong on player rows."""
+    columns = {
+        column[1]
+        for column in cursor.execute("PRAGMA table_info(players)")
+    }
+    if "description" not in columns:
+        cursor.execute(
+            "ALTER TABLE players ADD COLUMN description "
+            "TEXT NOT NULL DEFAULT 'An undescribed shinobi stands here.'"
+        )
+
+
+def create_builder_tables(cursor):
+    """Create lightweight builder safety and audit storage."""
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS builder_undo (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            zone_file TEXT NOT NULL,
+            snapshot TEXT NOT NULL,
+            action TEXT NOT NULL,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+        """
+    )
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS builder_audit (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            zone_file TEXT NOT NULL,
+            action TEXT NOT NULL,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+        """
+    )
+
+
+def ensure_technique_point_columns(cursor):
+    """Add hidden point progress while preserving visible percentage columns."""
+    create_technique_tables(cursor)
+    for table_name in ("character_skills", "character_jutsus"):
+        columns = {
+            column[1]
+            for column in cursor.execute(f"PRAGMA table_info({table_name})")
+        }
+        if "progress_points" not in columns:
+            cursor.execute(
+                f"ALTER TABLE {table_name} ADD COLUMN progress_points INTEGER NOT NULL DEFAULT 0"
+            )
+            if "progress_percent" in columns:
+                cursor.execute(
+                    f"""
+                    UPDATE {table_name}
+                    SET progress_points=CASE
+                        WHEN progress_percent >= 100 THEN 100000
+                        ELSE MAX(0, progress_percent * 1000)
+                    END
+                    """
+                )
+
+
+def migration_016_character_identity_and_builder_safety(cursor):
+    """Add character descriptions and builder undo/audit storage."""
+    ensure_character_identity_columns(cursor)
+    create_builder_tables(cursor)
+
+
+def migration_017_technique_progress_points(cursor):
+    """Add hidden point-based skill and jutsu progress."""
+    ensure_technique_point_columns(cursor)
+
+
 MIGRATIONS = (
     (1, migration_001_non_admin_default),
     (2, migration_002_persistent_items),
@@ -218,6 +295,8 @@ MIGRATIONS = (
     (13, migration_013_substitution_technique),
     (14, migration_014_pulse_combat_engagements),
     (15, migration_015_stance_profiles),
+    (16, migration_016_character_identity_and_builder_safety),
+    (17, migration_017_technique_progress_points),
 )
 
 

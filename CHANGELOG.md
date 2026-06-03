@@ -1,5 +1,69 @@
 # Changelog
 
+## 2026-06-02 20:46 -0500 - Sprint 29 Presentation and Navigation
+
+### Added
+
+- Added diagonal movement commands `northeast`, `northwest`, `southeast`, and `southwest` with `ne`, `nw`, `se`, and `sw` aliases.
+- Added map markers for other players and living NPCs, plus an expanded map legend.
+- Added a readable nearby divider before local and nearby character listings.
+
+### Changed
+
+- Increased the normal outdoor map view to `11x11` and tuned `survey` to a wider rectangular scan.
+- Styled command names separately from usage arguments when ANSI color is enabled, while preserving plain-text output.
+- Updated README and editable command help/category files for the new movement and map behavior.
+
+### Verification
+
+- Added focused coverage for diagonal movement, shortcut resolution, and player/NPC map markers.
+- Passed focused command, location, presentation, and multiplayer regression tests.
+
+## 2026-06-02 20:28 -0500 - Five-Sprint Builder and Character Pass
+
+### Added
+
+- Added builder daily workflow commands: `zstat`, `rlist`, `mlist`, `ilist`, `bfind`, and `contentcheck`.
+- Added builder safety commands: `cloneitem`, `clonenpc`, `cloneroom`, `spawnlist`, `despawnitem`, `despawnnpc`, and `bundo`.
+- Added `hedit` publishing workflow for command help summaries, details, categories, and unpublished `(i)` markers.
+- Added persistent character descriptions with player-facing `description`/`desc` editing.
+- Added migrations `16` and `17` for character descriptions, builder undo/audit tables, and point-based technique progression.
+
+### Changed
+
+- Reworked `score` into vertical health, stamina, chakra, qualitative fatigue, horizontal stats, and description output.
+- Mapped displayed `Intellect` to persisted `intelligence` and `Condition` to persisted `wisdom` while preserving DB compatibility.
+- Extended `pstat` and `pset` to expose descriptions plus `intellect` and `condition` aliases safely.
+- Applied room-flag consequences for `indoor`, `outdoor`, `vacuum`, `darkness`, `brightness`, `safe`, `no-combat`, and `recovery-friendly`.
+- Reworked skill and jutsu progress to hidden point thresholds while keeping tier and percent display for `prac`, `train`, gameplay use, `skill`, and `jutsu`.
+
+### Verification
+
+- Added focused regression coverage for builder inventory/search/validation, clone/despawn/undo, `hedit`, descriptions, score/admin stats, room flags, and point progression.
+- Passed `python -m unittest discover -s tests -v` with `175` tests.
+
+## 2026-06-02 19:58 -0500 - MISC Priority Pass
+
+### Added
+
+- Added server-wide login and disconnect announcements for already-online players.
+- Added reconnect takeover so a second successful login takes control of the character and removes the older active session.
+- Added `suggest <message>` and `bug <message>` with timestamped markdown logs in `suggestions.md` and `bugs.md`.
+- Added `ai_suggestions.md` for maintainer-side observations that are not ready as authored content.
+- Added richer editable builder help prose for zone, room, NPC, item, and spawn commands.
+
+### Changed
+
+- New character creation now enters the game after username and password setup with core attributes set to `10`.
+- NPC targeting for `talk`, `consider`, `attack`, and `throw` now accepts prefixes and ordinals such as `2.guard`.
+- Updated command categories, README, and TODO status for the completed starred MISC items.
+
+### Verification
+
+- Added regression coverage for reconnect takeover, feedback-file writes, default-10 creation, and NPC ordinal targeting.
+- Passed `python -m unittest discover -s tests -v` with `169` tests.
+- Passed Python syntax compilation, JSON validation, and `git diff --check`.
+
 ## 2026-06-02 15:51 -0500 - Neutral Stance Profiles
 
 ### Added

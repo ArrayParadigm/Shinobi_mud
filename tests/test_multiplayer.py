@@ -162,6 +162,7 @@ class MultiplayerTests(unittest.TestCase):
             self.array.messages[-1],
             "Nearby: Distant (2, 2; 1 away), Eve (1, 1; 1 away)",
         )
+        self.assertIn("-- Nearby --", self.array.messages)
         self.assertIn("Array arrives.", waiting_player.messages)
 
     def test_room_display_lists_players_already_present(self):
@@ -173,6 +174,7 @@ class MultiplayerTests(unittest.TestCase):
             shinobi_mud.WORLD_MAP = original_map
 
         self.assertIn("Also here: Eve", self.array.messages)
+        self.assertIn("-- Nearby --", self.array.messages)
         self.assertEqual(self.array.messages[-1], "Nearby: Distant (2, 2; 1 away)")
 
     def test_movement_reports_database_lock_without_moving_player(self):
@@ -213,7 +215,12 @@ class MultiplayerTests(unittest.TestCase):
         general_commands.handle_score(self.array)
 
         self.assertEqual(self.array.messages[0], "Score for Array")
-        self.assertIn("Health: 10/10  Stamina: 10/10  Chakra: 10/10", self.array.messages)
+        self.assertIn("Health: 10/10", self.array.messages)
+        self.assertIn("Stamina: 10/10", self.array.messages)
+        self.assertIn("Chakra: 10/10", self.array.messages)
+        self.assertIn("Fatigue: fresh", self.array.messages)
+        self.assertIn("Strength: 10  Intellect: 10  Dexterity: 10  Agility: 10  Condition: 10", self.array.messages)
+        self.assertIn("Description: An undescribed shinobi stands here.", self.array.messages)
         self.assertIn(
                 "Specialty: newbie  Clan: Unaffiliated  Release: Undeclared",
             self.array.messages,
