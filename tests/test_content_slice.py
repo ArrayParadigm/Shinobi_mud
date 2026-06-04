@@ -363,10 +363,20 @@ class ContentSliceTests(unittest.TestCase):
                         "description": "Practice Dummy waits here.",
                         "dialogue": "Practice Dummy has nothing to say yet.",
                         "behavior": "static",
+                        "max_health": 10,
+                        "max_stamina": 10,
+                        "max_chakra": 10,
+                        "strength": 10,
+                        "dexterity": 10,
+                        "agility": 10,
+                        "intelligence": 10,
+                        "wisdom": 10,
                         "movement_policy": "static",
                         "leash_radius": 0,
                         "aggression_policy": "passive",
                         "loot_table": [],
+                        "combat_techniques": [],
+                        "jutsus": [],
                         "room_emote": "",
                     }
                 ],
@@ -566,7 +576,9 @@ class ContentSliceTests(unittest.TestCase):
             self.assertEqual(tuple(saved), ("hostile", 15, 4, "leashed", 2, "aggressive", "The guard watches the street."))
             self.assertIn("NPC guard: Village Guard", self.player.messages)
             self.assertIn("  AI: movement=leashed leash=2 aggression=aggressive", self.player.messages)
-            self.assertIn("  Combat: health=15 damage=4 accuracy=5 evasion=5 respawn=60s", self.player.messages)
+            self.assertIn("  Resources: health=15 stamina=10 chakra=10", self.player.messages)
+            self.assertIn("  Stats: str=10 dex=10 agi=10 int=10 wis=10", self.player.messages)
+            self.assertIn("  Combat: damage_bonus=4 accuracy_bonus=5 evasion_bonus=5 respawn=60s", self.player.messages)
 
     def test_iedit_spawnitem_and_istat_keep_consumed_seed_finite(self):
         zone_data = {

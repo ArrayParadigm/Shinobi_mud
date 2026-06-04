@@ -12,6 +12,20 @@ BASE_HIT_CHANCE = 50
 STAT_HIT_CHANCE_STEP = 5
 MIN_HIT_CHANCE = 5
 MAX_HIT_CHANCE = 95
+NPC_STAT_COLUMNS = (
+    "strength",
+    "dexterity",
+    "agility",
+    "intelligence",
+    "wisdom",
+)
+NPC_RESOURCE_COLUMNS = (
+    "max_health",
+    "max_stamina",
+    "max_chakra",
+)
+NPC_DEFAULT_STAT = 10
+NPC_DEFAULT_RESOURCE = 10
 
 
 def create_npc_tables(cursor):
@@ -25,7 +39,14 @@ def create_npc_tables(cursor):
             description TEXT NOT NULL,
             dialogue TEXT NOT NULL,
             behavior TEXT NOT NULL DEFAULT 'static',
-            max_health INTEGER NOT NULL DEFAULT 1,
+            max_health INTEGER NOT NULL DEFAULT 10,
+            max_stamina INTEGER NOT NULL DEFAULT 10,
+            max_chakra INTEGER NOT NULL DEFAULT 10,
+            strength INTEGER NOT NULL DEFAULT 10,
+            dexterity INTEGER NOT NULL DEFAULT 10,
+            agility INTEGER NOT NULL DEFAULT 10,
+            intelligence INTEGER NOT NULL DEFAULT 10,
+            wisdom INTEGER NOT NULL DEFAULT 10,
             attack_damage INTEGER NOT NULL DEFAULT 0,
             accuracy INTEGER NOT NULL DEFAULT 5,
             evasion INTEGER NOT NULL DEFAULT 5,
@@ -34,7 +55,9 @@ def create_npc_tables(cursor):
             room_emote TEXT NOT NULL DEFAULT '',
             movement_policy TEXT NOT NULL DEFAULT 'static',
             leash_radius INTEGER NOT NULL DEFAULT 0,
-            aggression_policy TEXT NOT NULL DEFAULT 'passive'
+            aggression_policy TEXT NOT NULL DEFAULT 'passive',
+            combat_techniques TEXT NOT NULL DEFAULT '',
+            jutsus TEXT NOT NULL DEFAULT ''
         )
         """
     )
@@ -49,7 +72,9 @@ def create_npc_tables(cursor):
             home_y INTEGER NOT NULL,
             seed_key TEXT UNIQUE,
             last_tick_at TEXT,
-            health INTEGER NOT NULL DEFAULT 1,
+            health INTEGER NOT NULL DEFAULT 10,
+            stamina INTEGER NOT NULL DEFAULT 10,
+            chakra INTEGER NOT NULL DEFAULT 10,
             defeated_at TEXT,
             FOREIGN KEY (npc_template_id) REFERENCES npc_templates(id)
         )
@@ -66,7 +91,14 @@ def ensure_npc_combat_columns(cursor):
         for column in cursor.execute("PRAGMA table_info(npc_templates)")
     }
     for column_name, definition in (
-        ("max_health", "INTEGER NOT NULL DEFAULT 1"),
+        ("max_health", "INTEGER NOT NULL DEFAULT 10"),
+        ("max_stamina", "INTEGER NOT NULL DEFAULT 10"),
+        ("max_chakra", "INTEGER NOT NULL DEFAULT 10"),
+        ("strength", "INTEGER NOT NULL DEFAULT 10"),
+        ("dexterity", "INTEGER NOT NULL DEFAULT 10"),
+        ("agility", "INTEGER NOT NULL DEFAULT 10"),
+        ("intelligence", "INTEGER NOT NULL DEFAULT 10"),
+        ("wisdom", "INTEGER NOT NULL DEFAULT 10"),
         ("attack_damage", "INTEGER NOT NULL DEFAULT 0"),
         ("accuracy", "INTEGER NOT NULL DEFAULT 5"),
         ("evasion", "INTEGER NOT NULL DEFAULT 5"),
@@ -76,20 +108,53 @@ def ensure_npc_combat_columns(cursor):
         ("movement_policy", "TEXT NOT NULL DEFAULT 'static'"),
         ("leash_radius", "INTEGER NOT NULL DEFAULT 0"),
         ("aggression_policy", "TEXT NOT NULL DEFAULT 'passive'"),
+        ("combat_techniques", "TEXT NOT NULL DEFAULT ''"),
+        ("jutsus", "TEXT NOT NULL DEFAULT ''"),
     ):
         if column_name not in template_columns:
             cursor.execute(f"ALTER TABLE npc_templates ADD COLUMN {column_name} {definition}")
+    cursor.execute("UPDATE npc_templates SET max_health=10 WHERE max_health IS NULL OR max_health < 1")
+    cursor.execute("UPDATE npc_templates SET max_stamina=10 WHERE max_stamina IS NULL OR max_stamina < 1")
+    cursor.execute("UPDATE npc_templates SET max_chakra=10 WHERE max_chakra IS NULL OR max_chakra < 1")
+    for column_name in NPC_STAT_COLUMNS:
+        cursor.execute(
+            f"UPDATE npc_templates SET {column_name}=10 WHERE {column_name} IS NULL OR {column_name} < 0"
+        )
 
     instance_columns = {
         column[1]
         for column in cursor.execute("PRAGMA table_info(npc_instances)")
     }
     for column_name, definition in (
-        ("health", "INTEGER NOT NULL DEFAULT 1"),
+        ("health", "INTEGER NOT NULL DEFAULT 10"),
+        ("stamina", "INTEGER NOT NULL DEFAULT 10"),
+        ("chakra", "INTEGER NOT NULL DEFAULT 10"),
         ("defeated_at", "TEXT"),
     ):
         if column_name not in instance_columns:
             cursor.execute(f"ALTER TABLE npc_instances ADD COLUMN {column_name} {definition}")
+    cursor.execute(
+        """
+        UPDATE npc_instances
+        SET stamina=(
+                SELECT max_stamina
+                FROM npc_templates
+                WHERE npc_templates.id=npc_instances.npc_template_id
+            )
+        WHERE stamina IS NULL OR stamina < 0
+        """
+    )
+    cursor.execute(
+        """
+        UPDATE npc_instances
+        SET chakra=(
+                SELECT max_chakra
+                FROM npc_templates
+                WHERE npc_templates.id=npc_instances.npc_template_id
+            )
+        WHERE chakra IS NULL OR chakra < 0
+        """
+    )
 
 
 def npcs_at(cursor, x, y):
@@ -144,8 +209,14 @@ def consider_npc(cursor, x, y, npc_name):
         """
         SELECT npc_templates.name, npc_templates.description,
                npc_templates.behavior, npc_instances.health,
-               npc_templates.max_health, npc_templates.attack_damage,
-               npc_templates.accuracy, npc_templates.evasion
+               npc_templates.max_health, npc_instances.stamina,
+               npc_templates.max_stamina, npc_instances.chakra,
+               npc_templates.max_chakra, npc_templates.strength,
+               npc_templates.dexterity, npc_templates.agility,
+               npc_templates.intelligence, npc_templates.wisdom,
+               npc_templates.attack_damage, npc_templates.accuracy,
+               npc_templates.evasion, npc_templates.combat_techniques,
+               npc_templates.jutsus
         FROM npc_instances
         JOIN npc_templates ON npc_templates.id = npc_instances.npc_template_id
         WHERE npc_instances.x=? AND npc_instances.y=?
@@ -201,7 +272,8 @@ def attack_npc(cursor, username, x, y, npc_name):
             SELECT npc_instances.id, npc_instances.health,
                    npc_templates.name, npc_templates.behavior,
                    npc_templates.attack_damage, npc_templates.accuracy,
-                   npc_templates.evasion
+                   npc_templates.evasion, npc_templates.strength,
+                   npc_templates.dexterity, npc_templates.agility
             FROM npc_instances
             JOIN npc_templates ON npc_templates.id = npc_instances.npc_template_id
             WHERE npc_instances.x=? AND npc_instances.y=?
@@ -221,7 +293,7 @@ def attack_npc(cursor, username, x, y, npc_name):
         add_fatigue(cursor, username, 5)
         weapon_damage = _equipped_damage_bonus(cursor, player["id"])
         player_damage = max(1, player["strength"] // 2 + weapon_damage)
-        player_hit_chance = hit_chance(player["dexterity"], npc["evasion"])
+        player_hit_chance = hit_chance(player["dexterity"], npc["agility"] + npc["evasion"])
         player_hit = random.randint(1, 100) <= player_hit_chance
         npc_health = npc["health"]
         if player_hit:
@@ -249,8 +321,8 @@ def attack_npc(cursor, username, x, y, npc_name):
                 "UPDATE npc_instances SET health=? WHERE id=?",
                 (npc_health, npc["id"]),
             )
-        npc_damage = max(0, npc["attack_damage"])
-        npc_hit_chance = hit_chance(npc["accuracy"], player["agility"])
+        npc_damage = max(0, npc["strength"] // 2 + npc["attack_damage"])
+        npc_hit_chance = hit_chance(npc["dexterity"] + npc["accuracy"], player["agility"])
         npc_hit = random.randint(1, 100) <= npc_hit_chance
         player_health = player["health"]
         substitution = consume_substitution(cursor, username) if npc_hit else None
@@ -311,7 +383,8 @@ def throw_item_at_npc(cursor, username, x, y, item_name, npc_name):
             """
             SELECT npc_instances.id, npc_instances.x, npc_instances.y,
                    npc_instances.health, npc_templates.name,
-                   npc_templates.behavior, npc_templates.evasion
+                   npc_templates.behavior, npc_templates.agility,
+                   npc_templates.evasion
             FROM npc_instances
             JOIN npc_templates ON npc_templates.id=npc_instances.npc_template_id
             WHERE npc_instances.health > 0
@@ -329,7 +402,7 @@ def throw_item_at_npc(cursor, username, x, y, item_name, npc_name):
             return {"status": "not_attackable", "npc_name": npc["name"]}
 
         add_fatigue(cursor, username, 2)
-        player_hit_chance = hit_chance(player["dexterity"], npc["evasion"])
+        player_hit_chance = hit_chance(player["dexterity"], npc["agility"] + npc["evasion"])
         player_hit = random.randint(1, 100) <= player_hit_chance
         npc_health = npc["health"]
         if player_hit:
@@ -408,6 +481,16 @@ def tick_npcs(connection):
         UPDATE npc_instances
         SET health=(
                 SELECT max_health
+                FROM npc_templates
+                WHERE npc_templates.id=npc_instances.npc_template_id
+            ),
+            stamina=(
+                SELECT max_stamina
+                FROM npc_templates
+                WHERE npc_templates.id=npc_instances.npc_template_id
+            ),
+            chakra=(
+                SELECT max_chakra
                 FROM npc_templates
                 WHERE npc_templates.id=npc_instances.npc_template_id
             ),

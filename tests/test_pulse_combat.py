@@ -7,6 +7,7 @@ import general_commands
 import shinobi_mud
 import utils
 from combat import (
+    combat_round_timing,
     combat_status,
     engage_npc,
     list_combat_techniques,
@@ -84,9 +85,23 @@ class PulseCombatTests(unittest.TestCase):
         self.assertEqual(npc_health, 12)
         self.assertEqual(
             self.player.messages,
-            ["You engage Practice Construct. Basic auto attacks pulse every 6 seconds while you are in range."],
+            ["You engage Practice Construct. Basic auto attacks round every 0.714 seconds (1.4 attacks/sec) while you are in range."],
         )
         self.assertEqual(combat_status(self.player.cursor, "Fighter")["distance"], 0)
+
+    def test_dexterity_and_agility_drive_round_speed(self):
+        player_id = self.connection.execute(
+            "SELECT id FROM players WHERE username='Fighter'"
+        ).fetchone()["id"]
+        timing = combat_round_timing(self.player.cursor, player_id)
+        self.connection.execute(
+            "UPDATE players SET dexterity=100, agility=100 WHERE username='Fighter'"
+        )
+        self.connection.commit()
+        capped = combat_round_timing(self.player.cursor, player_id)
+
+        self.assertEqual(timing, {"attacks_per_second": 1.4, "round_seconds": 0.714})
+        self.assertEqual(capped, {"attacks_per_second": 5.0, "round_seconds": 0.2})
 
     def test_due_pulse_resolves_auto_attack_and_counterattack(self):
         engage_npc(self.player.cursor, "Fighter", 500, 499, "practice")
@@ -152,7 +167,7 @@ class PulseCombatTests(unittest.TestCase):
         rendered = "\n".join(self.player.messages)
         self.assertIn("Techniques", rendered)
         self.assertIn("Strike: cost 2 stamina; damage +2", rendered)
-        self.assertEqual(self.player.messages[-1], "You prepare Strike for your next combat pulse. Stamina: 8.")
+        self.assertEqual(self.player.messages[-1], "You prepare Strike for your next combat round. Stamina: 8.")
         self.assertEqual(combat_status(self.player.cursor, "Fighter")["action_key"], "strike")
 
     def test_strike_queues_damage_and_spends_stamina(self):
@@ -189,6 +204,29 @@ class PulseCombatTests(unittest.TestCase):
         self.assertFalse(event["player_hit"])
         self.assertEqual(npc_health, 12)
         self.assertEqual((event["npc_hit"], event["npc_damage"], event["player_health"]), (True, 0, 10))
+
+    def test_npc_can_spend_stamina_on_authored_technique(self):
+        self.connection.execute(
+            "UPDATE npc_templates SET combat_techniques='strike' WHERE npc_key='practice-construct'"
+        )
+        self.connection.commit()
+        engage_npc(self.player.cursor, "Fighter", 500, 499, "practice")
+        self.make_due()
+
+        with patch("combat.random.randint", side_effect=[100, 1]):
+            event = tick_combat(self.connection)[0]
+
+        stamina = self.connection.execute(
+            """
+            SELECT stamina
+            FROM npc_instances
+            JOIN npc_templates ON npc_templates.id=npc_instances.npc_template_id
+            WHERE npc_templates.npc_key='practice-construct'
+            """
+        ).fetchone()["stamina"]
+        self.assertEqual(event["npc_action_key"], "strike")
+        self.assertEqual((event["npc_hit"], event["npc_damage"], event["player_health"]), (True, 4, 6))
+        self.assertEqual(stamina, 8)
 
     def test_feint_turns_near_miss_into_hit(self):
         engage_npc(self.player.cursor, "Fighter", 500, 499, "practice")

@@ -640,8 +640,20 @@ def handle_consider(player, npc_name):
             return
         player.sendLine(
             (
-                f'Attack: {npc["attack_damage"]}  '
-                f'Accuracy: {npc["accuracy"]}  Evasion: {npc["evasion"]}'
+                f'Stamina: {npc["stamina"]}/{npc["max_stamina"]}  '
+                f'Chakra: {npc["chakra"]}/{npc["max_chakra"]}'
+            ).encode("utf-8")
+        )
+        player.sendLine(
+            (
+                f'STR: {npc["strength"]}  DEX: {npc["dexterity"]}  '
+                f'AGI: {npc["agility"]}  INT: {npc["intelligence"]}  WIS: {npc["wisdom"]}'
+            ).encode("utf-8")
+        )
+        player.sendLine(
+            (
+                f'Damage bonus: {npc["attack_damage"]}  '
+                f'Accuracy bonus: {npc["accuracy"]}  Evasion bonus: {npc["evasion"]}'
             ).encode("utf-8")
         )
     except Exception as exc:
@@ -659,7 +671,7 @@ def _broadcast_combat(player, message):
 
 
 def handle_attack(player, npc_name):
-    """Enter or retarget slow pulse combat against a hostile NPC."""
+    """Enter or retarget round combat against a hostile NPC."""
     try:
         if _current_room_flags(player) & {"safe", "no-combat"}:
             player.sendLine(b"Combat is not allowed here.")
@@ -682,8 +694,9 @@ def handle_attack(player, npc_name):
             return
         player.sendLine(
             (
-                f'You engage {result["npc_name"]}. Basic auto attacks pulse every '
-                f'{result["pulse_seconds"]} seconds while you are in range.'
+                f'You engage {result["npc_name"]}. Basic auto attacks round every '
+                f'{result["round_seconds"]} seconds '
+                f'({result["attacks_per_second"]} attacks/sec) while you are in range.'
             ).encode("utf-8")
         )
     except Exception as exc:
@@ -701,7 +714,8 @@ def handle_combat(player):
         player.sendLine(b"Combat")
         player.sendLine(
             (
-                f'Stance: {status["stance_name"]}  Pulse: {status["pulse_seconds"]}s  '
+                f'Stance: {status["stance_name"]}  Round: {status["round_seconds"]}s  '
+                f'Rate: {status["attacks_per_second"]}/sec  '
                 f'Accuracy: {status["accuracy_bonus"]:+d}  '
                 f'Evasion: {status["evasion_bonus"]:+d}  Damage: {status["damage_bonus"]:+d}  '
                 f'Damage reduction: {status["damage_reduction_bonus"]:+d}'
@@ -775,7 +789,7 @@ def _technique_effect_summary(technique):
         effects.append("skip attack")
     if technique["stamina_restore"]:
         effects.append(f'restore {technique["stamina_restore"]} stamina')
-    return ", ".join(effects) if effects else "no pulse modifier"
+    return ", ".join(effects) if effects else "no round modifier"
 
 
 def handle_technique(player, target):
@@ -809,7 +823,7 @@ def handle_technique(player, target):
         else:
             player.sendLine(
                 (
-                    f'You prepare {result["name"]} for your next combat pulse. '
+                    f'You prepare {result["name"]} for your next combat round. '
                     f'Stamina: {result["stamina"]}.'
                 ).encode("utf-8")
             )
@@ -1035,14 +1049,14 @@ COMMANDS = {
     "usejutsu": CommandSpec("usejutsu", lambda player, rooms, raw, args: handle_usejutsu(player, raw), "usejutsu <jutsu>", "Activate an implemented jutsu.", min_args=1, max_args=3),
     "talk": CommandSpec("talk", lambda player, rooms, raw, args: handle_talk(player, raw), "talk <character>", "Talk to a character at your location.", min_args=1),
     "consider": CommandSpec("consider", lambda player, rooms, raw, args: handle_consider(player, raw), "consider <character>", "Inspect a character's combat details.", min_args=1),
-    "attack": CommandSpec("attack", lambda player, rooms, raw, args: handle_attack(player, raw), "attack <character>", "Engage a hostile character for pulse combat.", min_args=1),
+    "attack": CommandSpec("attack", lambda player, rooms, raw, args: handle_attack(player, raw), "attack <character>", "Engage a hostile character for round combat.", min_args=1),
     "combat": CommandSpec("combat", lambda player, rooms, raw, args: handle_combat(player), "combat", "Display your active combat engagement and stance.", max_args=0),
     "stance": CommandSpec("stance", lambda player, rooms, raw, args: handle_stance(player, raw), "stance [s1|s2|s3|s4|s5]", "List or change your combat stance.", max_args=2),
     "technique": CommandSpec("technique", lambda player, rooms, raw, args: handle_technique(player, raw), "technique [technique]", "List or queue a stamina-based fighting technique.", max_args=2),
-    "strike": CommandSpec("strike", lambda player, rooms, raw, args: handle_technique(player, "strike"), "strike", "Queue Strike for the next combat pulse.", max_args=0),
-    "guard": CommandSpec("guard", lambda player, rooms, raw, args: handle_technique(player, "guard"), "guard", "Queue Guard for the next combat pulse.", max_args=0),
-    "feint": CommandSpec("feint", lambda player, rooms, raw, args: handle_technique(player, "feint"), "feint", "Queue Feint for the next combat pulse.", max_args=0),
-    "recover": CommandSpec("recover", lambda player, rooms, raw, args: handle_technique(player, "recover"), "recover", "Queue Recover for the next combat pulse.", max_args=0),
+    "strike": CommandSpec("strike", lambda player, rooms, raw, args: handle_technique(player, "strike"), "strike", "Queue Strike for the next combat round.", max_args=0),
+    "guard": CommandSpec("guard", lambda player, rooms, raw, args: handle_technique(player, "guard"), "guard", "Queue Guard for the next combat round.", max_args=0),
+    "feint": CommandSpec("feint", lambda player, rooms, raw, args: handle_technique(player, "feint"), "feint", "Queue Feint for the next combat round.", max_args=0),
+    "recover": CommandSpec("recover", lambda player, rooms, raw, args: handle_technique(player, "recover"), "recover", "Queue Recover for the next combat round.", max_args=0),
     "throw": CommandSpec("throw", lambda player, rooms, raw, args: handle_throw(player, raw), "throw <item> at <character>", "Throw a carried ranged item at a nearby hostile character.", min_args=3, args_validator=lambda args: "at" in [arg.lower() for arg in args]),
     "north": CommandSpec("north", lambda player, rooms, raw, args: handle_movement(player, "north"), "north", "Move north.", max_args=0),
     "south": CommandSpec("south", lambda player, rooms, raw, args: handle_movement(player, "south"), "south", "Move south.", max_args=0),

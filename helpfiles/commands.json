@@ -1,7 +1,7 @@
 {
     "attack": {
-        "summary": "Engage a hostile character for pulse combat.",
-        "details": ["Engagement persists while you reposition. Basic auto attacks pulse slowly and only connect up close."]
+        "summary": "Engage a hostile character for round combat.",
+        "details": ["Engagement persists while you reposition. Basic auto attacks resolve on Dex/Agi-driven combat rounds and only connect up close."]
     },
     "body": {
         "summary": "Display your body resources and recovery readiness.",
@@ -121,8 +121,8 @@
         "details": ["Item targets accept names, keywords, prefixes, and ordinals such as 2.kunai."]
     },
     "feint": {
-        "summary": "Queue Feint for the next combat pulse.",
-        "details": ["Technique command. Costs 3 stamina and gives the next eligible combat pulse a large accuracy bonus plus a small damage bonus."]
+        "summary": "Queue Feint for the next combat round.",
+        "details": ["Technique command. Costs 3 stamina and gives the next eligible combat round a large accuracy bonus plus a small damage bonus."]
     },
     "finger": {
         "summary": "Inspect detailed player account, stats, skills, and jutsus.",
@@ -137,8 +137,8 @@
         "details": ["Admin command. Coordinates remain canonical even when teleporting to an overlay VNUM."]
     },
     "guard": {
-        "summary": "Queue Guard for the next combat pulse.",
-        "details": ["Technique command. Costs 2 stamina, skips your next outgoing pulse attack, improves evasion, and reduces incoming damage for that pulse."]
+        "summary": "Queue Guard for the next combat round.",
+        "details": ["Technique command. Costs 2 stamina, skips your next outgoing round attack, improves evasion, and reduces incoming damage for that round."]
     },
     "help": {
         "summary": "List commands or explain one command.",
@@ -195,7 +195,7 @@
         "summary": "Edit an authored NPC template.",
         "details": [
             "Builder command. Use medit <npc_key> <field> <value> after createnpc to revise authored NPC data.",
-            "Supported fields include name, description, dialogue, behavior, movement, aggression, loot, emote, health, damage, accuracy, evasion, respawn, and leash. Use mstat before spawning to verify the template."
+            "Supported fields include name, description, dialogue, behavior, movement, aggression, loot, emote, health, stamina, chakra, strength, dexterity, agility, intelligence, wisdom, damage, accuracy, evasion, techniques, jutsus, respawn, and leash. Use mstat before spawning to verify the template."
         ]
     },
     "mlist": {
@@ -239,8 +239,8 @@
         "details": ["Admin builder command. Imports template edits and missing one-time spawns without restarting."]
     },
     "recover": {
-        "summary": "Queue Recover for the next combat pulse.",
-        "details": ["Technique command. Costs no stamina, skips your next outgoing pulse attack, and restores stamina on that pulse up to your maximum stamina."]
+        "summary": "Queue Recover for the next combat round.",
+        "details": ["Technique command. Costs no stamina, skips your next outgoing round attack, and restores stamina on that round up to your maximum stamina."]
     },
     "remove": {
         "summary": "Unequip a carried item.",
@@ -322,8 +322,8 @@
         "details": ["Use stance with no argument to list the neutral S1-S5 placeholder profiles. S1 favors accuracy, S2 damage, S3 balance, S4 evasion, and S5 damage reduction."]
     },
     "strike": {
-        "summary": "Queue Strike for the next combat pulse.",
-        "details": ["Technique command. Costs 2 stamina and adds damage to your next eligible combat pulse attack."]
+        "summary": "Queue Strike for the next combat round.",
+        "details": ["Technique command. Costs 2 stamina and adds damage to your next eligible combat round attack."]
     },
     "spawnnpc": {
         "summary": "Persist a spawn for an authored NPC template.",
@@ -351,7 +351,7 @@
     },
     "technique": {
         "summary": "List or queue a stamina-based fighting technique.",
-        "details": ["Use technique with no argument to list available pulse techniques, or technique <name> to queue one for your next eligible combat pulse. Queueing a new technique replaces the previous queued technique."]
+        "details": ["Use technique with no argument to list available round techniques, or technique <name> to queue one for your next eligible combat round. Queueing a new technique replaces the previous queued technique."]
     },
     "think": {
         "summary": "Perform the built-in thinking emote.",

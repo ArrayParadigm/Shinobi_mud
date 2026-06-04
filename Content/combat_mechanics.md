@@ -2,27 +2,28 @@
 
 ## Summary
 
-Shinobi MUD combat is built around automatic baseline fighting plus player-selected combat choices. The current implementation uses slower pulse combat: a player engages a hostile NPC, the server resolves due pulses, and any queued stance or technique modifiers are applied during that pulse.
+Shinobi MUD combat is built around automatic baseline fighting plus player-selected combat choices. The current implementation uses round combat: a player engages a hostile NPC, the server resolves due action rounds, and any queued stance or technique modifiers are applied during that round.
 
-The intended direction is a faster round-based combat loop. In that model, Dexterity and Agility determine how many combat rounds a character receives per second. A normal auto attack consumes one round, and active combat choices such as techniques, skills, and jutsus consume one or more rounds instead of resolving outside the main action rhythm.
+Dexterity and Agility determine how many combat rounds a character receives per second. A normal auto attack consumes one round, and active combat choices such as techniques consume that round instead of resolving outside the main action rhythm.
 
-This file separates current behavior from intended direction so future combat work can build from the live system without losing the target design.
+This file explains the live system and marks the remaining follow-up work for skills and jutsus.
 
 ## Current Combat Loop
 
-Combat starts with `attack <character>`. The command engages a hostile NPC at the player's current grid position and stores that engagement. Once engaged, the recurring combat tick checks whether the player's next combat pulse is due.
+Combat starts with `attack <character>`. The command engages a hostile NPC at the player's current grid position and stores that engagement. Once engaged, the recurring combat tick checks whether the player's next combat round is due.
 
-The current base pulse speed is 6 seconds. Stances can override that pulse timing through their authored `pulse_seconds` value. On each due pulse, the system checks range, resolves the player's outgoing action if possible, then resolves the NPC counterattack when the NPC is close enough.
+The current base round speed is derived from Dexterity and Agility. Each character starts at 1 attack per second and can scale to 5 attacks per second at 100 Dexterity and 100 Agility. On each due round, the system checks range, resolves the player's outgoing action if possible, then resolves the NPC counterattack when the NPC is close enough.
 
-If the target is out of range, the pulse is rescheduled and the queued action remains pending. This matters for techniques because a player should not lose a prepared action simply because the target moved or the player is not currently adjacent.
+If the target is out of range, the round is rescheduled and the queued action remains pending. This matters for techniques because a player should not lose a prepared action simply because the target moved or the player is not currently adjacent.
 
-Current pulse resolution includes:
+Current round resolution includes:
 
-- Player hit chance from Dexterity, stance accuracy, and queued accuracy against NPC evasion.
+- Player hit chance from Dexterity, stance accuracy, and queued accuracy against NPC Agility plus evasion bonuses.
 - Player damage from Strength, equipped weapon damage, stance damage, and queued damage.
-- NPC hit chance from NPC accuracy against player Agility, stance evasion, and queued evasion.
+- NPC hit chance from NPC Dexterity plus accuracy bonuses against player Agility, stance evasion, and queued evasion.
+- NPC technique use when the NPC has authored `combat_techniques` and enough stamina.
 - Incoming damage reduction from stance reduction and queued reduction.
-- Fatigue gain when a valid in-range pulse resolves.
+- Fatigue gain when a valid in-range round resolves.
 - Substitution jutsu consumption when it prevents a hostile hit.
 - Engagement cleanup when an NPC is defeated, the target disappears, the player disconnects, or the player is defeated.
 
@@ -30,15 +31,17 @@ Player defeat currently restores the player to full health at the same grid coor
 
 ## Attributes
 
-Strength is the current baseline damage attribute. A normal player attack uses roughly half Strength as its base before equipment, stance, and queued action modifiers are added.
+Strength is the baseline damage attribute. A normal player attack uses roughly half Strength as its base before equipment, stance, and queued action modifiers are added. NPCs use the same Strength baseline, plus any authored damage bonus.
 
-Dexterity currently improves outgoing hit chance. In the intended round model, Dexterity also contributes to combat speed.
+Dexterity improves outgoing hit chance and contributes to combat speed.
 
-Agility currently improves evasion against incoming attacks. In the intended round model, Agility also contributes to combat speed.
+Agility improves evasion against incoming attacks and contributes to combat speed.
 
 Stamina powers physical combat techniques. Technique stamina is spent when the technique is queued, not when the pulse resolves.
 
-Chakra powers jutsus. Current jutsus keep their own activation and state behavior, but future combat work should bring jutsu timing into the shared combat-round economy.
+Chakra powers jutsus. Current jutsus keep their own activation and state behavior; future combat work should bring jutsu timing into the shared combat-round economy.
+
+NPCs have the same core sheet shape as players: health, stamina, chakra, Strength, Dexterity, Agility, Intelligence, and Wisdom. Builder-created NPCs default those values to 10.
 
 ## Stances
 
@@ -50,7 +53,7 @@ Current stance fields can affect:
 - Evasion
 - Damage
 - Incoming damage reduction
-- Pulse speed
+- Round cadence through the legacy `pulse_seconds` multiplier
 
 The current placeholder stance set is S1 through S5:
 
@@ -60,7 +63,7 @@ The current placeholder stance set is S1 through S5:
 - S4 favors evasion.
 - S5 favors damage reduction.
 
-In the intended combat model, stances should remain persistent posture modifiers. They may adjust round cadence, accuracy, damage, defense, or resource pressure, but they should not replace techniques, skills, or jutsus as active round-consuming choices.
+Stances remain persistent posture modifiers. They may adjust round cadence, accuracy, damage, defense, or resource pressure, but they should not replace techniques, skills, or jutsus as active round-consuming choices.
 
 ## Techniques
 
@@ -82,7 +85,7 @@ Current first-pass techniques:
 - `feint`: costs 3 stamina and adds accuracy plus a small damage bonus.
 - `recover`: costs 0 stamina, skips the outgoing attack, and restores stamina up to maximum stamina.
 
-In the intended round model, a technique consumes the character's action for one combat round unless authored otherwise. For example, a kick technique would take the place of the normal auto attack for that round, applying its own accuracy, damage, movement, or defense rules.
+A technique consumes the character's action for one combat round unless authored otherwise. For example, a kick technique takes the place of the normal auto attack for that round, applying its own accuracy, damage, movement, or defense rules.
 
 ## Skills and Jutsus
 
@@ -94,9 +97,9 @@ Jutsus are chakra-based actions. Some jutsus should resolve in one round. Strong
 
 The long-term rule is simple: if the player is doing something meaningful in combat, it should use combat rounds. Auto-attacks fill empty rounds, while techniques, skills, and jutsus replace or augment those rounds.
 
-## Intended Round Speed
+## Round Speed
 
-The target combat model starts at 1 attack per second and scales to 5 attacks per second when both Dexterity and Agility are fully upgraded to 100.
+The combat model starts at 1 attack per second and scales to 5 attacks per second when both Dexterity and Agility are fully upgraded to 100.
 
 Use the average of Dexterity and Agility:
 
@@ -126,7 +129,7 @@ Under this system, "round" means one available action slot. A character at 1 att
 
 ## Implementation Notes
 
-The Dex/Agi round-speed system is intended design, not fully implemented yet. The live code still uses pulse combat with a current base of 6 seconds.
+The Dex/Agi round-speed system is implemented for player engagement rounds. The live code still keeps legacy `pulse_seconds` and `next_pulse_at` fields for compatibility with older saves, tests, and stance content, but precise scheduling uses `next_round_at`.
 
 Future implementation should preserve the useful parts of the current system:
 
@@ -138,4 +141,4 @@ Future implementation should preserve the useful parts of the current system:
 - Resource costs paid when an action is committed.
 - Queued actions remaining pending when range prevents resolution.
 
-The main future change is replacing slow pulse timing with round generation derived from Dexterity and Agility. Once that exists, techniques, combat skills, and jutsus should all route through the same action-slot system so combat stays automatic, readable, and fair.
+The main future change is routing combat skills and jutsus through the same action-slot system so combat stays automatic, readable, and fair.

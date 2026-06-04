@@ -453,7 +453,9 @@ class CombatSliceTests(unittest.TestCase):
                 "Practice Construct",
                 "A training construct waits for a sparring partner among the luminous flora.",
                 "Health: 12/12",
-                "Attack: 2  Accuracy: 5  Evasion: 5",
+                "Stamina: 10/10  Chakra: 10/10",
+                "STR: 4  DEX: 5  AGI: 5  INT: 10  WIS: 10",
+                "Damage bonus: 0  Accuracy bonus: 0  Evasion bonus: 0",
             ],
         )
 

@@ -157,7 +157,7 @@ The authored `aexpanse` overlay is anchored at `(1, 1)` with two rooms and a see
 - `usejutsu <jutsu>`: activate an implemented jutsu.
 - `talk <character>`: speak with an NPC at your grid location.
 - `consider <character>`: inspect a visible character's combat details.
-- `attack <character>`: engage a hostile NPC at your grid location for slow pulse combat.
+- `attack <character>`: engage a hostile NPC at your grid location for round combat.
 - `combat`: inspect your engagement, range, queued modifier, and active stance.
 - `stance [s1|s2|s3|s4|s5]`: list or change your placeholder combat stance.
 - `throw <item> at <character>`: throw a carried ranged item at a hostile NPC in your room or one cardinal step away.
@@ -218,7 +218,7 @@ Builder overlay tools:
 - `redit <title|desc|flag|exit|link|unlink> <value>` and `rstat [vnum]`: edit and inspect room titles, descriptions, flags, explicit exits, reciprocal links, and unlinking.
 - `rdelete <vnum>`: delete an authored room only after exits, incoming links, and authored spawns are cleared.
 - `createnpc <npc_key> <name>`: create a basic static authored NPC template in the current zone.
-- `medit <npc_key> <field> <value>` and `mstat <npc_key>`: edit and inspect NPC prose, behavior, combat values, respawn timing, loot table, room emote, movement policy, leash radius, and aggression policy.
+- `medit <npc_key> <field> <value>` and `mstat <npc_key>`: edit and inspect NPC prose, behavior, PC-like resources and stats, combat bonuses, techniques, jutsus, respawn timing, loot table, room emote, movement policy, leash radius, and aggression policy.
 - `spawnnpc <npc_key>`: persist and import an authored NPC spawn in the current room.
 - `iedit create <item_key> <name>`, `iedit <item_key> <field> <value>`, and `istat <item_key>`: create, edit, and inspect authored item templates including type, slot, flags, value, weight, stack limit, container capacity, use text, damage, throw damage, nutrition, and hydration.
 - `spawnitem <item_key>`: persist and import a finite authored item seed in the current room.
@@ -242,9 +242,11 @@ Eve's Haven authors a Haven Map, Travel Ration, and Water Flask at its entrance,
 
 Eve's Haven is also the compact training loop. Pick up food and water at the entrance, move north into the garden for the Practice Kunai and Practice Construct, then exercise melee, `throw`, `usejutsu substitution`, `body`, and `rest`.
 
-The combat loop is engagement-driven and pulse-based. `attack <character>` starts or retargets combat without dealing immediate damage. Basic auto attacks resolve slowly while the target is in the same grid room, using player dexterity, strength, equipped-weapon metadata, NPC evasion, and NPC counterattacks. Engagement remains active when a player moves away, so repositioning creates space instead of acting as a separate flee command. Defeated NPCs disappear until their authored respawn delay elapses. A defeated player recovers to maximum health at the same grid coordinate.
+The combat loop is engagement-driven and round-based. `attack <character>` starts or retargets combat without dealing immediate damage. Basic auto attacks resolve on action rounds derived from Dexterity and Agility: `1 + 4 * average(dexterity, agility) / 100`, capped from `1` to `5` attacks per second. Engagement remains active when a player moves away, so repositioning creates space instead of acting as a separate flee command. Defeated NPCs disappear until their authored respawn delay elapses. A defeated player recovers to maximum health at the same grid coordinate.
 
-`stance` adds the first authored combat profiles. All placeholders keep the same `6` second basic auto-attack pulse so stance choice only changes combat tradeoffs:
+NPCs now use the same core resource/stat shape as player characters: health, stamina, chakra, Strength, Dexterity, Agility, Intelligence, and Wisdom. Builder-created NPCs default those values to `10`. Legacy NPC `damage`, `accuracy`, and `evasion` fields remain as explicit combat bonuses, while authored `techniques` let NPCs spend stamina on the same combat techniques players can use.
+
+`stance` adds the first authored combat profiles. The current placeholders keep neutral timing, so stance choice only changes combat tradeoffs:
 
 - `S1 - Attack`: `+2` accuracy, `-1` damage, `-1` evasion.
 - `S2 - Damage`: `+2` damage, `-1` accuracy, `-1` evasion.
@@ -252,14 +254,14 @@ The combat loop is engagement-driven and pulse-based. `attack <character>` start
 - `S4 - Evasion`: `+2` evasion, `-1` accuracy, `-1` damage.
 - `S5 - Damage Reduction`: `+2` incoming damage reduction, `-1` accuracy, `-1` damage.
 
-Accuracy and evasion are opposing values. An S1 attacker facing an S2 defender has an easier hit check because the attacker contributes `+2` accuracy while the defender contributes `-1` evasion. NPC pulse combat applies the same player-side stance fields now; player-versus-player engagement can reuse the opposed calculation when it is introduced. The persisted combat queue can still apply one-shot range, accuracy, damage, and status modifiers from future skills and jutsus.
+Accuracy and evasion are opposing values. An S1 attacker facing an S2 defender has an easier hit check because the attacker contributes `+2` accuracy while the defender contributes `-1` evasion. NPC combat uses NPC Dexterity and Agility with optional authored accuracy/evasion bonuses. Player-versus-player engagement can reuse the opposed calculation when it is introduced. The persisted combat queue can still apply one-shot range, accuracy, damage, and status modifiers from future skills and jutsus.
 
-`technique` adds stamina-based fighting techniques that queue one pulse modifier. Use `technique` to list available moves, `technique <name>` to queue one, or the direct command name for the first set. Queueing a new technique replaces the previous queued technique. Stamina is spent when queued, and out-of-range pulses keep the technique pending until an eligible pulse resolves.
+`technique` adds stamina-based fighting techniques that queue one round modifier. Use `technique` to list available moves, `technique <name>` to queue one, or the direct command name for the first set. Queueing a new technique replaces the previous queued technique. Stamina is spent when queued, and out-of-range rounds keep the technique pending until an eligible round resolves.
 
-- `strike`: costs `2` stamina and adds `+2` damage to the next pulse attack.
-- `guard`: costs `2` stamina, skips your outgoing pulse attack, adds `+2` evasion, and reduces incoming damage by `2`.
-- `feint`: costs `3` stamina, adds `+4` accuracy, and adds `+1` damage to the next pulse attack.
-- `recover`: costs `0` stamina, skips your outgoing pulse attack, and restores up to `4` stamina on the next pulse.
+- `strike`: costs `2` stamina and adds `+2` damage to the next round attack.
+- `guard`: costs `2` stamina, skips your outgoing round attack, adds `+2` evasion, and reduces incoming damage by `2`.
+- `feint`: costs `3` stamina, adds `+4` accuracy, and adds `+1` damage to the next round attack.
+- `recover`: costs `0` stamina, skips your outgoing round attack, and restores up to `4` stamina on the next round.
 
 Characters also have abstract body resources: nutrition, hydration, and fatigue. Ordinary movement and hostile combat increase fatigue. `rest` reduces fatigue, consumes a small amount of nutrition and hydration, restores stamina, and restores chakra based on intellect and current body condition. Condition improves short-rest recovery, and recovery-friendly rooms add a room bonus. Rest is blocked at zero nutrition or hydration. `eat` and `drink` consume finite authored supplies to restore body resources.
 

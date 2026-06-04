@@ -128,16 +128,26 @@ def _sync_npc_templates(cursor, templates):
             """
             INSERT INTO npc_templates (
                 npc_key, name, description, dialogue, behavior,
-                max_health, attack_damage, accuracy, evasion, respawn_seconds,
-                loot_table, room_emote, movement_policy, leash_radius, aggression_policy
+                max_health, max_stamina, max_chakra, strength, dexterity,
+                agility, intelligence, wisdom, attack_damage, accuracy,
+                evasion, respawn_seconds, loot_table, room_emote,
+                movement_policy, leash_radius, aggression_policy,
+                combat_techniques, jutsus
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(npc_key) DO UPDATE SET
                 name=excluded.name,
                 description=excluded.description,
                 dialogue=excluded.dialogue,
                 behavior=excluded.behavior,
                 max_health=excluded.max_health,
+                max_stamina=excluded.max_stamina,
+                max_chakra=excluded.max_chakra,
+                strength=excluded.strength,
+                dexterity=excluded.dexterity,
+                agility=excluded.agility,
+                intelligence=excluded.intelligence,
+                wisdom=excluded.wisdom,
                 attack_damage=excluded.attack_damage,
                 accuracy=excluded.accuracy,
                 evasion=excluded.evasion,
@@ -146,7 +156,9 @@ def _sync_npc_templates(cursor, templates):
                 room_emote=excluded.room_emote,
                 movement_policy=excluded.movement_policy,
                 leash_radius=excluded.leash_radius,
-                aggression_policy=excluded.aggression_policy
+                aggression_policy=excluded.aggression_policy,
+                combat_techniques=excluded.combat_techniques,
+                jutsus=excluded.jutsus
             """,
             (
                 template["key"],
@@ -154,7 +166,14 @@ def _sync_npc_templates(cursor, templates):
                 template["description"],
                 template["dialogue"],
                 template.get("behavior", "static"),
-                int(template.get("max_health", 1)),
+                int(template.get("max_health", 10)),
+                int(template.get("max_stamina", 10)),
+                int(template.get("max_chakra", 10)),
+                int(template.get("strength", int(template.get("attack_damage", 5)) * 2 if "attack_damage" in template else 10)),
+                int(template.get("dexterity", template.get("accuracy", 5))),
+                int(template.get("agility", template.get("evasion", 5))),
+                int(template.get("intelligence", 10)),
+                int(template.get("wisdom", 10)),
                 int(template.get("attack_damage", 0)),
                 int(template.get("accuracy", 5)),
                 int(template.get("evasion", 5)),
@@ -164,6 +183,8 @@ def _sync_npc_templates(cursor, templates):
                 template.get("movement_policy", "static"),
                 int(template.get("leash_radius", 0)),
                 template.get("aggression_policy", "passive"),
+                " ".join(_words(template.get("combat_techniques", []))),
+                " ".join(_words(template.get("jutsus", []))),
             ),
         )
 
@@ -208,17 +229,27 @@ def _sync_npc_spawns(cursor, content_key, spawns, coordinates_by_vnum):
             continue
         x, y = _spawn_coordinates(spawn, coordinates_by_vnum)
         npc_template = cursor.execute(
-            "SELECT id, max_health FROM npc_templates WHERE npc_key=?",
+            "SELECT id, max_health, max_stamina, max_chakra FROM npc_templates WHERE npc_key=?",
             (spawn["npc"],),
         ).fetchone()
         cursor.execute(
             """
             INSERT INTO npc_instances (
-                npc_template_id, x, y, home_x, home_y, seed_key, health
+                npc_template_id, x, y, home_x, home_y, seed_key, health, stamina, chakra
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            (npc_template["id"], x, y, x, y, seed_key, npc_template["max_health"]),
+            (
+                npc_template["id"],
+                x,
+                y,
+                x,
+                y,
+                seed_key,
+                npc_template["max_health"],
+                npc_template["max_stamina"],
+                npc_template["max_chakra"],
+            ),
         )
         _record_seed(cursor, seed_key, "npc")
         created += 1

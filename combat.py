@@ -1,15 +1,21 @@
-"""Persistent pulse combat engagements, stances, and queued techniques."""
+"""Persistent round combat engagements, stances, and queued techniques."""
 
 import random
+import time
+from datetime import datetime, timezone
 
 from body import add_fatigue
 from npcs import _equipped_damage_bonus, _resolve_named_npc, hit_chance
 from techniques import consume_substitution
 
 
-BASE_AUTO_ATTACK_SECONDS = 6
+BASE_AUTO_ATTACK_SECONDS = 1
+LEGACY_STANCE_SECONDS = 6
 BASE_AUTO_ATTACK_RANGE = 0
 BALANCED_STANCE_NAME = "S3 - Balance"
+MIN_ATTACKS_PER_SECOND = 1.0
+MAX_ATTACKS_PER_SECOND = 5.0
+MAX_ROUNDS_PER_TICK = 5
 
 
 def create_combat_tables(cursor):
@@ -46,12 +52,14 @@ def create_combat_tables(cursor):
             player_id INTEGER PRIMARY KEY,
             npc_instance_id INTEGER NOT NULL,
             next_pulse_at TEXT NOT NULL,
+            next_round_at REAL NOT NULL DEFAULT 0,
             engaged_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (player_id) REFERENCES players(id),
             FOREIGN KEY (npc_instance_id) REFERENCES npc_instances(id)
         )
         """
     )
+    ensure_combat_engagement_columns(cursor)
     cursor.execute(
         """
         CREATE TABLE IF NOT EXISTS combat_action_queue (
@@ -118,7 +126,7 @@ def sync_stance_templates(cursor, templates):
                 int(template.get("evasion_bonus", 0)),
                 int(template.get("damage_bonus", 0)),
                 int(template.get("damage_reduction_bonus", 0)),
-                max(1, int(template.get("pulse_seconds", BASE_AUTO_ATTACK_SECONDS))),
+                max(1, int(template.get("pulse_seconds", LEGACY_STANCE_SECONDS))),
             ),
         )
 
@@ -133,6 +141,18 @@ def ensure_stance_columns(cursor):
         cursor.execute(
             "ALTER TABLE stance_definitions "
             "ADD COLUMN damage_reduction_bonus INTEGER NOT NULL DEFAULT 0"
+        )
+
+
+def ensure_combat_engagement_columns(cursor):
+    """Add precise round timing while preserving legacy pulse timestamps."""
+    columns = {
+        column[1]
+        for column in cursor.execute("PRAGMA table_info(combat_engagements)")
+    }
+    if "next_round_at" not in columns:
+        cursor.execute(
+            "ALTER TABLE combat_engagements ADD COLUMN next_round_at REAL NOT NULL DEFAULT 0"
         )
 
 
@@ -243,17 +263,21 @@ def engage_npc(cursor, username, x, y, npc_name):
         if npc["behavior"] != "hostile":
             connection.rollback()
             return {"status": "not_attackable", "npc_name": npc["name"]}
-        pulse_seconds = _pulse_seconds(cursor, player["id"])
+        round_timing = combat_round_timing(cursor, player["id"])
+        next_round_at = time.time() + round_timing["round_seconds"]
         cursor.execute(
             """
-            INSERT INTO combat_engagements (player_id, npc_instance_id, next_pulse_at)
-            VALUES (?, ?, datetime('now', '+' || ? || ' seconds'))
+            INSERT INTO combat_engagements (
+                player_id, npc_instance_id, next_pulse_at, next_round_at
+            )
+            VALUES (?, ?, datetime(?, 'unixepoch'), ?)
             ON CONFLICT(player_id) DO UPDATE SET
                 npc_instance_id=excluded.npc_instance_id,
                 next_pulse_at=excluded.next_pulse_at,
+                next_round_at=excluded.next_round_at,
                 engaged_at=CURRENT_TIMESTAMP
             """,
-            (player["id"], npc["id"], pulse_seconds),
+            (player["id"], npc["id"], next_round_at, next_round_at),
         )
         connection.commit()
     except Exception:
@@ -262,7 +286,9 @@ def engage_npc(cursor, username, x, y, npc_name):
     return {
         "status": "engaged",
         "npc_name": npc["name"],
-        "pulse_seconds": pulse_seconds,
+        "pulse_seconds": round_timing["round_seconds"],
+        "round_seconds": round_timing["round_seconds"],
+        "attacks_per_second": round_timing["attacks_per_second"],
     }
 
 
@@ -288,7 +314,9 @@ def set_stance(cursor, username, target):
                 "evasion_bonus": 0,
                 "damage_bonus": 0,
                 "damage_reduction_bonus": 0,
-                "pulse_seconds": BASE_AUTO_ATTACK_SECONDS,
+                "pulse_seconds": LEGACY_STANCE_SECONDS,
+                "round_seconds": BASE_AUTO_ATTACK_SECONDS,
+                "attacks_per_second": MIN_ATTACKS_PER_SECOND,
             }
         stances = cursor.execute(
             "SELECT * FROM stance_definitions ORDER BY name"
@@ -484,7 +512,7 @@ def combat_status(cursor, username):
                npc_templates.name AS npc_name, npc_instances.health AS npc_health,
                npc_templates.max_health AS npc_max_health,
                npc_instances.x AS npc_x, npc_instances.y AS npc_y,
-               combat_engagements.next_pulse_at,
+               combat_engagements.next_pulse_at, combat_engagements.next_round_at,
                combat_action_queue.action_key,
                combat_action_queue.status_key
         FROM players
@@ -496,12 +524,18 @@ def combat_status(cursor, username):
         LEFT JOIN combat_action_queue ON combat_action_queue.player_id=players.id
         WHERE players.username=?
         """,
-        (BASE_AUTO_ATTACK_SECONDS, username),
+        (LEGACY_STANCE_SECONDS, username),
     ).fetchone()
     if not row:
         return None
     status = dict(row)
     status["stance_name"] = status["stance_name"] or BALANCED_STANCE_NAME
+    timing = _round_timing_from_stats(
+        _player_stats(cursor, status["player_id"]),
+        status["pulse_seconds"],
+    )
+    status["round_seconds"] = timing["round_seconds"]
+    status["attacks_per_second"] = timing["attacks_per_second"]
     if status["npc_name"]:
         status["distance"] = abs(status["player_x"] - status["npc_x"]) + abs(
             status["player_y"] - status["npc_y"]
@@ -528,55 +562,34 @@ def clear_engagement(cursor, username):
 
 
 def tick_combat(connection, active_usernames=None):
-    """Resolve due persisted auto attacks and return player-facing combat events."""
+    """Resolve due persisted combat rounds and return player-facing events."""
     cursor = connection.cursor()
     active = None if active_usernames is None else set(active_usernames)
+    now = time.time()
     events = []
     try:
         cursor.execute("BEGIN IMMEDIATE")
-        rows = cursor.execute(
-            """
-            SELECT combat_engagements.player_id, combat_engagements.npc_instance_id,
-                   players.username, players.x AS player_x, players.y AS player_y,
-                   players.health AS player_health, players.max_health,
-                   players.strength, players.dexterity, players.agility,
-                   npc_instances.x AS npc_x, npc_instances.y AS npc_y,
-                   npc_instances.health AS npc_health,
-                   npc_templates.name AS npc_name, npc_templates.behavior,
-                   npc_templates.attack_damage, npc_templates.accuracy,
-                   npc_templates.evasion,
-                   COALESCE(stance_definitions.name, ?) AS stance_name,
-                   COALESCE(stance_definitions.accuracy_bonus, 0) AS stance_accuracy,
-                   COALESCE(stance_definitions.evasion_bonus, 0) AS stance_evasion,
-                   COALESCE(stance_definitions.damage_bonus, 0) AS stance_damage,
-                   COALESCE(stance_definitions.damage_reduction_bonus, 0) AS stance_damage_reduction,
-                   COALESCE(stance_definitions.pulse_seconds, ?) AS pulse_seconds,
-                   combat_action_queue.action_key,
-                   COALESCE(combat_action_queue.accuracy_bonus, 0) AS queued_accuracy,
-                   COALESCE(combat_action_queue.damage_bonus, 0) AS queued_damage,
-                   COALESCE(combat_action_queue.max_range, ?) AS queued_range,
-                   COALESCE(combat_action_queue.evasion_bonus, 0) AS queued_evasion,
-                   COALESCE(combat_action_queue.damage_reduction_bonus, 0) AS queued_damage_reduction,
-                   COALESCE(combat_action_queue.skip_attack, 0) AS queued_skip_attack,
-                   COALESCE(combat_action_queue.stamina_restore, 0) AS queued_stamina_restore
-            FROM combat_engagements
-            JOIN players ON players.id=combat_engagements.player_id
-            JOIN npc_instances ON npc_instances.id=combat_engagements.npc_instance_id
-            JOIN npc_templates ON npc_templates.id=npc_instances.npc_template_id
-            LEFT JOIN character_stances ON character_stances.player_id=players.id
-            LEFT JOIN stance_definitions ON stance_definitions.id=character_stances.stance_definition_id
-            LEFT JOIN combat_action_queue ON combat_action_queue.player_id=players.id
-            WHERE combat_engagements.next_pulse_at <= CURRENT_TIMESTAMP
-            ORDER BY combat_engagements.player_id
-            """,
-            (BALANCED_STANCE_NAME, BASE_AUTO_ATTACK_SECONDS, BASE_AUTO_ATTACK_RANGE),
-        ).fetchall()
-        for row in rows:
+        player_ids = [
+            row["player_id"]
+            for row in cursor.execute(
+                "SELECT player_id FROM combat_engagements ORDER BY player_id"
+            ).fetchall()
+        ]
+        for player_id in player_ids:
+            rounds = 0
+            row = _combat_row(cursor, player_id)
+            if not row:
+                continue
             if active is not None and row["username"] not in active:
                 _delete_engagement(cursor, row["player_id"])
                 continue
-            event = _resolve_pulse(cursor, row)
-            events.append(event)
+            while row and _next_round_at(row) <= now and rounds < MAX_ROUNDS_PER_TICK:
+                event = _resolve_pulse(cursor, row, now)
+                events.append(event)
+                rounds += 1
+                if event["status"] in {"ended", "npc_defeated"} or event.get("player_defeated"):
+                    break
+                row = _combat_row(cursor, player_id)
         connection.commit()
     except Exception:
         connection.rollback()
@@ -584,7 +597,62 @@ def tick_combat(connection, active_usernames=None):
     return events
 
 
-def _resolve_pulse(cursor, row):
+def _combat_row(cursor, player_id):
+    return cursor.execute(
+        """
+        SELECT combat_engagements.player_id, combat_engagements.npc_instance_id,
+               combat_engagements.next_pulse_at, combat_engagements.next_round_at,
+               players.username, players.x AS player_x, players.y AS player_y,
+               players.health AS player_health, players.max_health,
+               players.stamina AS player_stamina, players.max_stamina AS player_max_stamina,
+               players.chakra AS player_chakra, players.max_chakra AS player_max_chakra,
+               players.strength, players.dexterity, players.agility,
+               players.intelligence, players.wisdom,
+               npc_instances.x AS npc_x, npc_instances.y AS npc_y,
+               npc_instances.health AS npc_health,
+               npc_instances.stamina AS npc_stamina,
+               npc_instances.chakra AS npc_chakra,
+               npc_templates.name AS npc_name, npc_templates.behavior,
+               npc_templates.max_health AS npc_max_health,
+               npc_templates.max_stamina AS npc_max_stamina,
+               npc_templates.max_chakra AS npc_max_chakra,
+               npc_templates.strength AS npc_strength,
+               npc_templates.dexterity AS npc_dexterity,
+               npc_templates.agility AS npc_agility,
+               npc_templates.intelligence AS npc_intelligence,
+               npc_templates.wisdom AS npc_wisdom,
+               npc_templates.attack_damage, npc_templates.accuracy,
+               npc_templates.evasion, npc_templates.combat_techniques,
+               npc_templates.jutsus,
+               COALESCE(stance_definitions.name, ?) AS stance_name,
+               COALESCE(stance_definitions.accuracy_bonus, 0) AS stance_accuracy,
+               COALESCE(stance_definitions.evasion_bonus, 0) AS stance_evasion,
+               COALESCE(stance_definitions.damage_bonus, 0) AS stance_damage,
+               COALESCE(stance_definitions.damage_reduction_bonus, 0) AS stance_damage_reduction,
+               COALESCE(stance_definitions.pulse_seconds, ?) AS pulse_seconds,
+               combat_action_queue.action_key,
+               COALESCE(combat_action_queue.accuracy_bonus, 0) AS queued_accuracy,
+               COALESCE(combat_action_queue.damage_bonus, 0) AS queued_damage,
+               COALESCE(combat_action_queue.max_range, ?) AS queued_range,
+               COALESCE(combat_action_queue.evasion_bonus, 0) AS queued_evasion,
+               COALESCE(combat_action_queue.damage_reduction_bonus, 0) AS queued_damage_reduction,
+               COALESCE(combat_action_queue.skip_attack, 0) AS queued_skip_attack,
+               COALESCE(combat_action_queue.stamina_restore, 0) AS queued_stamina_restore
+        FROM combat_engagements
+        JOIN players ON players.id=combat_engagements.player_id
+        JOIN npc_instances ON npc_instances.id=combat_engagements.npc_instance_id
+        JOIN npc_templates ON npc_templates.id=npc_instances.npc_template_id
+        LEFT JOIN character_stances ON character_stances.player_id=players.id
+        LEFT JOIN stance_definitions ON stance_definitions.id=character_stances.stance_definition_id
+        LEFT JOIN combat_action_queue ON combat_action_queue.player_id=players.id
+        WHERE combat_engagements.player_id=?
+        """,
+        (BALANCED_STANCE_NAME, LEGACY_STANCE_SECONDS, BASE_AUTO_ATTACK_RANGE, player_id),
+    ).fetchone()
+
+
+def _resolve_pulse(cursor, row, now=None):
+    now = time.time() if now is None else now
     npc = cursor.execute(
         "SELECT x, y, health FROM npc_instances WHERE id=?",
         (row["npc_instance_id"],),
@@ -610,19 +678,24 @@ def _resolve_pulse(cursor, row):
         "player_x": row["player_x"],
         "player_y": row["player_y"],
         "action_key": row["action_key"],
+        "round_seconds": _round_timing_from_row(row)["round_seconds"],
+        "attacks_per_second": _round_timing_from_row(row)["attacks_per_second"],
     }
     if npc["health"] <= 0:
         _delete_engagement(cursor, row["player_id"])
         return {**event, "status": "ended"}
 
     attack_range = max(BASE_AUTO_ATTACK_RANGE, row["queued_range"])
+    round_timing = _round_timing_from_row(row)
+    next_round_at = max(_next_round_at(row), now) + round_timing["round_seconds"]
     cursor.execute(
         """
         UPDATE combat_engagements
-        SET next_pulse_at=datetime('now', '+' || ? || ' seconds')
+        SET next_pulse_at=datetime(?, 'unixepoch'),
+            next_round_at=?
         WHERE player_id=?
         """,
-        (row["pulse_seconds"], row["player_id"]),
+        (next_round_at, next_round_at, row["player_id"]),
     )
     if distance > attack_range:
         return {**event, "status": "out_of_range", "attack_range": attack_range}
@@ -638,7 +711,7 @@ def _resolve_pulse(cursor, row):
     )
     player_hit = False if skip_attack else random.randint(1, 100) <= hit_chance(
         row["dexterity"] + row["stance_accuracy"] + row["queued_accuracy"],
-        row["evasion"],
+        row["npc_agility"] + row["evasion"],
     )
     npc_health = npc["health"]
     if player_hit:
@@ -678,20 +751,24 @@ def _resolve_pulse(cursor, row):
             "stamina_restored": stamina_restored,
         }
 
+    npc_technique = _npc_technique(cursor, row)
+    npc_skip_attack = bool(npc_technique and npc_technique["skip_attack"])
     npc_hit = False
     substitution = None
     player_health = row["player_health"]
     player_defeated = False
     if distance <= BASE_AUTO_ATTACK_RANGE:
-        npc_hit = random.randint(1, 100) <= hit_chance(
-            row["accuracy"],
+        npc_hit = False if npc_skip_attack else random.randint(1, 100) <= hit_chance(
+            row["npc_dexterity"] + row["accuracy"] + _technique_value(npc_technique, "accuracy_bonus"),
             row["agility"] + row["stance_evasion"] + row["queued_evasion"],
         )
         substitution = consume_substitution(cursor, row["username"]) if npc_hit else None
         if npc_hit and not substitution:
             npc_damage = max(
                 0,
-                row["attack_damage"]
+                row["npc_strength"] // 2
+                + row["attack_damage"]
+                + _technique_value(npc_technique, "damage_bonus")
                 - row["stance_damage_reduction"]
                 - row["queued_damage_reduction"],
             )
@@ -713,7 +790,9 @@ def _resolve_pulse(cursor, row):
         "npc_hit": npc_hit,
         "npc_damage": max(
             0,
-            row["attack_damage"]
+            row["npc_strength"] // 2
+            + row["attack_damage"]
+            + _technique_value(npc_technique, "damage_bonus")
             - row["stance_damage_reduction"]
             - row["queued_damage_reduction"],
         ),
@@ -722,7 +801,77 @@ def _resolve_pulse(cursor, row):
         "substitution": substitution,
         "skip_attack": skip_attack,
         "stamina_restored": stamina_restored,
+        "npc_action_key": npc_technique["technique_key"] if npc_technique else None,
+        "npc_skip_attack": npc_skip_attack,
     }
+
+
+def combat_round_timing(cursor, player_id):
+    """Return Dex/Agi attacks-per-second timing for a player."""
+    row = _player_stats(cursor, player_id)
+    stance_seconds = _pulse_seconds(cursor, player_id)
+    return _round_timing_from_stats(row, stance_seconds)
+
+
+def _player_stats(cursor, player_id):
+    return cursor.execute(
+        """
+        SELECT dexterity, agility
+        FROM players
+        WHERE id=?
+        """,
+        (player_id,),
+    ).fetchone()
+
+
+def _round_timing_from_row(row):
+    return _round_timing_from_stats(row, row["pulse_seconds"])
+
+
+def _round_timing_from_stats(row, stance_seconds=LEGACY_STANCE_SECONDS):
+    if not row:
+        dexterity = agility = 0
+    else:
+        dexterity = max(0, int(row["dexterity"]))
+        agility = max(0, int(row["agility"]))
+    speed_stat = min(100.0, (dexterity + agility) / 2.0)
+    attacks_per_second = MIN_ATTACKS_PER_SECOND + (
+        (MAX_ATTACKS_PER_SECOND - MIN_ATTACKS_PER_SECOND) * speed_stat / 100.0
+    )
+    attacks_per_second = max(
+        MIN_ATTACKS_PER_SECOND,
+        min(MAX_ATTACKS_PER_SECOND, attacks_per_second),
+    )
+    stance_multiplier = LEGACY_STANCE_SECONDS / max(1.0, float(stance_seconds))
+    attacks_per_second = max(
+        MIN_ATTACKS_PER_SECOND,
+        min(MAX_ATTACKS_PER_SECOND, attacks_per_second * stance_multiplier),
+    )
+    return {
+        "attacks_per_second": round(attacks_per_second, 2),
+        "round_seconds": round(1.0 / attacks_per_second, 3),
+    }
+
+
+def _next_round_at(row):
+    next_round_at = float(row["next_round_at"] or 0)
+    legacy_due_at = _legacy_timestamp(row["next_pulse_at"])
+    if legacy_due_at and legacy_due_at < next_round_at and next_round_at - legacy_due_at > 1.0:
+        return legacy_due_at
+    return next_round_at
+
+
+def _legacy_timestamp(value):
+    if not value:
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+    try:
+        return datetime.strptime(str(value), "%Y-%m-%d %H:%M:%S").replace(
+            tzinfo=timezone.utc
+        ).timestamp()
+    except ValueError:
+        return None
 
 
 def _pulse_seconds(cursor, player_id):
@@ -735,7 +884,49 @@ def _pulse_seconds(cursor, player_id):
         """,
         (player_id,),
     ).fetchone()
-    return row["pulse_seconds"] if row else BASE_AUTO_ATTACK_SECONDS
+    return row["pulse_seconds"] if row else LEGACY_STANCE_SECONDS
+
+
+def _npc_technique(cursor, row):
+    """Choose and pay for one simple NPC technique for this round."""
+    keys = [key for key in str(row["combat_techniques"] or "").split() if key]
+    if not keys:
+        return None
+    placeholders = ", ".join("?" for _ in keys)
+    techniques = cursor.execute(
+        f"""
+        SELECT *
+        FROM combat_technique_definitions
+        WHERE is_available=1 AND technique_key IN ({placeholders})
+        ORDER BY CASE technique_key
+            {' '.join(f'WHEN ? THEN {index}' for index, _ in enumerate(keys))}
+            ELSE {len(keys)}
+        END
+        """,
+        (*keys, *keys),
+    ).fetchall()
+    for technique in techniques:
+        cost = int(technique["stamina_cost"])
+        if row["npc_stamina"] < cost:
+            continue
+        updated_stamina = row["npc_stamina"] - cost
+        if technique["stamina_restore"]:
+            updated_stamina = min(
+                row["npc_max_stamina"],
+                updated_stamina + int(technique["stamina_restore"]),
+            )
+        cursor.execute(
+            "UPDATE npc_instances SET stamina=? WHERE id=?",
+            (updated_stamina, row["npc_instance_id"]),
+        )
+        return technique
+    return None
+
+
+def _technique_value(technique, field):
+    if not technique:
+        return 0
+    return int(technique[field])
 
 
 def _resolve_stance(stances, target):

@@ -741,9 +741,28 @@ def mstat(protocol, npc_key):
     protocol.sendLine(f"  Room emote: {template.get('room_emote', '') or 'None'}".encode("utf-8"))
     protocol.sendLine(
         (
-            f"  Combat: health={template.get('max_health', 1)} damage={template.get('attack_damage', 0)} "
-            f"accuracy={template.get('accuracy', 5)} evasion={template.get('evasion', 5)} "
+            f"  Resources: health={template.get('max_health', 10)} "
+            f"stamina={template.get('max_stamina', 10)} chakra={template.get('max_chakra', 10)}"
+        ).encode("utf-8")
+    )
+    protocol.sendLine(
+        (
+            f"  Stats: str={template.get('strength', 10)} dex={template.get('dexterity', 10)} "
+            f"agi={template.get('agility', 10)} int={template.get('intelligence', 10)} "
+            f"wis={template.get('wisdom', 10)}"
+        ).encode("utf-8")
+    )
+    protocol.sendLine(
+        (
+            f"  Combat: damage_bonus={template.get('attack_damage', 0)} "
+            f"accuracy_bonus={template.get('accuracy', 5)} evasion_bonus={template.get('evasion', 5)} "
             f"respawn={template.get('respawn_seconds', 60)}s"
+        ).encode("utf-8")
+    )
+    protocol.sendLine(
+        (
+            f"  Actions: techniques={', '.join(template.get('combat_techniques', [])) or 'None'} "
+            f"jutsus={', '.join(template.get('jutsus', [])) or 'None'}"
         ).encode("utf-8")
     )
 
@@ -753,9 +772,26 @@ def medit(protocol, npc_key, field, value):
     integer_fields = {
         "health": "max_health",
         "maxhealth": "max_health",
+        "stamina": "max_stamina",
+        "maxstamina": "max_stamina",
+        "chakra": "max_chakra",
+        "maxchakra": "max_chakra",
+        "strength": "strength",
+        "str": "strength",
+        "dexterity": "dexterity",
+        "dex": "dexterity",
+        "agility": "agility",
+        "agi": "agility",
+        "intelligence": "intelligence",
+        "int": "intelligence",
+        "wisdom": "wisdom",
+        "wis": "wisdom",
         "damage": "attack_damage",
+        "damage_bonus": "attack_damage",
         "accuracy": "accuracy",
+        "accuracy_bonus": "accuracy",
         "evasion": "evasion",
+        "evasion_bonus": "evasion",
         "respawn": "respawn_seconds",
         "leash": "leash_radius",
     }
@@ -787,13 +823,17 @@ def medit(protocol, npc_key, field, value):
             template["loot_table"] = _parse_csv_words(value, set(_authored_item_template_keys()), "NPC loot table")
         elif field == "emote":
             template["room_emote"] = _required_text(value, "NPC room emote")
+        elif field == "techniques":
+            template["combat_techniques"] = _parse_csv_words(value, None, "NPC combat techniques")
+        elif field == "jutsus":
+            template["jutsus"] = _parse_csv_words(value, None, "NPC jutsus")
         elif field in integer_fields:
             numeric_value = int(value)
             if numeric_value < 0:
                 raise ValueError("NPC numeric fields cannot be negative.")
             template[integer_fields[field]] = numeric_value
         else:
-            raise ValueError("NPC field must be name, desc, dialogue, behavior, movement, aggression, loot, emote, health, damage, accuracy, evasion, respawn, or leash.")
+            raise ValueError("NPC field must be name, desc, dialogue, behavior, movement, aggression, loot, emote, health, stamina, chakra, strength, dexterity, agility, intelligence, wisdom, damage, accuracy, evasion, techniques, jutsus, respawn, or leash.")
         _sync_zone_edit(protocol, zone_path, zone_data, original_zone_data)
     except (OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
         protocol.sendLine(f"Unable to edit NPC template: {exc}".encode("utf-8"))
@@ -818,10 +858,20 @@ def createnpc(protocol, npc_key, npc_name):
                 "description": f"{npc_name} waits here.",
                 "dialogue": f"{npc_name} has nothing to say yet.",
                 "behavior": "static",
+                "max_health": 10,
+                "max_stamina": 10,
+                "max_chakra": 10,
+                "strength": 10,
+                "dexterity": 10,
+                "agility": 10,
+                "intelligence": 10,
+                "wisdom": 10,
                 "movement_policy": "static",
                 "leash_radius": 0,
                 "aggression_policy": "passive",
                 "loot_table": [],
+                "combat_techniques": [],
+                "jutsus": [],
                 "room_emote": "",
             }
         )
@@ -1166,8 +1216,22 @@ def _contentcheck_errors(zones):
             aggression = template.get("aggression_policy", "passive")
             if aggression not in NPC_AGGRESSION_POLICIES:
                 errors.append(f"NPC template {template.get('key')} has unsupported aggression {aggression}.")
-            for field in ("max_health", "attack_damage", "accuracy", "evasion", "respawn_seconds", "leash_radius"):
-                if int(template.get(field, 0 if field != "max_health" else 1)) < 0:
+            for field in (
+                "max_health",
+                "max_stamina",
+                "max_chakra",
+                "strength",
+                "dexterity",
+                "agility",
+                "intelligence",
+                "wisdom",
+                "attack_damage",
+                "accuracy",
+                "evasion",
+                "respawn_seconds",
+                "leash_radius",
+            ):
+                if int(template.get(field, 10 if field.startswith("max_") or field in {"strength", "dexterity", "agility", "intelligence", "wisdom"} else 0)) < 0:
                     errors.append(f"NPC template {template.get('key')} has negative {field}.")
             for item_key in template.get("loot_table", []):
                 if item_key not in item_keys:
@@ -1660,9 +1724,10 @@ def _parse_csv_words(value, allowed, label):
     ]
     if not words:
         raise ValueError(f"{label} cannot be empty.")
-    invalid = sorted(set(words) - allowed)
-    if invalid:
-        raise ValueError(f"{label} contains unsupported values: {', '.join(invalid)}.")
+    if allowed is not None:
+        invalid = sorted(set(words) - allowed)
+        if invalid:
+            raise ValueError(f"{label} contains unsupported values: {', '.join(invalid)}.")
     return words
 
 

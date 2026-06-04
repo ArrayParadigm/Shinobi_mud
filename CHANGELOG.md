@@ -1,5 +1,29 @@
 # Changelog
 
+## 2026-06-04 17:23 -0500 - Round Combat and NPC Stat Sheets
+
+### Added
+
+- Added migration `23` for player-like NPC resources/stats and precise combat round timing.
+- Added NPC template fields for health, stamina, chakra, Strength, Dexterity, Agility, Intelligence, Wisdom, combat techniques, and jutsus.
+- Added Dex/Agi combat round timing from `1` to `5` attacks per second, with `next_round_at` preserving sub-second scheduling.
+- Added NPC stamina spending for authored combat techniques such as Strike.
+
+### Changed
+
+- Reworked engagement combat from slow pulse language to Dex/Agi-driven rounds while preserving legacy `next_pulse_at` compatibility.
+- Updated player and NPC combat math to use the same stat shape, with legacy NPC damage/accuracy/evasion fields retained as bonuses.
+- Updated builder NPC creation, `medit`, `mstat`, `consider`, help, README, and combat mechanics docs for NPC stat sheets.
+
+### Verification
+
+- `python -m unittest tests.test_pulse_combat tests.test_combat tests.test_content_slice tests.test_npcs -v`
+- `python -m unittest discover -s tests -v`
+- `python -m compileall .`
+- JSON validation for `helpfiles/*.json` and `zones/*.json`
+- `git diff --check`
+- `python update_schema.py` and local schema readback confirmed migration `23`
+
 ## 2026-06-04 15:53 -0500 - Combat Techniques Sprint
 
 ### Added

@@ -1062,7 +1062,7 @@ def _combat_event_messages(event):
     if event["status"] == "out_of_range":
         return [
             (
-                f"{npc_name} is {event['distance']} step(s) away; your basic auto attack cannot connect.",
+                f"{npc_name} is {event['distance']} step(s) away; your combat round cannot connect.",
                 None,
             )
         ]
@@ -1111,6 +1111,13 @@ def _combat_event_messages(event):
             (
                 f"You evade {npc_name} through Substitution Technique. Jutsu: {event['substitution']['proficiency']} ({event['substitution']['progress_percent']}%).",
                 f"{username} evades {npc_name} through Substitution Technique.",
+            )
+        )
+    elif event.get("npc_skip_attack"):
+        messages.append(
+            (
+                f"{npc_name} holds position and uses {event['npc_action_key']}.",
+                f"{npc_name} holds position and uses {event['npc_action_key']}.",
             )
         )
     elif not event["npc_hit"]:
