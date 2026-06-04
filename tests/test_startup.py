@@ -94,6 +94,7 @@ class StartupSmokeTests(unittest.TestCase):
                     "character_stances",
                     "combat_engagements",
                     "combat_action_queue",
+                    "combat_technique_definitions",
                 }
                 <= tables
             )

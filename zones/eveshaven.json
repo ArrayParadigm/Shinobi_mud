@@ -487,6 +487,40 @@
             "available": false
         }
     ],
+    "combat_technique_templates": [
+        {
+            "key": "strike",
+            "name": "Strike",
+            "description": "Commit to a sharper melee attack on the next combat pulse.",
+            "stamina_cost": 2,
+            "damage_bonus": 2
+        },
+        {
+            "key": "guard",
+            "name": "Guard",
+            "description": "Hold your attack to weather the next hostile pulse.",
+            "stamina_cost": 2,
+            "evasion_bonus": 2,
+            "damage_reduction_bonus": 2,
+            "skip_attack": true
+        },
+        {
+            "key": "feint",
+            "name": "Feint",
+            "description": "Create an opening for a more accurate next strike.",
+            "stamina_cost": 3,
+            "accuracy_bonus": 4,
+            "damage_bonus": 1
+        },
+        {
+            "key": "recover",
+            "name": "Recover",
+            "description": "Yield the next attack window to steady your breath and recover stamina.",
+            "stamina_cost": 0,
+            "skip_attack": true,
+            "stamina_restore": 4
+        }
+    ],
     "stance_templates": [
         {
             "key": "s1-attack",

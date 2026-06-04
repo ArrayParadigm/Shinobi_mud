@@ -254,6 +254,13 @@ The combat loop is engagement-driven and pulse-based. `attack <character>` start
 
 Accuracy and evasion are opposing values. An S1 attacker facing an S2 defender has an easier hit check because the attacker contributes `+2` accuracy while the defender contributes `-1` evasion. NPC pulse combat applies the same player-side stance fields now; player-versus-player engagement can reuse the opposed calculation when it is introduced. The persisted combat queue can still apply one-shot range, accuracy, damage, and status modifiers from future skills and jutsus.
 
+`technique` adds stamina-based fighting techniques that queue one pulse modifier. Use `technique` to list available moves, `technique <name>` to queue one, or the direct command name for the first set. Queueing a new technique replaces the previous queued technique. Stamina is spent when queued, and out-of-range pulses keep the technique pending until an eligible pulse resolves.
+
+- `strike`: costs `2` stamina and adds `+2` damage to the next pulse attack.
+- `guard`: costs `2` stamina, skips your outgoing pulse attack, adds `+2` evasion, and reduces incoming damage by `2`.
+- `feint`: costs `3` stamina, adds `+4` accuracy, and adds `+1` damage to the next pulse attack.
+- `recover`: costs `0` stamina, skips your outgoing pulse attack, and restores up to `4` stamina on the next pulse.
+
 Characters also have abstract body resources: nutrition, hydration, and fatigue. Ordinary movement and hostile combat increase fatigue. `rest` reduces fatigue, consumes a small amount of nutrition and hydration, restores stamina, and restores chakra based on intellect and current body condition. Condition improves short-rest recovery, and recovery-friendly rooms add a room bonus. Rest is blocked at zero nutrition or hydration. `eat` and `drink` consume finite authored supplies to restore body resources.
 
 Room flags have player-visible effects. `darkness` hides survey and nearby maps, `brightness` washes the minimap, `indoor` limits map visibility, `safe` and `no-combat` block player combat commands, `vacuum` adds fatigue and can pressure health at extreme fatigue, and `recovery-friendly` improves rest.

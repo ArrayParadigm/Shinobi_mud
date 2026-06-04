@@ -41,6 +41,13 @@
         "jutsu",
         "usejutsu"
     ],
+    "Techniques": [
+        "technique",
+        "strike",
+        "guard",
+        "feint",
+        "recover"
+    ],
     "Combat": [
         "consider",
         "attack",

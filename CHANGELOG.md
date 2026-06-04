@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-06-04 15:53 -0500 - Combat Techniques Sprint
+
+### Added
+
+- Added migration `22` for authored combat techniques and expanded queued pulse effects.
+- Added `technique`, `strike`, `guard`, `feint`, and `recover` commands under a new `Techniques` help category.
+- Added authored stamina-based combat techniques to Eve's Haven content: Strike, Guard, Feint, and Recover.
+
+### Changed
+
+- Extended combat pulses so queued actions can add evasion, incoming damage reduction, skipped outgoing attacks, and stamina restoration.
+- Updated combat pulse feedback, command help, README, TODO, and startup table validation for the technique system.
+
+### Verification
+
+- `python -m unittest tests.test_pulse_combat -v`
+- `python -m unittest tests.test_commands tests.test_startup -v`
+- `python -m unittest discover -s tests -v`
+- `python -m compileall .`
+
 ## 2026-06-04 15:11 -0500 - Player Admin Inspection
 
 ### Added

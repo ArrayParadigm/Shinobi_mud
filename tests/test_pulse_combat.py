@@ -9,7 +9,9 @@ import utils
 from combat import (
     combat_status,
     engage_npc,
+    list_combat_techniques,
     queue_combat_modifier,
+    queue_combat_technique,
     set_stance,
     tick_combat,
 )
@@ -132,6 +134,126 @@ class PulseCombatTests(unittest.TestCase):
         self.assertEqual(queued["status"], "queued")
         self.assertEqual((event["status"], event["player_damage"], event["npc_health"]), ("exchange", 7, 5))
         self.assertFalse(event["npc_hit"])
+        self.assertIsNone(combat_status(self.player.cursor, "Fighter")["action_key"])
+
+    def test_authored_combat_techniques_sync_from_content(self):
+        techniques = list_combat_techniques(self.player.cursor)
+
+        self.assertEqual(
+            [(row["technique_key"], row["stamina_cost"]) for row in techniques],
+            [("feint", 3), ("guard", 2), ("recover", 0), ("strike", 2)],
+        )
+
+    def test_technique_command_lists_and_direct_wrapper_queues(self):
+        general_commands.handle_technique(self.player, "")
+        engage_npc(self.player.cursor, "Fighter", 500, 499, "practice")
+        general_commands.COMMANDS["strike"](self.player, {}, "", [])
+
+        rendered = "\n".join(self.player.messages)
+        self.assertIn("Techniques", rendered)
+        self.assertIn("Strike: cost 2 stamina; damage +2", rendered)
+        self.assertEqual(self.player.messages[-1], "You prepare Strike for your next combat pulse. Stamina: 8.")
+        self.assertEqual(combat_status(self.player.cursor, "Fighter")["action_key"], "strike")
+
+    def test_strike_queues_damage_and_spends_stamina(self):
+        engage_npc(self.player.cursor, "Fighter", 500, 499, "practice")
+
+        result = queue_combat_technique(self.player.cursor, "Fighter", "strike")
+        self.make_due()
+        with patch("combat.random.randint", side_effect=[1, 100]):
+            event = tick_combat(self.connection)[0]
+
+        stamina = self.connection.execute(
+            "SELECT stamina FROM players WHERE username='Fighter'"
+        ).fetchone()["stamina"]
+        self.assertEqual((result["status"], result["stamina"]), ("queued", 8))
+        self.assertEqual((event["player_damage"], event["npc_health"]), (7, 5))
+        self.assertEqual(stamina, 8)
+
+    def test_guard_skips_attack_and_reduces_incoming_damage(self):
+        engage_npc(self.player.cursor, "Fighter", 500, 499, "practice")
+
+        queue_combat_technique(self.player.cursor, "Fighter", "guard")
+        self.make_due()
+        with patch("combat.random.randint", return_value=1):
+            event = tick_combat(self.connection)[0]
+
+        npc_health = self.connection.execute(
+            """
+            SELECT health FROM npc_instances
+            JOIN npc_templates ON npc_templates.id=npc_instances.npc_template_id
+            WHERE npc_templates.npc_key='practice-construct'
+            """
+        ).fetchone()["health"]
+        self.assertTrue(event["skip_attack"])
+        self.assertFalse(event["player_hit"])
+        self.assertEqual(npc_health, 12)
+        self.assertEqual((event["npc_hit"], event["npc_damage"], event["player_health"]), (True, 0, 10))
+
+    def test_feint_turns_near_miss_into_hit(self):
+        engage_npc(self.player.cursor, "Fighter", 500, 499, "practice")
+
+        queue_combat_technique(self.player.cursor, "Fighter", "feint")
+        self.make_due()
+        with patch("combat.random.randint", side_effect=[70, 100]):
+            event = tick_combat(self.connection)[0]
+
+        self.assertTrue(event["player_hit"])
+        self.assertEqual((event["player_damage"], event["npc_health"]), (6, 6))
+
+    def test_recover_skips_attack_and_restores_stamina_to_cap(self):
+        self.connection.execute(
+            "UPDATE players SET stamina=7, max_stamina=10 WHERE username='Fighter'"
+        )
+        self.connection.commit()
+        engage_npc(self.player.cursor, "Fighter", 500, 499, "practice")
+
+        queue_combat_technique(self.player.cursor, "Fighter", "recover")
+        self.make_due()
+        with patch("combat.random.randint", return_value=100):
+            event = tick_combat(self.connection)[0]
+
+        stamina = self.connection.execute(
+            "SELECT stamina FROM players WHERE username='Fighter'"
+        ).fetchone()["stamina"]
+        self.assertTrue(event["skip_attack"])
+        self.assertEqual(event["stamina_restored"], 3)
+        self.assertEqual(stamina, 10)
+
+    def test_replacing_queued_technique_keeps_latest_and_spends_new_cost(self):
+        engage_npc(self.player.cursor, "Fighter", 500, 499, "practice")
+
+        queue_combat_technique(self.player.cursor, "Fighter", "strike")
+        result = queue_combat_technique(self.player.cursor, "Fighter", "feint")
+
+        status = combat_status(self.player.cursor, "Fighter")
+        stamina = self.connection.execute(
+            "SELECT stamina FROM players WHERE username='Fighter'"
+        ).fetchone()["stamina"]
+        self.assertEqual(result["status"], "queued")
+        self.assertEqual(status["action_key"], "feint")
+        self.assertEqual(stamina, 5)
+
+    def test_out_of_range_pulse_preserves_queued_technique(self):
+        engage_npc(self.player.cursor, "Fighter", 500, 499, "practice")
+        self.connection.execute("UPDATE players SET y=500 WHERE username='Fighter'")
+        self.connection.commit()
+
+        queue_combat_technique(self.player.cursor, "Fighter", "strike")
+        self.make_due()
+        event = tick_combat(self.connection)[0]
+
+        self.assertEqual(event["status"], "out_of_range")
+        self.assertEqual(combat_status(self.player.cursor, "Fighter")["action_key"], "strike")
+
+    def test_insufficient_stamina_refuses_technique_queue(self):
+        self.connection.execute("UPDATE players SET stamina=1 WHERE username='Fighter'")
+        self.connection.commit()
+        engage_npc(self.player.cursor, "Fighter", 500, 499, "practice")
+
+        result = queue_combat_technique(self.player.cursor, "Fighter", "strike")
+
+        self.assertEqual(result["status"], "insufficient_stamina")
         self.assertIsNone(combat_status(self.player.cursor, "Fighter")["action_key"])
 
     def test_authored_stances_adjust_pulse_and_persist_without_engagement(self):

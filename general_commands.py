@@ -2,7 +2,14 @@ import json
 import logging
 import presentation
 from body import apply_vacuum_exposure, body_state, body_warnings, chakra_recovery_amount, rest_character
-from combat import combat_status, engage_npc, list_stances, set_stance
+from combat import (
+    combat_status,
+    engage_npc,
+    list_combat_techniques,
+    list_stances,
+    queue_combat_technique,
+    set_stance,
+)
 from command_system import CommandSpec
 from feedback import DEFAULT_BUGS_FILE, DEFAULT_SUGGESTIONS_FILE, append_feedback
 from help_content import (
@@ -752,6 +759,65 @@ def handle_stance(player, target):
         player.sendLine(b"Unable to change stance right now.")
 
 
+def _technique_effect_summary(technique):
+    effects = []
+    if technique["damage_bonus"]:
+        effects.append(f'damage {technique["damage_bonus"]:+d}')
+    if technique["accuracy_bonus"]:
+        effects.append(f'accuracy {technique["accuracy_bonus"]:+d}')
+    if technique["evasion_bonus"]:
+        effects.append(f'evasion {technique["evasion_bonus"]:+d}')
+    if technique["damage_reduction_bonus"]:
+        effects.append(f'damage reduction {technique["damage_reduction_bonus"]:+d}')
+    if technique["max_range"]:
+        effects.append(f'range {technique["max_range"]}')
+    if technique["skip_attack"]:
+        effects.append("skip attack")
+    if technique["stamina_restore"]:
+        effects.append(f'restore {technique["stamina_restore"]} stamina')
+    return ", ".join(effects) if effects else "no pulse modifier"
+
+
+def handle_technique(player, target):
+    """List or queue one stamina-based fighting technique."""
+    try:
+        if not target.strip():
+            player.sendLine(b"Techniques")
+            rows = list_combat_techniques(player.cursor)
+            if not rows:
+                player.sendLine(b"  none")
+                return
+            for technique in rows:
+                player.sendLine(
+                    (
+                        f'  {technique["name"]}: cost {technique["stamina_cost"]} stamina; '
+                        f'{_technique_effect_summary(technique)}'
+                    ).encode("utf-8")
+                )
+            return
+        result = queue_combat_technique(player.cursor, player.username, target)
+        if result["status"] == "missing":
+            player.sendLine(b"You do not know that technique.")
+        elif result["status"] == "missing_player":
+            player.sendLine(b"Your character is unavailable right now.")
+        elif result["status"] == "not_engaged":
+            player.sendLine(b"You must be engaged in combat to use a technique.")
+        elif result["status"] == "insufficient_stamina":
+            player.sendLine(
+                f'You need {result["stamina_cost"]} stamina to use {result["name"]}.'.encode("utf-8")
+            )
+        else:
+            player.sendLine(
+                (
+                    f'You prepare {result["name"]} for your next combat pulse. '
+                    f'Stamina: {result["stamina"]}.'
+                ).encode("utf-8")
+            )
+    except Exception as exc:
+        logging.error("Unable to queue technique for %s: %s", player.username, exc, exc_info=True)
+        player.sendLine(b"Unable to use that technique right now.")
+
+
 def handle_usejutsu(player, target):
     """Activate one implemented jutsu by name or unique prefix."""
     try:
@@ -972,6 +1038,11 @@ COMMANDS = {
     "attack": CommandSpec("attack", lambda player, rooms, raw, args: handle_attack(player, raw), "attack <character>", "Engage a hostile character for pulse combat.", min_args=1),
     "combat": CommandSpec("combat", lambda player, rooms, raw, args: handle_combat(player), "combat", "Display your active combat engagement and stance.", max_args=0),
     "stance": CommandSpec("stance", lambda player, rooms, raw, args: handle_stance(player, raw), "stance [s1|s2|s3|s4|s5]", "List or change your combat stance.", max_args=2),
+    "technique": CommandSpec("technique", lambda player, rooms, raw, args: handle_technique(player, raw), "technique [technique]", "List or queue a stamina-based fighting technique.", max_args=2),
+    "strike": CommandSpec("strike", lambda player, rooms, raw, args: handle_technique(player, "strike"), "strike", "Queue Strike for the next combat pulse.", max_args=0),
+    "guard": CommandSpec("guard", lambda player, rooms, raw, args: handle_technique(player, "guard"), "guard", "Queue Guard for the next combat pulse.", max_args=0),
+    "feint": CommandSpec("feint", lambda player, rooms, raw, args: handle_technique(player, "feint"), "feint", "Queue Feint for the next combat pulse.", max_args=0),
+    "recover": CommandSpec("recover", lambda player, rooms, raw, args: handle_technique(player, "recover"), "recover", "Queue Recover for the next combat pulse.", max_args=0),
     "throw": CommandSpec("throw", lambda player, rooms, raw, args: handle_throw(player, raw), "throw <item> at <character>", "Throw a carried ranged item at a nearby hostile character.", min_args=3, args_validator=lambda args: "at" in [arg.lower() for arg in args]),
     "north": CommandSpec("north", lambda player, rooms, raw, args: handle_movement(player, "north"), "north", "Move north.", max_args=0),
     "south": CommandSpec("south", lambda player, rooms, raw, args: handle_movement(player, "south"), "south", "Move south.", max_args=0),

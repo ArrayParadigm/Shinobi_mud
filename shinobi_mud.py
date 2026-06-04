@@ -1076,7 +1076,14 @@ def _combat_event_messages(event):
                 f"{username} strikes {npc_name} for {event['player_damage']} damage and defeats it.",
             )
         ]
-    if event["player_hit"]:
+    if event.get("skip_attack"):
+        messages.append(
+            (
+                f"You hold your attack and use {event['action_key']}.",
+                f"{username} holds their attack and uses {event['action_key']}.",
+            )
+        )
+    elif event["player_hit"]:
         messages.append(
             (
                 f"You strike {npc_name} for {event['player_damage']} damage. {npc_name} has {event['npc_health']} health remaining.",
@@ -1088,6 +1095,13 @@ def _combat_event_messages(event):
             (
                 f"You attack {npc_name}, but miss.",
                 f"{username} attacks {npc_name}, but misses.",
+            )
+        )
+    if event.get("stamina_restored"):
+        messages.append(
+            (
+                f"You recover {event['stamina_restored']} stamina.",
+                None,
             )
         )
     if event["distance"] > 0:

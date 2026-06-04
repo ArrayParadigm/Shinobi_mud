@@ -2,12 +2,12 @@
 
 ## Current Checkpoint
 
-The private-alpha gameplay loop is covered by `185` automated tests. The current build has the builder and character foundation needed for a real soak pass:
+The private-alpha gameplay loop is covered by `195` automated tests. The current build has the builder and character foundation needed for a real soak pass:
 
 - Coordinate-first wilderness movement with optional VNUM-backed overlays.
 - Persistent accounts, items, inventories, equipment, NPC instances, combat state, body resources, descriptions, and point-based technique progress.
 - Builder promotion plus builder tools for zone inventory, search, validation, publish, linking/unlinking, guarded deletion, cloning, rich template editing, spawn inspection/removal, undo, audit, and help publishing.
-- Character-facing score/body/description, visible room-flag behavior, pulse combat, stances, Throw, and Substitution Technique.
+- Character-facing score/body/description, visible room-flag behavior, pulse combat, stances, combat techniques, Throw, and Substitution Technique.
 - Editable command help and command categories with unpublished `(i)` markers.
 
 Completed roadmap history now lives in [TODO-Historical.md](TODO-Historical.md). Detailed implementation notes remain in [CHANGELOG.md](CHANGELOG.md).
@@ -41,6 +41,7 @@ Clear these before starting the next broad sprint.
 - Sprint 26 added the local soak harness and builder smoke path.
 - Sprint 27 added publish safety, guarded deletion, reciprocal links/unlinks, audit detail, and builder undo coverage.
 - Sprint 28 added builder promotion, split builder/admin permissions, and rich item/NPC template metadata.
+- Combat Techniques Sprint added stamina-based queued pulse techniques: Strike, Guard, Feint, and Recover.
 
 ## Active Multi-Day Sprint Queue
 

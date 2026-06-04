@@ -339,6 +339,11 @@ def migration_021_player_login_timestamps(cursor):
     ensure_player_login_columns(cursor)
 
 
+def migration_022_combat_techniques(cursor):
+    """Add authored stamina-based combat techniques and queue effects."""
+    create_combat_tables(cursor)
+
+
 MIGRATIONS = (
     (1, migration_001_non_admin_default),
     (2, migration_002_persistent_items),
@@ -361,6 +366,7 @@ MIGRATIONS = (
     (19, migration_019_builder_access_flag),
     (20, migration_020_rich_item_npc_templates),
     (21, migration_021_player_login_timestamps),
+    (22, migration_022_combat_techniques),
 )
 
 
