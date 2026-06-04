@@ -8,6 +8,17 @@ from content import sync_authored_content
 from locations import DIRECTION_OFFSETS, is_within_bounds, online_players, teleport_player
 from twisted.internet import reactor
 from combat import combat_status
+from character_state import (
+    FEATURE_FIELDS,
+    add_injury,
+    clear_injury,
+    injury_labels,
+    injury_rows,
+    private_biology_summary,
+    private_pregnancy_summary,
+    set_feature,
+    set_reproductive_field,
+)
 from techniques import list_jutsus, list_skills, proficiency_label
 from shinobi_mud import ACTIVE_CONFIG, UTILITIES, WORLD_MAP, WORLD_OVERLAYS, players_in_rooms, COMMAND_REGISTRY
 
@@ -1550,6 +1561,16 @@ PLAYER_TEXT_FIELDS = {
     "release": "natural_release",
     "description": "description",
 }
+PLAYER_FEATURE_FIELDS = {field: field for field in FEATURE_FIELDS}
+PLAYER_REPRODUCTIVE_FIELDS = {
+    "repro": "reproductive_role",
+    "reproductive_role": "reproductive_role",
+    "cycle_day": "cycle_day",
+    "cycle_length": "cycle_length",
+    "pregnancy_status": "pregnancy_status",
+    "pregnancy_stage": "pregnancy_stage",
+    "pregnancy_partner": "pregnancy_partner",
+}
 
 
 def _online_player(username):
@@ -1571,7 +1592,10 @@ def _player_row(protocol, username):
                is_builder,
                health, max_health, stamina, max_stamina, chakra, max_chakra,
                strength, dexterity, agility, intelligence, wisdom,
-               nutrition, hydration, fatigue, recovery_state, description, x, y,
+               nutrition, hydration, fatigue, recovery_state, description,
+               hair, eyes, height, build, complexion, marks,
+               reproductive_role, cycle_day, cycle_length, pregnancy_status,
+               pregnancy_stage, pregnancy_partner, pregnancy_due_at, x, y,
                created_at, last_login_at
         FROM players
         WHERE username=? COLLATE NOCASE
@@ -1666,6 +1690,12 @@ def finger(protocol, username):
     protocol.sendLine(f"  Description: {player['description']}".encode("utf-8"))
     protocol.sendLine(
         (
+            f"  Features: hair={player['hair']} eyes={player['eyes']} height={player['height']} "
+            f"build={player['build']} complexion={player['complexion']} marks={player['marks']}"
+        ).encode("utf-8")
+    )
+    protocol.sendLine(
+        (
             f"  Health: {player['health']}/{player['max_health']}  "
             f"Stamina: {player['stamina']}/{player['max_stamina']}  "
             f"Chakra: {player['chakra']}/{player['max_chakra']}"
@@ -1683,6 +1713,12 @@ def finger(protocol, username):
             f"fatigue={player['fatigue']} recovery={player['recovery_state']}"
         ).encode("utf-8")
     )
+    for line in private_biology_summary(protocol.cursor, player["username"]):
+        protocol.sendLine(f"  {line}".encode("utf-8"))
+    for line in private_pregnancy_summary(protocol.cursor, player["username"]):
+        protocol.sendLine(f"  {line}".encode("utf-8"))
+    injuries = injury_labels({row["injury_key"] for row in injury_rows(protocol.cursor, player["username"])})
+    protocol.sendLine(f"  Injuries: {', '.join(injuries) if injuries else 'none'}".encode("utf-8"))
     stance = combat_status(protocol.cursor, player["username"])
     if stance:
         protocol.sendLine(f"  Stance: {stance['stance_name']}".encode("utf-8"))
@@ -1757,6 +1793,25 @@ def pset(protocol, username, field, value):
         elif requested_field in PLAYER_TEXT_FIELDS:
             column = PLAYER_TEXT_FIELDS[requested_field]
             parsed_value = _required_text(value, requested_field.title())
+        elif requested_field in PLAYER_FEATURE_FIELDS:
+            set_feature(protocol.cursor, player["username"], requested_field, value)
+            protocol.sendLine(f"Set {requested_field} for {player['username']}.".encode("utf-8"))
+            return
+        elif requested_field in PLAYER_REPRODUCTIVE_FIELDS:
+            set_reproductive_field(protocol.cursor, player["username"], PLAYER_REPRODUCTIVE_FIELDS[requested_field], value)
+            protocol.sendLine(f"Set {requested_field} for {player['username']}.".encode("utf-8"))
+            return
+        elif requested_field in {"injury", "injuries"}:
+            parts = value.split(maxsplit=1)
+            if len(parts) != 2 or parts[0].lower() not in {"add", "clear"}:
+                raise ValueError("injury value must be 'add <injury>' or 'clear <injury|all>'.")
+            if parts[0].lower() == "add":
+                add_injury(protocol.cursor, player["username"], parts[1])
+                protocol.sendLine(f"Added injury {parts[1]} to {player['username']}.".encode("utf-8"))
+            else:
+                clear_injury(protocol.cursor, player["username"], parts[1])
+                protocol.sendLine(f"Cleared injury {parts[1]} for {player['username']}.".encode("utf-8"))
+            return
         else:
             numeric_fields = {
                 **PLAYER_RESOURCE_FIELDS,
@@ -1768,7 +1823,8 @@ def pset(protocol, username, field, value):
                     "Player field must be admin, specialty, dojo, clan, release, "
                     "builder, "
                     "health, max_health, stamina, max_stamina, chakra, max_chakra, "
-                    "strength, intellect, dexterity, agility, condition, nutrition, hydration, fatigue, or description."
+                    "strength, intellect, dexterity, agility, condition, nutrition, hydration, fatigue, "
+                    "description, appearance fields, reproductive fields, or injury."
                 )
             column, maximum = numeric_fields[requested_field]
             parsed_value = _parse_bounded_integer(value, column, maximum)
@@ -1824,6 +1880,20 @@ def pset(protocol, username, field, value):
 def pedit(protocol, username, field, value):
     """Admin-facing player editor with explicit builder promotion support."""
     pset(protocol, username, field, value)
+
+
+def treatinjury(protocol, username, injury_key):
+    """Clear one persistent injury or all injuries from a player."""
+    player = _player_row(protocol, username)
+    if not player:
+        protocol.sendLine(f"Player not found: {username}".encode("utf-8"))
+        return
+    try:
+        clear_injury(protocol.cursor, player["username"], injury_key)
+    except ValueError as exc:
+        protocol.sendLine(f"Unable to treat injury: {exc}".encode("utf-8"))
+        return
+    protocol.sendLine(f"Treated {injury_key} for {player['username']}.".encode("utf-8"))
 
 
 def setrole(protocol, username, role_type):
@@ -1884,6 +1954,7 @@ COMMANDS = {
     "pstat": CommandSpec("pstat", lambda protocol, rooms, raw, args: pstat(protocol, args[0]), "pstat <username>", "Inspect persistent player state.", permission="admin", min_args=1, max_args=1),
     "pset": CommandSpec("pset", lambda protocol, rooms, raw, args: pset(protocol, args[0], args[1], " ".join(args[2:])), "pset <username> <field> <value>", "Set a validated persistent player field.", permission="admin", min_args=3),
     "pedit": CommandSpec("pedit", lambda protocol, rooms, raw, args: pedit(protocol, args[0], args[1], " ".join(args[2:])), "pedit <username> <field> <value>", "Edit access and validated persistent player fields.", permission="admin", min_args=3),
+    "treatinjury": CommandSpec("treatinjury", lambda protocol, rooms, raw, args: treatinjury(protocol, args[0], args[1]), "treatinjury <username> <injury|all>", "Clear one persistent injury or all injuries.", permission="admin", min_args=2, max_args=2),
     "setrole": CommandSpec("setrole", lambda protocol, rooms, raw, args: setrole(protocol, *args), "setrole <username> <role_type>", "Set a character role.", permission="admin", min_args=2, max_args=2),
     "setstat": CommandSpec("setstat", lambda protocol, rooms, raw, args: setstat(protocol, *args), "setstat <username> <stat> <value>", "Set a character stat.", permission="admin", min_args=3, max_args=3),
     "setdojo": CommandSpec("setdojo", lambda protocol, rooms, raw, args: setdojo(protocol, *args), "setdojo <username> <dojo>", "Set a character dojo alignment.", permission="admin", min_args=2, max_args=2),

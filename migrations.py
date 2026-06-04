@@ -3,6 +3,7 @@ import logging
 from content import create_authored_content_tables
 from combat import create_combat_tables, ensure_stance_columns, retire_initial_stance_placeholders
 from body import ensure_body_columns
+from character_state import create_character_state_tables
 from items import create_item_tables, ensure_item_seed_tracking
 from npcs import create_npc_tables
 from socials import create_social_tables
@@ -356,6 +357,12 @@ def migration_024_social_catalog_and_consent(cursor):
     create_social_tables(cursor)
 
 
+def migration_025_character_state_and_injuries(cursor):
+    """Add appearance, reproductive state, pregnancy, and persistent injuries."""
+    create_character_state_tables(cursor)
+    create_social_tables(cursor)
+
+
 MIGRATIONS = (
     (1, migration_001_non_admin_default),
     (2, migration_002_persistent_items),
@@ -381,6 +388,7 @@ MIGRATIONS = (
     (22, migration_022_combat_techniques),
     (23, migration_023_npc_stat_sheets_and_round_combat),
     (24, migration_024_social_catalog_and_consent),
+    (25, migration_025_character_state_and_injuries),
 )
 
 

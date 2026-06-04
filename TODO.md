@@ -2,12 +2,12 @@
 
 ## Current Checkpoint
 
-The private-alpha gameplay loop is covered by `201` automated tests. The current build has the builder and character foundation needed for a real soak pass:
+The private-alpha gameplay loop is covered by `206` automated tests. The current build has the builder and character foundation needed for a real soak pass:
 
 - Coordinate-first wilderness movement with optional VNUM-backed overlays.
 - Persistent accounts, items, inventories, equipment, NPC instances, combat state, body resources, descriptions, and point-based technique progress.
 - Builder promotion plus builder tools for zone inventory, search, validation, publish, linking/unlinking, guarded deletion, cloning, rich template editing, spawn inspection/removal, undo, audit, and help publishing.
-- Character-facing score/body/description, visible room-flag behavior, consent-backed social actions, Dex/Agi round combat, NPC stat sheets, stances, combat techniques, Throw, and Substitution Technique.
+- Character-facing score/body/description/features, visible room-flag behavior, consent-backed social actions, persistent injuries, opt-in pregnancy state, Dex/Agi round combat, NPC stat sheets, stances, combat techniques, Throw, and Substitution Technique.
 - Editable command help and command categories with unpublished `(i)` markers.
 
 Completed roadmap history now lives in [TODO-Historical.md](TODO-Historical.md). Detailed implementation notes remain in [CHANGELOG.md](CHANGELOG.md).
@@ -44,6 +44,7 @@ Clear these before starting the next broad sprint.
 - Combat Techniques Sprint added stamina-based queued pulse techniques: Strike, Guard, Feint, and Recover.
 - Round Combat and NPC Stat Sheets replaced slow pulse timing with Dex/Agi action rounds and gave NPCs player-like resources, stats, and authored technique hooks.
 - Expansive Socials and Consent Foundation added catalog-backed social actions, consent settings, handholding movement, and opt-in restrictive states.
+- Pregnancy, Permanent Injury, Appearance, and Expanded XSocials added structured appearance, hidden biology/pregnancy state, persistent injuries, movement/support socials, and admin treatment/editing tools.
 
 ## Active Multi-Day Sprint Queue
 

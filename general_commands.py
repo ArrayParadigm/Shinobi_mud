@@ -3,6 +3,17 @@ import logging
 import sqlite3
 import presentation
 from body import apply_vacuum_exposure, body_state, body_warnings, chakra_recovery_amount, rest_character
+from character_state import (
+    FEATURE_FIELDS,
+    feature_state,
+    injury_labels,
+    injury_rows,
+    movement_block as injury_movement_block,
+    private_pregnancy_summary,
+    set_feature,
+    sight_block,
+    visible_profile,
+)
 from combat import (
     combat_status,
     engage_npc,
@@ -40,6 +51,7 @@ from locations import (
 )
 from npcs import consider_npc, npc_locations, talk_to_npc, throw_item_at_npc
 from socials import move_social_followers, movement_block
+from socials import sight_block as social_sight_block
 from techniques import (
     activate_jutsu,
     jutsu_detail,
@@ -71,7 +83,10 @@ def handle_look(player, players_in_rooms=None, raw_args=""):
     """Display the current location or inspect one visible item."""
     if raw_args:
         if raw_args.lower().startswith("at "):
-            handle_examine(player, raw_args[3:])
+            target_text = raw_args[3:].strip()
+            if _handle_look_at_player(player, target_text, players_in_rooms):
+                return
+            handle_examine(player, target_text)
         else:
             player.sendLine(b"Usage: look [at <item>]")
         return
@@ -85,6 +100,10 @@ def handle_look(player, players_in_rooms=None, raw_args=""):
         flags = _current_room_flags(player)
         render_open_land = UTILITIES["render_open_land"]
         UTILITIES["render_room"](player, WORLD_OVERLAYS)
+        sight = sight_block(player.cursor, player.username) or social_sight_block(player.cursor, player.username)
+        if sight:
+            player.sendLine(sight.encode("utf-8"))
+            return
         if "darkness" in flags:
             player.sendLine(b"It is too dark to read the nearby map.")
             return
@@ -121,6 +140,10 @@ def handle_movement(player, direction):
         block = movement_block(player.cursor, player.username)
         if block:
             player.sendLine(block.encode("utf-8"))
+            return
+        injury_block = injury_movement_block(player.cursor, player.username)
+        if injury_block:
+            player.sendLine(injury_block.encode("utf-8"))
             return
         previous_location = coordinate_key(player.x, player.y)
         if move_player(player, direction, world_map, players_in_rooms):
@@ -184,7 +207,8 @@ def handle_score(player, players_in_rooms=None):
         player.cursor.execute(
             "SELECT health, max_health, stamina, max_stamina, chakra, max_chakra, "
             "strength, dexterity, agility, intelligence, wisdom, dojo_alignment, "
-            "role_type, clan, natural_release, fatigue, description "
+            "role_type, clan, natural_release, fatigue, description, "
+            "hair, eyes, height, build, complexion, marks "
             "FROM players WHERE username=?",
             (player.username,)
         )
@@ -203,6 +227,12 @@ def handle_score(player, players_in_rooms=None):
                 ).encode("utf-8")
             )
             player.sendLine(f"Description: {stats[16]}".encode("utf-8"))
+            player.sendLine(
+                (
+                    f"Features: hair={stats[17]} eyes={stats[18]} height={stats[19]} "
+                    f"build={stats[20]} complexion={stats[21]} marks={stats[22]}"
+                ).encode("utf-8")
+            )
             player.sendLine(f"Specialty: {stats[12]}  Clan: {stats[13]}  Release: {stats[14]}".encode("utf-8"))
             player.sendLine(f"Dojo Alignment: {stats[11]}".encode("utf-8"))
             stance = combat_status(player.cursor, player.username)
@@ -259,6 +289,27 @@ def _npc_locations(player, width_radius, height_radius):
         return []
 
 
+def _handle_look_at_player(player, target_text, tracked_players):
+    tracked_players = tracked_players if tracked_players is not None else players_in_rooms
+    room_key = coordinate_key(player.x, player.y)
+    target = next(
+        (
+            candidate
+            for candidate in tracked_players.get(room_key, [])
+            if candidate is not player and candidate.username.casefold().startswith(target_text.casefold())
+        ),
+        None,
+    )
+    if not target:
+        return False
+    lines = visible_profile(player.cursor, target.username)
+    if not lines:
+        return False
+    for line in lines:
+        player.sendLine(line.encode("utf-8"))
+    return True
+
+
 def handle_description(player, raw_args):
     """View or edit the character's public description."""
     text = raw_args.strip()
@@ -275,6 +326,50 @@ def handle_description(player, raw_args):
     )
     player.cursor.connection.commit()
     player.sendLine(b"Description updated.")
+
+
+def handle_features(player, raw_args):
+    """View or edit structured appearance features."""
+    text = raw_args.strip()
+    if not text:
+        row = feature_state(player.cursor, player.username)
+        if not row:
+            player.sendLine(b"Features are unavailable right now.")
+            return
+        player.sendLine(b"Features")
+        for field in FEATURE_FIELDS:
+            player.sendLine(f"  {field}: {row[field]}".encode("utf-8"))
+        return
+    parts = text.split(maxsplit=1)
+    if len(parts) != 2:
+        player.sendLine(b"Usage: features <hair|eyes|height|build|complexion|marks> <value>")
+        return
+    try:
+        set_feature(player.cursor, player.username, parts[0], parts[1])
+    except ValueError as exc:
+        player.sendLine(str(exc).encode("utf-8"))
+        return
+    player.sendLine(b"Feature updated.")
+
+
+def handle_injuries(player):
+    """Display persistent injuries and obvious penalties."""
+    rows = injury_rows(player.cursor, player.username)
+    if not rows:
+        player.sendLine(b"Injuries: none.")
+        return
+    player.sendLine(b"Injuries")
+    for label in injury_labels({row["injury_key"] for row in rows}):
+        player.sendLine(f"  {label}".encode("utf-8"))
+    movement = injury_movement_block(player.cursor, player.username)
+    if movement:
+        player.sendLine(f"Movement: {movement}".encode("utf-8"))
+
+
+def handle_pregnancy(player):
+    """Display private pregnancy status."""
+    for line in private_pregnancy_summary(player.cursor, player.username):
+        player.sendLine(line.encode("utf-8"))
 
 
 def handle_loc(player):
@@ -1045,6 +1140,9 @@ COMMANDS = {
     "look": CommandSpec("look", lambda player, rooms, raw, args: handle_look(player, rooms, raw), "look [at <item>]", "Display your location or inspect an item.", args_validator=lambda args: not args or (len(args) >= 2 and args[0].lower() == "at")),
     "score": CommandSpec("score", lambda player, rooms, raw, args: handle_score(player, rooms), "score", "Display your character sheet.", aliases=("status",), max_args=0),
     "description": CommandSpec("description", lambda player, rooms, raw, args: handle_description(player, raw), "description [text]", "View or update your character description.", aliases=("desc",)),
+    "features": CommandSpec("features", lambda player, rooms, raw, args: handle_features(player, raw), "features [field value]", "View or update structured appearance features."),
+    "injuries": CommandSpec("injuries", lambda player, rooms, raw, args: handle_injuries(player), "injuries", "Display persistent injuries and penalties.", max_args=0),
+    "pregnancy": CommandSpec("pregnancy", lambda player, rooms, raw, args: handle_pregnancy(player), "pregnancy", "Display private pregnancy status.", max_args=0),
     "loc": CommandSpec("loc", lambda player, rooms, raw, args: handle_loc(player), "loc", "Display your grid coordinates and area.", max_args=0),
     "who": CommandSpec("who", lambda player, rooms, raw, args: handle_who(player, rooms), "who", "List connected characters.", max_args=0),
     "survey": CommandSpec("survey", lambda player, rooms, raw, args: handle_survey(player), "survey", "Display a wide terrain view.", max_args=0),

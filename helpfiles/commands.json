@@ -1,27 +1,93 @@
 {
+    "afterglow": {
+        "summary": "Perform the afterglow social.",
+        "details": [
+            "Catalog social. Flags: requires consent, adult opt-in."
+        ]
+    },
+    "apologize": {
+        "summary": "Perform the apologize social.",
+        "details": [
+            "Catalog social."
+        ]
+    },
+    "applaud": {
+        "summary": "Perform the applaud social.",
+        "details": [
+            "Catalog social."
+        ]
+    },
     "attack": {
         "summary": "Engage a hostile character for round combat.",
-        "details": ["Engagement persists while you reposition. Basic auto attacks resolve on Dex/Agi-driven combat rounds and only connect up close."]
+        "details": [
+            "Engagement persists while you reposition. Basic auto attacks resolve on Dex/Agi-driven combat rounds and only connect up close."
+        ]
     },
-    "body": {
-        "summary": "Display your body resources and recovery readiness.",
-        "details": ["Shows nutrition, hydration, fatigue, recovery state, and short-rest chakra recovery."]
-    },
-    "bow": {
-        "summary": "Bow as a social action.",
-        "details": ["Catalog social. Visible to characters at your location."]
+    "beckon": {
+        "summary": "Perform the beckon social.",
+        "details": [
+            "Catalog social."
+        ]
     },
     "bfind": {
         "summary": "Search authored rooms, templates, and spawns.",
-        "details": ["Admin builder command. Searches room VNUMs, titles, descriptions, template keys, names, keywords, and spawn references."]
+        "details": [
+            "Admin builder command. Searches room VNUMs, titles, descriptions, template keys, names, keywords, and spawn references."
+        ]
+    },
+    "bindankles": {
+        "summary": "Perform the bindankles social.",
+        "details": [
+            "Catalog social. Flags: requires consent, adult opt-in, state: restrained."
+        ]
+    },
+    "bindwrists": {
+        "summary": "Perform the bindwrists social.",
+        "details": [
+            "Catalog social. Flags: requires consent, adult opt-in, state: restrained."
+        ]
+    },
+    "blindfold": {
+        "summary": "Perform the blindfold social.",
+        "details": [
+            "Catalog social. Flags: requires consent, adult opt-in, state: blindfolded."
+        ]
+    },
+    "blush": {
+        "summary": "Perform the blush social.",
+        "details": [
+            "Catalog social."
+        ]
+    },
+    "body": {
+        "summary": "Display your body resources and recovery readiness.",
+        "details": [
+            "Shows nutrition, hydration, fatigue, recovery state, and short-rest chakra recovery."
+        ]
+    },
+    "bounce": {
+        "summary": "Perform the bounce social.",
+        "details": [
+            "Catalog social."
+        ]
+    },
+    "bow": {
+        "summary": "Perform the bow social.",
+        "details": [
+            "Catalog social."
+        ]
+    },
+    "breed": {
+        "summary": "Perform the breed social.",
+        "details": [
+            "Catalog social. Flags: requires consent, adult opt-in, pregnancy-risk."
+        ]
     },
     "bug": {
         "summary": "Record a player-visible bug report.",
-        "details": ["Use bug <message> to append a timestamped report to bugs.md for later triage."]
-    },
-    "bundo": {
-        "summary": "Undo the most recent builder zone mutation.",
-        "details": ["Admin builder command. Restores the previous zone JSON snapshot recorded before the latest successful builder edit."]
+        "details": [
+            "Use bug <message> to append a timestamped report to bugs.md for later triage."
+        ]
     },
     "buildzone": {
         "summary": "Create, anchor, and enter a usable authored zone.",
@@ -30,13 +96,89 @@
             "Use zonelist afterward to confirm placement, then use redit, dig, createnpc, iedit, spawnnpc, and spawnitem to author the first playable slice."
         ]
     },
+    "bundo": {
+        "summary": "Undo the most recent builder zone mutation.",
+        "details": [
+            "Admin builder command. Restores the previous zone JSON snapshot recorded before the latest successful builder edit."
+        ]
+    },
+    "caress": {
+        "summary": "Perform the caress social.",
+        "details": [
+            "Catalog social. Flags: requires consent, adult opt-in."
+        ]
+    },
+    "carry": {
+        "summary": "Perform the carry social.",
+        "details": [
+            "Catalog social. Flags: requires consent, state: carry."
+        ]
+    },
+    "chant": {
+        "summary": "Perform the chant social.",
+        "details": [
+            "Catalog social."
+        ]
+    },
+    "cheer": {
+        "summary": "Perform the cheer social.",
+        "details": [
+            "Catalog social."
+        ]
+    },
+    "claim": {
+        "summary": "Perform the claim social.",
+        "details": [
+            "Catalog social. Flags: requires consent, adult opt-in."
+        ]
+    },
+    "clap": {
+        "summary": "Perform the clap social.",
+        "details": [
+            "Catalog social."
+        ]
+    },
+    "cloneitem": {
+        "summary": "Clone an authored item template.",
+        "details": [
+            "Admin builder command. Copies an existing item template under a new builder key for fast variations."
+        ]
+    },
+    "clonenpc": {
+        "summary": "Clone an authored NPC template.",
+        "details": [
+            "Admin builder command. Copies an existing NPC template under a new builder key for fast variations."
+        ]
+    },
+    "cloneroom": {
+        "summary": "Clone an authored room inside its zone.",
+        "details": [
+            "Admin builder command. Copies a room into a free VNUM in the same zone with exits cleared."
+        ]
+    },
     "color": {
         "summary": "Toggle ANSI terminal colors for this connection.",
-        "details": ["Use color off if your client does not render ANSI colors cleanly."]
+        "details": [
+            "Use color off if your client does not render ANSI colors cleanly."
+        ]
     },
-    "cuddle": {
-        "summary": "Cuddle with a consenting character.",
-        "details": ["Adult catalog social. Hidden unless you opt into intimate socials, and the target must consent."]
+    "combat": {
+        "summary": "Display your active combat engagement and stance.",
+        "details": [
+            "Combat persists while you reposition. Basic auto attacks only connect up close; skills and jutsus can later queue range, accuracy, damage, and status modifiers."
+        ]
+    },
+    "commands": {
+        "summary": "List every command with a brief description.",
+        "details": [
+            "This catalog includes admin-only commands so the full command surface remains discoverable."
+        ]
+    },
+    "compliment": {
+        "summary": "Perform the compliment social.",
+        "details": [
+            "Catalog social."
+        ]
     },
     "consent": {
         "summary": "Manage social consent settings.",
@@ -46,41 +188,29 @@
             "Use consent deny <category> or consent revoke <character> to close access and clear related active states."
         ]
     },
-    "combat": {
-        "summary": "Display your active combat engagement and stance.",
-        "details": ["Combat persists while you reposition. Basic auto attacks only connect up close; skills and jutsus can later queue range, accuracy, damage, and status modifiers."]
-    },
-    "commands": {
-        "summary": "List every command with a brief description.",
-        "details": ["This catalog includes admin-only commands so the full command surface remains discoverable."]
-    },
     "consider": {
         "summary": "Inspect a character's combat details.",
-        "details": ["Use this before combat to review a visible NPC's health and authored combat values."]
+        "details": [
+            "Use this before combat to review a visible NPC's health and authored combat values."
+        ]
     },
     "contentcheck": {
         "summary": "Validate authored content references.",
-        "details": ["Builder command. Reports broken exits, missing spawn templates, invalid VNUMs, duplicate VNUMs, overlapping coordinates, out-of-bounds rooms, unsupported item metadata, and unsupported NPC behavior or AI fields."]
-    },
-    "zpublish": {
-        "summary": "Validate and publish authored zone changes.",
-        "details": ["Admin builder command. Runs zone validation, marks the zone published, reloads overlays, and records a builder audit entry."]
+        "details": [
+            "Builder command. Reports broken exits, missing spawn templates, invalid VNUMs, duplicate VNUMs, overlapping coordinates, out-of-bounds rooms, unsupported item metadata, and unsupported NPC behavior or AI fields."
+        ]
     },
     "copyover": {
         "summary": "Report the disabled soft-restart status.",
-        "details": ["Soft restarts remain intentionally disabled during private alpha."]
+        "details": [
+            "Soft restarts remain intentionally disabled during private alpha."
+        ]
     },
-    "cloneitem": {
-        "summary": "Clone an authored item template.",
-        "details": ["Admin builder command. Copies an existing item template under a new builder key for fast variations."]
-    },
-    "clonenpc": {
-        "summary": "Clone an authored NPC template.",
-        "details": ["Admin builder command. Copies an existing NPC template under a new builder key for fast variations."]
-    },
-    "cloneroom": {
-        "summary": "Clone an authored room inside its zone.",
-        "details": ["Admin builder command. Copies a room into a free VNUM in the same zone with exits cleared."]
+    "cough": {
+        "summary": "Perform the cough social.",
+        "details": [
+            "Catalog social."
+        ]
     },
     "createnpc": {
         "summary": "Create a basic static authored NPC template.",
@@ -91,7 +221,45 @@
     },
     "createzone": {
         "summary": "Create an authored zone.",
-        "details": ["Admin builder command. Creates a JSON zone file with an available VNUM range. Use buildzone for the faster one-step anchored workflow."]
+        "details": [
+            "Admin builder command. Creates a JSON zone file with an available VNUM range. Use buildzone for the faster one-step anchored workflow."
+        ]
+    },
+    "cuddle": {
+        "summary": "Perform the cuddle social.",
+        "details": [
+            "Catalog social. Flags: requires consent, adult opt-in."
+        ]
+    },
+    "dance": {
+        "summary": "Perform the dance social.",
+        "details": [
+            "Catalog social."
+        ]
+    },
+    "deepkiss": {
+        "summary": "Perform the deepkiss social.",
+        "details": [
+            "Catalog social. Flags: requires consent, adult opt-in."
+        ]
+    },
+    "description": {
+        "summary": "View or update your character description.",
+        "details": [
+            "Use description with no text to view your current description, or description <text> to replace it."
+        ]
+    },
+    "despawnitem": {
+        "summary": "Remove an authored item spawn.",
+        "details": [
+            "Admin builder command. Removes a finite item spawn from the current authored zone JSON."
+        ]
+    },
+    "despawnnpc": {
+        "summary": "Remove an authored NPC spawn.",
+        "details": [
+            "Admin builder command. Removes an NPC spawn from the current authored zone JSON."
+        ]
     },
     "dig": {
         "summary": "Create an authored room exit.",
@@ -100,25 +268,23 @@
             "The command writes a reciprocal exit, assigns the next VNUM in the zone range, and refuses to overwrite an occupied overlay coordinate."
         ]
     },
-    "description": {
-        "summary": "View or update your character description.",
-        "details": ["Use description with no text to view your current description, or description <text> to replace it."]
-    },
-    "despawnitem": {
-        "summary": "Remove an authored item spawn.",
-        "details": ["Admin builder command. Removes a finite item spawn from the current authored zone JSON."]
-    },
-    "despawnnpc": {
-        "summary": "Remove an authored NPC spawn.",
-        "details": ["Admin builder command. Removes an NPC spawn from the current authored zone JSON."]
+    "drag": {
+        "summary": "Perform the drag social.",
+        "details": [
+            "Catalog social. Flags: requires consent, state: drag."
+        ]
     },
     "drink": {
         "summary": "Drink a carried beverage to restore hydration.",
-        "details": ["Consumables are finite carried items and are removed after use."]
+        "details": [
+            "Consumables are finite carried items and are removed after use."
+        ]
     },
     "drop": {
         "summary": "Drop a carried item at your location.",
-        "details": ["Dropped items persist at your current grid coordinate."]
+        "details": [
+            "Dropped items persist at your current grid coordinate."
+        ]
     },
     "east": {
         "summary": "Move east.",
@@ -126,63 +292,159 @@
     },
     "eat": {
         "summary": "Eat a carried food item to restore nutrition.",
-        "details": ["Consumables are finite carried items and are removed after use."]
+        "details": [
+            "Consumables are finite carried items and are removed after use."
+        ]
     },
     "emote": {
         "summary": "Perform an action at your location.",
-        "details": ["Characters in your room will see the authored action text."]
+        "details": [
+            "Characters in your room will see the authored action text."
+        ]
+    },
+    "encourage": {
+        "summary": "Perform the encourage social.",
+        "details": [
+            "Catalog social."
+        ]
+    },
+    "escort": {
+        "summary": "Perform the escort social.",
+        "details": [
+            "Catalog social. Flags: requires consent, state: escort."
+        ]
     },
     "examine": {
         "summary": "Inspect a visible or carried item.",
-        "details": ["Item targets accept names, keywords, prefixes, and ordinals such as 2.kunai."]
+        "details": [
+            "Item targets accept names, keywords, prefixes, and ordinals such as 2.kunai."
+        ]
+    },
+    "farewell": {
+        "summary": "Perform the farewell social.",
+        "details": [
+            "Catalog social."
+        ]
+    },
+    "features": {
+        "summary": "View or update structured appearance features.",
+        "details": [
+            "Character state command. Updates or displays persistent appearance, injury, or private pregnancy state."
+        ]
     },
     "feint": {
         "summary": "Queue Feint for the next combat round.",
-        "details": ["Technique command. Costs 3 stamina and gives the next eligible combat round a large accuracy bonus plus a small damage bonus."]
+        "details": [
+            "Technique command. Costs 3 stamina and gives the next eligible combat round a large accuracy bonus plus a small damage bonus."
+        ]
     },
     "finger": {
         "summary": "Inspect detailed player account, stats, skills, and jutsus.",
-        "details": ["Admin command. Shows player access, online state, created and last-login timestamps, identity, resources, attributes, body state, location, skill progress, and jutsu progress without exposing password data."]
+        "details": [
+            "Admin command. Shows player access, online state, created and last-login timestamps, identity, resources, attributes, body state, location, skill progress, and jutsu progress without exposing password data."
+        ]
+    },
+    "fondle": {
+        "summary": "Perform the fondle social.",
+        "details": [
+            "Catalog social. Flags: requires consent, adult opt-in."
+        ]
+    },
+    "frown": {
+        "summary": "Perform the frown social.",
+        "details": [
+            "Catalog social."
+        ]
+    },
+    "gag": {
+        "summary": "Perform the gag social.",
+        "details": [
+            "Catalog social. Flags: requires consent, adult opt-in, state: gagged."
+        ]
     },
     "get": {
         "summary": "Pick up an item at your location.",
-        "details": ["Item targets accept names, keywords, prefixes, and ordinals such as 2.kunai."]
+        "details": [
+            "Item targets accept names, keywords, prefixes, and ordinals such as 2.kunai."
+        ]
+    },
+    "glare": {
+        "summary": "Perform the glare social.",
+        "details": [
+            "Catalog social."
+        ]
     },
     "goto": {
         "summary": "Travel to an authored room, grid location, or online player.",
-        "details": ["Admin command. Coordinates remain canonical even when teleporting to an overlay VNUM."]
+        "details": [
+            "Admin command. Coordinates remain canonical even when teleporting to an overlay VNUM."
+        ]
+    },
+    "greet": {
+        "summary": "Perform the greet social.",
+        "details": [
+            "Catalog social."
+        ]
+    },
+    "grin": {
+        "summary": "Perform the grin social.",
+        "details": [
+            "Catalog social."
+        ]
+    },
+    "grind": {
+        "summary": "Perform the grind social.",
+        "details": [
+            "Catalog social. Flags: requires consent, adult opt-in."
+        ]
     },
     "guard": {
         "summary": "Queue Guard for the next combat round.",
-        "details": ["Technique command. Costs 2 stamina, skips your next outgoing round attack, improves evasion, and reduces incoming damage for that round."]
+        "details": [
+            "Technique command. Costs 2 stamina, skips your next outgoing round attack, improves evasion, and reduces incoming damage for that round."
+        ]
     },
-    "highfive": {
-        "summary": "High-five a character at your location.",
-        "details": ["Catalog social. This friendly action does not require explicit consent."]
-    },
-    "holdhands": {
-        "summary": "Hold hands with a consenting character.",
-        "details": ["Mechanical catalog social. The target must consent to utility and mechanical socials. While active, your movement can lead them along."]
-    },
-    "hug": {
-        "summary": "Hug a consenting character at your location.",
-        "details": ["Catalog social. The target must consent to friendly socials from you or to the friendly category."]
-    },
-    "help": {
-        "summary": "List commands or explain one command.",
-        "details": ["Help prose is loaded from helpfiles/commands.json and can be refreshed without restarting the server."]
+    "guide": {
+        "summary": "Perform the guide social.",
+        "details": [
+            "Catalog social. Flags: requires consent, state: guide."
+        ]
     },
     "hedit": {
         "summary": "Edit command help prose and publish state.",
-        "details": ["Admin builder command. Supports summary, detail, category, publish, and unpublish edits for command help."]
+        "details": [
+            "Admin builder command. Supports summary, detail, category, publish, and unpublish edits for command help."
+        ]
     },
-    "ilist": {
-        "summary": "List authored item templates in a zone.",
-        "details": ["Admin builder command. Shows item keys, names, and types for the current or named zone."]
+    "help": {
+        "summary": "List commands or explain one command.",
+        "details": [
+            "Help prose is loaded from helpfiles/commands.json and can be refreshed without restarting the server."
+        ]
     },
-    "inventory": {
-        "summary": "List the items you carry.",
-        "details": ["Equipped slots are displayed alongside carried items."]
+    "highfive": {
+        "summary": "Perform the highfive social.",
+        "details": [
+            "Catalog social."
+        ]
+    },
+    "holdhands": {
+        "summary": "Perform the holdhands social.",
+        "details": [
+            "Catalog social. Flags: requires consent, state: holdhands."
+        ]
+    },
+    "hug": {
+        "summary": "Perform the hug social.",
+        "details": [
+            "Catalog social. Flags: requires consent."
+        ]
+    },
+    "hum": {
+        "summary": "Perform the hum social.",
+        "details": [
+            "Catalog social."
+        ]
     },
     "iedit": {
         "summary": "Create or edit an authored item template.",
@@ -191,49 +453,95 @@
             "Supported fields include name, description, keywords, type, slot, flags, use text, damage, throw damage, nutrition, hydration, value, weight, stack, and capacity. Use istat to inspect the result before spawning it."
         ]
     },
+    "ilist": {
+        "summary": "List authored item templates in a zone.",
+        "details": [
+            "Admin builder command. Shows item keys, names, and types for the current or named zone."
+        ]
+    },
+    "injuries": {
+        "summary": "Display persistent injuries and penalties.",
+        "details": [
+            "Character state command. Updates or displays persistent appearance, injury, or private pregnancy state."
+        ]
+    },
+    "intimate": {
+        "summary": "Perform the intimate social.",
+        "details": [
+            "Catalog social. Flags: requires consent, adult opt-in."
+        ]
+    },
+    "inventory": {
+        "summary": "List the items you carry.",
+        "details": [
+            "Equipped slots are displayed alongside carried items."
+        ]
+    },
     "istat": {
         "summary": "Inspect an authored item template.",
-        "details": ["Admin builder command. Displays the current editable fields for one globally keyed item template."]
+        "details": [
+            "Admin builder command. Displays the current editable fields for one globally keyed item template."
+        ]
     },
     "jutsu": {
         "summary": "List available jutsus, inspect one, or show the full catalog.",
-        "details": ["Use jutsu all to include catalog placeholders that are not implemented yet."]
+        "details": [
+            "Use jutsu all to include catalog placeholders that are not implemented yet."
+        ]
+    },
+    "kiss": {
+        "summary": "Perform the kiss social.",
+        "details": [
+            "Catalog social. Flags: requires consent, adult opt-in."
+        ]
     },
     "kneel": {
-        "summary": "Kneel as an opt-in adult social action.",
-        "details": ["Catalog social. Hidden unless you opt into BDSM socials."]
+        "summary": "Perform the kneel social.",
+        "details": [
+            "Catalog social. Flags: adult opt-in."
+        ]
+    },
+    "lapdance": {
+        "summary": "Perform the lapdance social.",
+        "details": [
+            "Catalog social. Flags: requires consent, adult opt-in."
+        ]
     },
     "laugh": {
-        "summary": "Laugh as a social action.",
-        "details": ["Catalog social. Visible to characters at your location."]
+        "summary": "Perform the laugh social.",
+        "details": [
+            "Catalog social."
+        ]
+    },
+    "lean": {
+        "summary": "Perform the lean social.",
+        "details": [
+            "Catalog social."
+        ]
+    },
+    "listen": {
+        "summary": "Perform the listen social.",
+        "details": [
+            "Catalog social."
+        ]
     },
     "loc": {
         "summary": "Display your grid coordinates and area.",
-        "details": ["Coordinates are the canonical source of truth; overlay VNUMs are optional authored metadata."]
+        "details": [
+            "Coordinates are the canonical source of truth; overlay VNUMs are optional authored metadata."
+        ]
     },
     "look": {
         "summary": "Display your location or inspect an item.",
-        "details": ["Use look with no arguments for the room and nearby map, or look at <item> to inspect an item."]
+        "details": [
+            "Use look with no arguments for the room and nearby map, or look at <item> to inspect an item."
+        ]
     },
-    "north": {
-        "summary": "Move north.",
-        "details": []
-    },
-    "northeast": {
-        "summary": "Move northeast.",
-        "details": ["Alias: ne."]
-    },
-    "northwest": {
-        "summary": "Move northwest.",
-        "details": ["Alias: nw."]
-    },
-    "nod": {
-        "summary": "Nod as a social action.",
-        "details": ["Catalog social. Visible to characters at your location."]
-    },
-    "nuzzle": {
-        "summary": "Nuzzle a consenting character.",
-        "details": ["Adult catalog social. Hidden unless you opt into intimate socials, and the target must consent."]
+    "makeout": {
+        "summary": "Perform the makeout social.",
+        "details": [
+            "Catalog social. Flags: requires consent, adult opt-in."
+        ]
     },
     "medit": {
         "summary": "Edit an authored NPC template.",
@@ -242,77 +550,165 @@
             "Supported fields include name, description, dialogue, behavior, movement, aggression, loot, emote, health, stamina, chakra, strength, dexterity, agility, intelligence, wisdom, damage, accuracy, evasion, techniques, jutsus, respawn, and leash. Use mstat before spawning to verify the template."
         ]
     },
+    "meditate": {
+        "summary": "Perform the meditate social.",
+        "details": [
+            "Catalog social."
+        ]
+    },
     "mlist": {
         "summary": "List authored NPC templates in a zone.",
-        "details": ["Admin builder command. Shows NPC keys, names, and behavior for the current or named zone."]
+        "details": [
+            "Admin builder command. Shows NPC keys, names, and behavior for the current or named zone."
+        ]
     },
     "mstat": {
         "summary": "Inspect an authored NPC template.",
-        "details": ["Admin builder command. Displays the current editable fields for one globally keyed NPC template."]
+        "details": [
+            "Admin builder command. Displays the current editable fields for one globally keyed NPC template."
+        ]
+    },
+    "mutter": {
+        "summary": "Perform the mutter social.",
+        "details": [
+            "Catalog social."
+        ]
+    },
+    "nod": {
+        "summary": "Perform the nod social.",
+        "details": [
+            "Catalog social."
+        ]
+    },
+    "north": {
+        "summary": "Move north.",
+        "details": []
+    },
+    "northeast": {
+        "summary": "Move northeast.",
+        "details": [
+            "Alias: ne."
+        ]
+    },
+    "northwest": {
+        "summary": "Move northwest.",
+        "details": [
+            "Alias: nw."
+        ]
+    },
+    "nuzzle": {
+        "summary": "Perform the nuzzle social.",
+        "details": [
+            "Catalog social. Flags: requires consent, adult opt-in."
+        ]
     },
     "ooc": {
         "summary": "Speak on the global out-of-character channel.",
-        "details": ["Use this for player discussion that is not spoken by your character."]
+        "details": [
+            "Use this for player discussion that is not spoken by your character."
+        ]
+    },
+    "pace": {
+        "summary": "Perform the pace social.",
+        "details": [
+            "Catalog social."
+        ]
     },
     "pat": {
-        "summary": "Give a consenting character a playful pat.",
-        "details": ["Catalog social. The target must consent to playful socials from you or to the playful category."]
-    },
-    "poke": {
-        "summary": "Poke a character playfully.",
-        "details": ["Catalog social. Visible to characters at your location."]
-    },
-    "placezone": {
-        "summary": "Anchor a zone file on the world grid.",
-        "details": ["Admin builder command. Reloads overlay coordinates after persisting the new anchor."]
-    },
-    "players": {
-        "summary": "List every registered player account.",
-        "details": ["Admin command. Lists every saved player with online status, access flags, identity summary, location, and last-login timestamp. Use finger for full inspection and pedit or pset for edits."]
-    },
-    "prac": {
-        "summary": "List skills or inspect usage-based proficiency.",
-        "details": ["Ordinary skill proficiency increases through valid gameplay use. Active practice reports visible tier progress without raw percentages."]
+        "summary": "Perform the pat social.",
+        "details": [
+            "Catalog social. Flags: requires consent."
+        ]
     },
     "pedit": {
         "summary": "Edit access and validated persistent player fields.",
-        "details": ["Admin command. Use pedit <username> builder on or pedit <username> builder off to grant or remove builder access without granting full admin power. It also accepts the same validated player fields as pset."]
+        "details": [
+            "Admin command. Use pedit <username> builder on or pedit <username> builder off to grant or remove builder access without granting full admin power. It also accepts the same validated player fields as pset."
+        ]
+    },
+    "peer": {
+        "summary": "Perform the peer social.",
+        "details": [
+            "Catalog social."
+        ]
+    },
+    "placezone": {
+        "summary": "Anchor a zone file on the world grid.",
+        "details": [
+            "Admin builder command. Reloads overlay coordinates after persisting the new anchor."
+        ]
+    },
+    "players": {
+        "summary": "List every registered player account.",
+        "details": [
+            "Admin command. Lists every saved player with online status, access flags, identity summary, location, and last-login timestamp. Use finger for full inspection and pedit or pset for edits."
+        ]
+    },
+    "point": {
+        "summary": "Perform the point social.",
+        "details": [
+            "Catalog social."
+        ]
+    },
+    "poke": {
+        "summary": "Perform the poke social.",
+        "details": [
+            "Catalog social."
+        ]
+    },
+    "ponder": {
+        "summary": "Perform the ponder social.",
+        "details": [
+            "Catalog social."
+        ]
+    },
+    "pose": {
+        "summary": "Perform the pose social.",
+        "details": [
+            "Catalog social."
+        ]
+    },
+    "prac": {
+        "summary": "List skills or inspect usage-based proficiency.",
+        "details": [
+            "Ordinary skill proficiency increases through valid gameplay use. Active practice reports visible tier progress without raw percentages."
+        ]
+    },
+    "pray": {
+        "summary": "Perform the pray social.",
+        "details": [
+            "Catalog social."
+        ]
+    },
+    "pregnancy": {
+        "summary": "Display private pregnancy status.",
+        "details": [
+            "Character state command. Updates or displays persistent appearance, injury, or private pregnancy state."
+        ]
     },
     "pset": {
         "summary": "Set a validated persistent player field.",
-        "details": ["Admin command. Supports admin and builder access, specialty, dojo, clan, release, resources, attributes, nutrition, hydration, and fatigue. Passwords, usernames, and locations require separate workflows."]
+        "details": [
+            "Admin command. Supports admin and builder access, specialty, dojo, clan, release, resources, attributes, nutrition, hydration, and fatigue. Passwords, usernames, and locations require separate workflows."
+        ]
     },
     "pstat": {
         "summary": "Inspect persistent player state.",
-        "details": ["Admin command. Compatibility alias for finger; displays detailed player state without exposing password data."]
+        "details": [
+            "Admin command. Compatibility alias for finger; displays detailed player state without exposing password data."
+        ]
     },
-    "reloadcontent": {
-        "summary": "Reload authored JSON content into live state.",
-        "details": ["Admin builder command. Imports template edits and missing one-time spawns without restarting."]
+    "rdelete": {
+        "summary": "Delete an unreferenced authored room.",
+        "details": [
+            "Admin builder command. Refuses deletion while the room has exits, incoming links, or authored spawns."
+        ]
     },
     "recover": {
         "summary": "Queue Recover for the next combat round.",
-        "details": ["Technique command. Costs no stamina, skips your next outgoing round attack, and restores stamina on that round up to your maximum stamina."]
-    },
-    "remove": {
-        "summary": "Unequip a carried item.",
-        "details": []
-    },
-    "release": {
-        "summary": "Release social holds or restraints you control.",
-        "details": ["Use release <character> or release all to clear active handholding or restraint states."]
-    },
-    "resist": {
-        "summary": "Break an active restrictive social state.",
-        "details": ["Use resist to clear a restraint affecting you. Consent can always be withdrawn or resisted."]
-    },
-    "restrain": {
-        "summary": "Restrain a consenting character.",
-        "details": ["Adult mechanical social. Hidden unless you opt into BDSM socials, and the target must consent to BDSM and restrictive socials."]
-    },
-    "rest": {
-        "summary": "Recover stamina and chakra through a short rest.",
-        "details": ["Rest consumes nutrition and hydration. Depleted nutrition or hydration blocks recovery."]
+        "details": [
+            "Technique command. Costs no stamina, skips your next outgoing round attack, and restores stamina on that round up to your maximum stamina."
+        ]
     },
     "redit": {
         "summary": "Edit the current authored room.",
@@ -321,21 +717,63 @@
             "Use redit flag <flag> <on|off>, redit exit <direction> <vnum|none>, redit link <direction> <vnum> [oneway], or redit unlink <direction> [oneway]."
         ]
     },
-    "rdelete": {
-        "summary": "Delete an unreferenced authored room.",
-        "details": ["Admin builder command. Refuses deletion while the room has exits, incoming links, or authored spawns."]
+    "release": {
+        "summary": "Release social holds or restraints you control.",
+        "details": [
+            "Use release <character> or release all to clear active handholding or restraint states."
+        ]
     },
-    "roomdesc": {
-        "summary": "Replace the current authored room description.",
-        "details": ["Admin builder command. Updates the current overlay room description in authored JSON. Use redit desc <text> when working inside the broader editing suite."]
+    "reloadcontent": {
+        "summary": "Reload authored JSON content into live state.",
+        "details": [
+            "Admin builder command. Imports template edits and missing one-time spawns without restarting."
+        ]
     },
-    "rstat": {
-        "summary": "Inspect authored room builder fields.",
-        "details": ["Admin builder command. Displays room title, description, offsets, flags, and exits."]
+    "remove": {
+        "summary": "Unequip a carried item.",
+        "details": []
+    },
+    "resist": {
+        "summary": "Break an active restrictive social state.",
+        "details": [
+            "Use resist to clear a restraint affecting you. Consent can always be withdrawn or resisted."
+        ]
+    },
+    "rest": {
+        "summary": "Recover stamina and chakra through a short rest.",
+        "details": [
+            "Rest consumes nutrition and hydration. Depleted nutrition or hydration blocks recovery."
+        ]
+    },
+    "restrain": {
+        "summary": "Perform the restrain social.",
+        "details": [
+            "Catalog social. Flags: requires consent, adult opt-in, state: restrained."
+        ]
     },
     "rlist": {
         "summary": "List authored rooms in a zone.",
-        "details": ["Admin builder command. Shows VNUMs, room titles, and coordinate offsets for the current or named zone."]
+        "details": [
+            "Admin builder command. Shows VNUMs, room titles, and coordinate offsets for the current or named zone."
+        ]
+    },
+    "roomdesc": {
+        "summary": "Replace the current authored room description.",
+        "details": [
+            "Admin builder command. Updates the current overlay room description in authored JSON. Use redit desc <text> when working inside the broader editing suite."
+        ]
+    },
+    "rstat": {
+        "summary": "Inspect authored room builder fields.",
+        "details": [
+            "Admin builder command. Displays room title, description, offsets, flags, and exits."
+        ]
+    },
+    "salute": {
+        "summary": "Perform the salute social.",
+        "details": [
+            "Catalog social."
+        ]
     },
     "say": {
         "summary": "Speak to characters at your location.",
@@ -343,39 +781,105 @@
     },
     "score": {
         "summary": "Display your character sheet.",
-        "details": ["Shows core resources, attributes, specialty, clan, release, dojo alignment, and location."]
+        "details": [
+            "Shows core resources, attributes, specialty, clan, release, dojo alignment, and location."
+        ]
     },
     "setdojo": {
         "summary": "Set a character dojo alignment.",
-        "details": ["Admin command."]
+        "details": [
+            "Admin command."
+        ]
     },
     "setrole": {
         "summary": "Set a character role.",
-        "details": ["Admin command."]
+        "details": [
+            "Admin command."
+        ]
     },
     "setstat": {
         "summary": "Set a character stat.",
-        "details": ["Admin command."]
+        "details": [
+            "Admin command."
+        ]
+    },
+    "shiver": {
+        "summary": "Perform the shiver social.",
+        "details": [
+            "Catalog social."
+        ]
     },
     "shout": {
         "summary": "Speak to characters within one grid cell.",
-        "details": ["Shouts reach your room and adjacent grid coordinates."]
+        "details": [
+            "Shouts reach your room and adjacent grid coordinates."
+        ]
     },
-    "smile": {
-        "summary": "Smile as a social action.",
-        "details": ["Catalog social. Visible to characters at your location."]
-    },
-    "socials": {
-        "summary": "List catalog-backed social actions.",
-        "details": ["Use socials to list visible socials, socials <category> for one category, or socials all to inspect the full catalog including opt-in adult categories."]
+    "shrug": {
+        "summary": "Perform the shrug social.",
+        "details": [
+            "Catalog social."
+        ]
     },
     "shutdown": {
         "summary": "Stop the server.",
-        "details": ["Admin command. Connected players are disconnected by the normal server shutdown."]
+        "details": [
+            "Admin command. Connected players are disconnected by the normal server shutdown."
+        ]
+    },
+    "sigh": {
+        "summary": "Perform the sigh social.",
+        "details": [
+            "Catalog social."
+        ]
+    },
+    "sing": {
+        "summary": "Perform the sing social.",
+        "details": [
+            "Catalog social."
+        ]
+    },
+    "sit": {
+        "summary": "Perform the sit social.",
+        "details": [
+            "Catalog social."
+        ]
     },
     "skill": {
         "summary": "List available skills, inspect one, or show the full catalog.",
-        "details": ["Use skill all to include catalog placeholders that are not implemented yet."]
+        "details": [
+            "Use skill all to include catalog placeholders that are not implemented yet."
+        ]
+    },
+    "smile": {
+        "summary": "Perform the smile social.",
+        "details": [
+            "Catalog social."
+        ]
+    },
+    "smirk": {
+        "summary": "Perform the smirk social.",
+        "details": [
+            "Catalog social."
+        ]
+    },
+    "sneeze": {
+        "summary": "Perform the sneeze social.",
+        "details": [
+            "Catalog social."
+        ]
+    },
+    "snicker": {
+        "summary": "Perform the snicker social.",
+        "details": [
+            "Catalog social."
+        ]
+    },
+    "socials": {
+        "summary": "List catalog-backed social actions.",
+        "details": [
+            "Use socials to list visible socials, socials <category> for one category, or socials all to inspect the full catalog including opt-in adult categories."
+        ]
     },
     "south": {
         "summary": "Move south.",
@@ -383,79 +887,189 @@
     },
     "southeast": {
         "summary": "Move southeast.",
-        "details": ["Alias: se."]
+        "details": [
+            "Alias: se."
+        ]
     },
     "southwest": {
         "summary": "Move southwest.",
-        "details": ["Alias: sw."]
-    },
-    "stance": {
-        "summary": "List or change your combat stance.",
-        "details": ["Use stance with no argument to list the neutral S1-S5 placeholder profiles. S1 favors accuracy, S2 damage, S3 balance, S4 evasion, and S5 damage reduction."]
-    },
-    "strike": {
-        "summary": "Queue Strike for the next combat round.",
-        "details": ["Technique command. Costs 2 stamina and adds damage to your next eligible combat round attack."]
-    },
-    "spawnnpc": {
-        "summary": "Persist a spawn for an authored NPC template.",
-        "details": ["Admin builder command. Creates a persistent authored NPC seed in the current overlay room. Use mstat first to confirm the template and reloadcontent if live state needs to be refreshed."]
+        "details": [
+            "Alias: sw."
+        ]
     },
     "spawnitem": {
         "summary": "Persist a finite authored item seed.",
-        "details": ["Admin builder command. Places one finite authored item seed in the current overlay room. Use istat first to confirm keywords, type, and use fields."]
+        "details": [
+            "Admin builder command. Places one finite authored item seed in the current overlay room. Use istat first to confirm keywords, type, and use fields."
+        ]
     },
     "spawnlist": {
         "summary": "List authored item and NPC spawns.",
-        "details": ["Admin builder command. Shows item and NPC spawn keys, template references, and target VNUMs."]
+        "details": [
+            "Admin builder command. Shows item and NPC spawn keys, template references, and target VNUMs."
+        ]
+    },
+    "spawnnpc": {
+        "summary": "Persist a spawn for an authored NPC template.",
+        "details": [
+            "Admin builder command. Creates a persistent authored NPC seed in the current overlay room. Use mstat first to confirm the template and reloadcontent if live state needs to be refreshed."
+        ]
+    },
+    "spoon": {
+        "summary": "Perform the spoon social.",
+        "details": [
+            "Catalog social. Flags: requires consent, adult opt-in."
+        ]
+    },
+    "stance": {
+        "summary": "List or change your combat stance.",
+        "details": [
+            "Use stance with no argument to list the neutral S1-S5 placeholder profiles. S1 favors accuracy, S2 damage, S3 balance, S4 evasion, and S5 damage reduction."
+        ]
+    },
+    "stand": {
+        "summary": "Perform the stand social.",
+        "details": [
+            "Catalog social."
+        ]
+    },
+    "stare": {
+        "summary": "Perform the stare social.",
+        "details": [
+            "Catalog social."
+        ]
+    },
+    "straddle": {
+        "summary": "Perform the straddle social.",
+        "details": [
+            "Catalog social. Flags: requires consent, adult opt-in."
+        ]
+    },
+    "stretch": {
+        "summary": "Perform the stretch social.",
+        "details": [
+            "Catalog social."
+        ]
+    },
+    "strike": {
+        "summary": "Queue Strike for the next combat round.",
+        "details": [
+            "Technique command. Costs 2 stamina and adds damage to your next eligible combat round attack."
+        ]
     },
     "suggest": {
         "summary": "Record a player suggestion for builders and maintainers.",
-        "details": ["Use suggest <message> to append a timestamped entry to suggestions.md."]
+        "details": [
+            "Use suggest <message> to append a timestamped entry to suggestions.md."
+        ]
+    },
+    "support": {
+        "summary": "Perform the support social.",
+        "details": [
+            "Catalog social. Flags: requires consent, state: support."
+        ]
     },
     "survey": {
         "summary": "Display a wide terrain view.",
-        "details": ["Shows a wider grid view than look, including nearby player and NPC map markers."]
+        "details": [
+            "Shows a wider grid view than look, including nearby player and NPC map markers."
+        ]
+    },
+    "sweat": {
+        "summary": "Perform the sweat social.",
+        "details": [
+            "Catalog social."
+        ]
     },
     "talk": {
         "summary": "Talk to a character at your location.",
-        "details": ["Targets a visible authored NPC in your room."]
+        "details": [
+            "Targets a visible authored NPC in your room."
+        ]
+    },
+    "tease": {
+        "summary": "Perform the tease social.",
+        "details": [
+            "Catalog social. Flags: requires consent, adult opt-in."
+        ]
     },
     "technique": {
         "summary": "List or queue a stamina-based fighting technique.",
-        "details": ["Use technique with no argument to list available round techniques, or technique <name> to queue one for your next eligible combat round. Queueing a new technique replaces the previous queued technique."]
+        "details": [
+            "Use technique with no argument to list available round techniques, or technique <name> to queue one for your next eligible combat round. Queueing a new technique replaces the previous queued technique."
+        ]
+    },
+    "thank": {
+        "summary": "Perform the thank social.",
+        "details": [
+            "Catalog social."
+        ]
     },
     "think": {
         "summary": "Perform the built-in thinking emote.",
         "details": []
     },
-    "tie": {
-        "summary": "Tie or restrain a consenting character.",
-        "details": ["Adult mechanical social. Hidden unless you opt into BDSM socials, and the target must consent to BDSM and restrictive socials."]
-    },
     "throw": {
         "summary": "Throw a carried ranged item at a nearby hostile character.",
-        "details": ["Valid throws increase Throw proficiency and land the item at the target location, even on a miss."]
+        "details": [
+            "Valid throws increase Throw proficiency and land the item at the target location, even on a miss."
+        ]
+    },
+    "tie": {
+        "summary": "Perform the tie social.",
+        "details": [
+            "Catalog social. Flags: requires consent, adult opt-in, state: restrained."
+        ]
     },
     "train": {
         "summary": "List jutsus or inspect usage-based proficiency.",
-        "details": ["Jutsu proficiency increases through valid gameplay use. Active training reports visible tier progress without raw percentages."]
+        "details": [
+            "Jutsu proficiency increases through valid gameplay use. Active training reports visible tier progress without raw percentages."
+        ]
+    },
+    "treatinjury": {
+        "summary": "Clear one persistent injury or all injuries.",
+        "details": [
+            "Admin command. Clears one persistent injury or all injuries from a character; future healer authorization can reuse this command."
+        ]
+    },
+    "undress": {
+        "summary": "Perform the undress social.",
+        "details": [
+            "Catalog social. Flags: requires consent, adult opt-in."
+        ]
+    },
+    "ungag": {
+        "summary": "Perform the ungag social.",
+        "details": [
+            "Catalog social. Flags: requires consent, adult opt-in."
+        ]
     },
     "usejutsu": {
         "summary": "Activate an implemented jutsu.",
-        "details": ["Substitution Technique currently spends 3 chakra, lasts 30 seconds, and has a 60 second cooldown."]
+        "details": [
+            "Substitution Technique currently spends 3 chakra, lasts 30 seconds, and has a 60 second cooldown."
+        ]
+    },
+    "wave": {
+        "summary": "Perform the wave social.",
+        "details": [
+            "Catalog social."
+        ]
     },
     "west": {
         "summary": "Move west.",
         "details": []
     },
-    "wave": {
-        "summary": "Wave as a social action.",
-        "details": ["Catalog social. Visible to characters at your location."]
-    },
     "whisper": {
         "summary": "Send a private message to an online character.",
         "details": []
+    },
+    "whistle": {
+        "summary": "Perform the whistle social.",
+        "details": [
+            "Catalog social."
+        ]
     },
     "who": {
         "summary": "List connected characters.",
@@ -463,22 +1077,50 @@
     },
     "wield": {
         "summary": "Equip a carried item.",
-        "details": ["The item must define an authored equipment slot."]
+        "details": [
+            "The item must define an authored equipment slot."
+        ]
     },
-    "zoneinfo": {
-        "summary": "Inspect an authored overlay room.",
-        "details": ["Admin builder command. With no VNUM, inspects the current location."]
+    "wink": {
+        "summary": "Perform the wink social.",
+        "details": [
+            "Catalog social."
+        ]
     },
-    "zonelist": {
-        "summary": "List authored zones and placement status.",
-        "details": ["Admin builder command. Shows filenames, display names, VNUM ranges, anchors, and room counts."]
+    "yawn": {
+        "summary": "Perform the yawn social.",
+        "details": [
+            "Catalog social."
+        ]
     },
     "zdelete": {
         "summary": "Delete an unreferenced authored zone.",
-        "details": ["Admin builder command. Refuses deletion while external exits or authored spawns still reference the zone."]
+        "details": [
+            "Admin builder command. Refuses deletion while external exits or authored spawns still reference the zone."
+        ]
+    },
+    "zoneinfo": {
+        "summary": "Inspect an authored overlay room.",
+        "details": [
+            "Admin builder command. With no VNUM, inspects the current location."
+        ]
+    },
+    "zonelist": {
+        "summary": "List authored zones and placement status.",
+        "details": [
+            "Admin builder command. Shows filenames, display names, VNUM ranges, anchors, and room counts."
+        ]
+    },
+    "zpublish": {
+        "summary": "Validate and publish authored zone changes.",
+        "details": [
+            "Admin builder command. Runs zone validation, marks the zone published, reloads overlays, and records a builder audit entry."
+        ]
     },
     "zstat": {
         "summary": "Inspect compact zone builder counts.",
-        "details": ["Admin builder command. Shows range, anchor, room count, template counts, and spawn counts for one zone."]
+        "details": [
+            "Admin builder command. Shows range, anchor, room count, template counts, and spawn counts for one zone."
+        ]
     }
 }

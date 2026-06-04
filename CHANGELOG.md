@@ -1,5 +1,30 @@
 # Changelog
 
+## 2026-06-04 18:49 -0500 - Pregnancy, Injury, Appearance, and Expanded XSocials
+
+### Added
+
+- Added migration `25` for structured appearance fields, hidden reproductive/pregnancy state, persistent character injuries, and expanded social metadata.
+- Added `features`, `injuries`, `pregnancy`, and `treatinjury` commands.
+- Added public `look at <player>` rendering for structured features, public description, obvious injuries, visible pregnancy stage, and obvious social states.
+- Added 50 regular social emotes, 15 intimate adult socials, 5 bondage/control socials, and 5 movement/support socials.
+- Added pregnancy-risk handling for consented adult socials when hidden reproductive roles and fertility state allow it.
+
+### Changed
+
+- Updated `score`, `finger`/`pstat`, and `pset`/`pedit` surfaces to expose appearance, injuries, and admin-only biology/pregnancy state safely.
+- Updated movement, speech, look, map, and social handling so persistent injuries and active restrictive states apply logical penalties.
+- Updated social consent metadata for gag-blocked speech, actor mobility requirements, disabled-target movement support, and pregnancy-risk actions.
+- Updated README, TODO, command help, and command categories for the new character-state and expanded-social commands.
+
+### Verification
+
+- `python -m unittest tests.test_character_state tests.test_socials tests.test_commands -v`
+- `python -m unittest discover -s tests -v`
+- `python -m compileall .`
+- JSON validation for `helpfiles/*.json` and `zones/*.json`
+- `git diff --check`
+
 ## 2026-06-04 18:02 -0500 - Expansive Socials and Consent Foundation
 
 ### Added

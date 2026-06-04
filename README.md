@@ -133,13 +133,16 @@ The authored `aexpanse` overlay is anchored at `(1, 1)` with two rooms and a see
 
 ### Player Commands
 
-- `look [at <item>]`: display a compact local terrain view or inspect an item.
+- `look [at <item|player>]`: display a compact local terrain view, inspect an item, or inspect a visible player at your location.
 - `survey`: display the larger terrain view.
 - `color <on|off>`: toggle ANSI terminal colors for the current connection.
 - `north`, `south`, `east`, `west`, `northeast`, `northwest`, `southeast`, `southwest`: move across the world grid. Diagonal aliases are `ne`, `nw`, `se`, and `sw`.
 - `loc`: display your grid coordinates and optional overlay area.
-- `score`: display vertical resources, qualitative fatigue, horizontal stats, description, identity, stance, and location. `status` remains available as an alias.
+- `score`: display vertical resources, qualitative fatigue, horizontal stats, appearance features, description, identity, stance, and location. `status` remains available as an alias.
 - `description [text]`: view or update your public character description. `desc` remains available as an alias.
+- `features [field value]`: view or update structured appearance fields: hair, eyes, height, build, complexion, and marks.
+- `injuries`: view persistent injuries and any movement or speech penalties they cause.
+- `pregnancy`: view private pregnancy status for your character. Hidden cycle and reproductive-role values are admin-only.
 - `body`: display nutrition, hydration, fatigue, and short-rest chakra recovery.
 - `rest`: recover stamina and chakra while reducing fatigue.
 - `inventory`: list persistent carried and equipped items. `inv` remains available as an alias.
@@ -169,10 +172,10 @@ The authored `aexpanse` overlay is anchored at `(1, 1)` with two rooms and a see
 - `think`: perform the built-in thinking emote at your grid location.
 - `socials [category|all]`: list catalog-backed social actions; opt-in adult categories are hidden from the default list.
 - `consent [allow|deny <category> [character] | revoke <character>]`: manage social consent for categories such as friendly, playful, intimate, BDSM, mechanical, and restrictive.
-- `wave`, `smile`, `nod`, `bow`, `laugh`, `highfive`, `poke`: perform simple social actions.
-- `hug`, `pat`, `cuddle`, `nuzzle`: perform consent-gated social actions. Intimate socials require opt-in before use.
-- `holdhands <character>`: create a consent-gated handholding state. When you move, the held character is led along if the destination is valid.
-- `tie <character>` and `restrain <character>`: create opt-in adult restrictive states that block movement until `release` or `resist`.
+- `wave`, `smile`, `nod`, `bow`, `laugh`, `highfive`, `poke`, and many other direct social commands perform catalog-backed emotes.
+- `hug`, `pat`, `cuddle`, `nuzzle`, and intimate social commands are consent-gated. Adult categories require opt-in before they appear in default social discovery or resolve.
+- `holdhands`, `carry`, `support`, `guide`, `drag`, and `escort` create consent-gated movement/support states. These can move disabled, restrained, knocked-out, or injured targets when state and consent rules allow it.
+- `tie`, `restrain`, `gag`, `blindfold`, `bindwrists`, and `bindankles` create opt-in restrictive states until `release` or `resist`.
 - `release <character|all>` and `resist`: end active social holds or restraints. Consent can always be withdrawn or resisted.
 - `ooc <message>`: speak on the global out-of-character channel.
 - `suggest <message>`: append a timestamped player suggestion to `suggestions.md`.
@@ -190,7 +193,15 @@ NPC targets for `talk`, `consider`, `attack`, and `throw` accept name prefixes a
 
 Socials now have authored catalog records instead of only free-form `emote` text. Normal socials are visible by default, while adult intimate and BDSM categories require explicit opt-in through `consent` before they appear in `socials` or can be used. Targeted socials that touch, pull, restrain, or otherwise affect another character check the target's consent before they resolve.
 
-Mechanical social states are intentionally revocable. `holdhands` can lead a consenting character through ordinary movement. `tie` and `restrain` block movement only after explicit consent, and the target can always use `resist` or revoke consent. `release` clears states controlled by the acting character.
+Mechanical social states are intentionally revocable. Movement/support socials can lead, carry, guide, drag, escort, or support a consenting character through ordinary movement. Restrictive states such as restraint, gagging, and blindfolding only resolve after explicit consent, and the target can always use `resist` or revoke consent. `release` clears states controlled by the acting character.
+
+Pregnancy-capable adult socials are separate from ordinary character state. Pregnancy can only roll from a consented, adult, pregnancy-risk social when hidden reproductive-role state is biologically compatible; early pregnancy and cycle data are not shown in public look output.
+
+### Appearance, Injuries, and Biology
+
+Characters have structured appearance fields in addition to free-form public description. `features` manages hair, eyes, height, build, complexion, and distinguishing marks; `look at <player>` renders those visible features, the public description, obvious injuries, visible pregnancy stage, and obvious social states.
+
+Persistent injuries are stored as structured records. V1 supports missing limbs, blindness or blindfolding, gagging or muteness, scarring, chronic limp, and knocked-out state. Admin/test tools can add or clear these injuries, while combat does not create permanent injuries yet. Leg, foot, and knocked-out states block ordinary voluntary movement; gagged or mute state blocks speech commands and speech-like socials; blind or blindfolded state limits map and look output.
 
 ### Editable Help Files
 
@@ -205,10 +216,11 @@ Keep executable command syntax, aliases, permissions, and validation rules in Py
 Admin access tools:
 
 - `players`: list every registered account with online status, access flags, identity summary, saved location, and last-login timestamp.
-- `finger <username>`: inspect a player's persistent identity, admin/builder access, online state, created and last-login timestamps, resources, attributes, body state, stance, saved location, skills, and jutsus without exposing password data.
+- `finger <username>`: inspect a player's persistent identity, appearance, admin/builder access, online state, created and last-login timestamps, resources, attributes, body state, biology/pregnancy admin state, injuries, stance, saved location, skills, and jutsus without exposing password data.
 - `pstat <username>`: compatibility alias for the detailed `finger` inspection.
 - `pedit <username> builder on|off`: grant or remove builder access without granting full admin access.
-- `pset <username> <field> <value>`: set a validated player field such as `admin`, `builder`, `specialty`, `clan`, `release`, `dojo`, description, resources, `intellect`, `condition`, other attributes, nutrition, hydration, or fatigue.
+- `pset <username> <field> <value>`: set a validated player field such as `admin`, `builder`, `specialty`, `clan`, `release`, `dojo`, description, resources, attributes, body resources, appearance fields, reproductive role, cycle/pregnancy admin fields, or `injury add|clear <key|all>`.
+- `treatinjury <username> <injury|all>`: clear one persistent injury or all persistent injuries through the admin/healer path.
 - `copyover`: report that soft restarts are intentionally disabled for now.
 
 Builder overlay tools:

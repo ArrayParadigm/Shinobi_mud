@@ -1,10 +1,18 @@
 import logging
+from character_state import (
+    maybe_apply_pregnancy,
+    movement_block as injury_movement_block,
+    speech_block as injury_speech_block,
+)
 from command_system import CommandSpec
 from locations import coordinate_key, online_players
 from presentation import emote_message, ooc_message, say_message, shout_message, whisper_message
 from socials import (
     CONSENT_ALLOW,
     CONSENT_DENY,
+    DEFAULT_SOCIALS,
+    STATE_BLINDFOLDED,
+    STATE_GAGGED,
     STATE_RESTRAINED,
     active_social_states,
     can_see_social,
@@ -19,11 +27,16 @@ from socials import (
     revoke_consent,
     set_consent,
     social_template,
+    speech_block as social_speech_block,
 )
 
 logging.info("social_commands imported")
 
 def handle_say(player, raw_args, split_args, players_in_rooms):
+    blocked = injury_speech_block(player.cursor, player.username) or social_speech_block(player.cursor, player.username)
+    if blocked:
+        player.sendLine(blocked.encode("utf-8"))
+        return
     message = raw_args.strip()
     if not message:
         player.sendLine(b"You must specify a message.")
@@ -163,6 +176,16 @@ def handle_catalog_social(player, raw_args, split_args, players_in_rooms, social
     if not template or not can_see_social(player.cursor, player.username, template):
         player.sendLine(f"Unknown social: {social_key}".encode("utf-8"))
         return
+    if template["speech_blocked_by_gag"]:
+        blocked = injury_speech_block(player.cursor, player.username) or social_speech_block(player.cursor, player.username)
+        if blocked:
+            player.sendLine(blocked.encode("utf-8"))
+            return
+    if template["requires_mobile_actor"]:
+        blocked = injury_movement_block(player.cursor, player.username)
+        if blocked:
+            player.sendLine(blocked.encode("utf-8"))
+            return
     target = None
     if template["target_required"]:
         if not split_args:
@@ -190,8 +213,17 @@ def handle_catalog_social(player, raw_args, split_args, players_in_rooms, social
 
     _broadcast_social(player, target, template, players_in_rooms)
     if target and template["mechanical"]:
-        create_social_state(player.cursor, template["mechanical"], player.username, target.username)
+        if social_key == "ungag":
+            clear_social_state(player.cursor, STATE_GAGGED, player.username, target.username)
+        else:
+            create_social_state(player.cursor, template["mechanical"], player.username, target.username)
         player.cursor.connection.commit()
+    if target and template["pregnancy_risk"]:
+        result = maybe_apply_pregnancy(player.cursor, player.username, target.username, True)
+        if result.get("pregnant"):
+            carrier = _online_player(players_in_rooms, result["carrier"])
+            if carrier:
+                carrier.sendLine(b"You feel that this encounter may have lasting consequences.")
 
 
 def handle_release(player, raw_args, split_args, players_in_rooms):
@@ -227,13 +259,13 @@ def handle_resist(player, raw_args, split_args, players_in_rooms):
     rows = [
         row
         for row in active_social_states(player.cursor, player.username)
-        if row["target"] == player.username and row["state_type"] == STATE_RESTRAINED
+        if row["target"] == player.username and row["state_type"] in {STATE_RESTRAINED, STATE_GAGGED, STATE_BLINDFOLDED}
     ]
     if not rows:
         player.sendLine(b"You are not restrained.")
         return
     for row in rows:
-        clear_social_state(player.cursor, STATE_RESTRAINED, row["actor"], player.username)
+        clear_social_state(player.cursor, row["state_type"], row["actor"], player.username)
         actor = _online_player(players_in_rooms, row["actor"])
         if actor:
             actor.sendLine(f"{player.username} resists free from your restraint.".encode("utf-8"))
@@ -243,6 +275,10 @@ def handle_resist(player, raw_args, split_args, players_in_rooms):
 
 def handle_whisper(player, raw_args, split_args, players_in_rooms):
     """Send one private message to an online character."""
+    blocked = injury_speech_block(player.cursor, player.username) or social_speech_block(player.cursor, player.username)
+    if blocked:
+        player.sendLine(blocked.encode("utf-8"))
+        return
     if len(split_args) < 2:
         player.sendLine(b"Usage: whisper <character> <message>")
         return
@@ -270,6 +306,10 @@ def handle_whisper(player, raw_args, split_args, players_in_rooms):
 
 def handle_shout(player, raw_args, split_args, players_in_rooms):
     """Broadcast one message to characters within one grid cell."""
+    blocked = injury_speech_block(player.cursor, player.username) or social_speech_block(player.cursor, player.username)
+    if blocked:
+        player.sendLine(blocked.encode("utf-8"))
+        return
     message = raw_args.strip()
     if not message:
         player.sendLine(b"You must specify a message.")
@@ -345,22 +385,6 @@ COMMANDS = {
     "resist": CommandSpec("resist", lambda player, rooms, raw, args: handle_resist(player, raw, args, rooms), "resist", "Break an active restrictive social state on yourself.", max_args=0),
 }
 
-for social_name in (
-    "wave",
-    "smile",
-    "nod",
-    "bow",
-    "laugh",
-    "hug",
-    "highfive",
-    "pat",
-    "poke",
-    "cuddle",
-    "nuzzle",
-    "holdhands",
-    "tie",
-    "restrain",
-    "kneel",
-):
+for social_name in sorted({template["key"] for template in DEFAULT_SOCIALS}):
     COMMANDS[social_name] = _social_command(social_name)
 
