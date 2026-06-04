@@ -2,12 +2,12 @@
 
 ## Current Checkpoint
 
-The private-alpha gameplay loop is covered by `197` automated tests. The current build has the builder and character foundation needed for a real soak pass:
+The private-alpha gameplay loop is covered by `201` automated tests. The current build has the builder and character foundation needed for a real soak pass:
 
 - Coordinate-first wilderness movement with optional VNUM-backed overlays.
 - Persistent accounts, items, inventories, equipment, NPC instances, combat state, body resources, descriptions, and point-based technique progress.
 - Builder promotion plus builder tools for zone inventory, search, validation, publish, linking/unlinking, guarded deletion, cloning, rich template editing, spawn inspection/removal, undo, audit, and help publishing.
-- Character-facing score/body/description, visible room-flag behavior, Dex/Agi round combat, NPC stat sheets, stances, combat techniques, Throw, and Substitution Technique.
+- Character-facing score/body/description, visible room-flag behavior, consent-backed social actions, Dex/Agi round combat, NPC stat sheets, stances, combat techniques, Throw, and Substitution Technique.
 - Editable command help and command categories with unpublished `(i)` markers.
 
 Completed roadmap history now lives in [TODO-Historical.md](TODO-Historical.md). Detailed implementation notes remain in [CHANGELOG.md](CHANGELOG.md).
@@ -43,6 +43,7 @@ Clear these before starting the next broad sprint.
 - Sprint 28 added builder promotion, split builder/admin permissions, and rich item/NPC template metadata.
 - Combat Techniques Sprint added stamina-based queued pulse techniques: Strike, Guard, Feint, and Recover.
 - Round Combat and NPC Stat Sheets replaced slow pulse timing with Dex/Agi action rounds and gave NPCs player-like resources, stats, and authored technique hooks.
+- Expansive Socials and Consent Foundation added catalog-backed social actions, consent settings, handholding movement, and opt-in restrictive states.
 
 ## Active Multi-Day Sprint Queue
 
@@ -147,10 +148,6 @@ The game has a repeatable private Linux test path with clear preflight, transfer
 - [ ] Add `workout` or equivalent attribute-training loops after the practice/training model has soaked.
 - [ ] Add more real skill and jutsu actions that consume stamina/chakra and raise fatigue.
 
-### Combat Tuning
-
-- [ ] After Sprint 26 soak results, revisit auto-attack speed scaling from dexterity and agility. Candidate model: average DEX/AGI from 10 to 100 maps from 1 to 5 attacks per second, with skills, jutsu, and attributes able to modify it later.
-
 ### World and Operations
 
 - [ ] Add dimensions with independent grid sizes for planets, continents, and planes. Support dimension-aware `goto`, including `prime`.
@@ -161,7 +158,7 @@ The game has a repeatable private Linux test path with clear preflight, transfer
 
 ### Content and Systems
 
-- [ ] Add a larger social-command library.
+- [ ] Expand the social catalog with more authored normal, playful, intimate, and opt-in BDSM actions after the consent foundation soaks.
 - [ ] Expand dialogue trees, quests, objectives, and rewards.
 - [ ] Add NPC followers, factions, families, and friends.
 - [ ] Add pets with growth and progression.

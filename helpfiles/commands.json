@@ -7,6 +7,10 @@
         "summary": "Display your body resources and recovery readiness.",
         "details": ["Shows nutrition, hydration, fatigue, recovery state, and short-rest chakra recovery."]
     },
+    "bow": {
+        "summary": "Bow as a social action.",
+        "details": ["Catalog social. Visible to characters at your location."]
+    },
     "bfind": {
         "summary": "Search authored rooms, templates, and spawns.",
         "details": ["Admin builder command. Searches room VNUMs, titles, descriptions, template keys, names, keywords, and spawn references."]
@@ -29,6 +33,18 @@
     "color": {
         "summary": "Toggle ANSI terminal colors for this connection.",
         "details": ["Use color off if your client does not render ANSI colors cleanly."]
+    },
+    "cuddle": {
+        "summary": "Cuddle with a consenting character.",
+        "details": ["Adult catalog social. Hidden unless you opt into intimate socials, and the target must consent."]
+    },
+    "consent": {
+        "summary": "Manage social consent settings.",
+        "details": [
+            "Use consent with no arguments to inspect your settings.",
+            "Use consent allow <category> to opt into categories such as intimate, bdsm, mechanical, or restrictive.",
+            "Use consent deny <category> or consent revoke <character> to close access and clear related active states."
+        ]
     },
     "combat": {
         "summary": "Display your active combat engagement and stance.",
@@ -140,6 +156,18 @@
         "summary": "Queue Guard for the next combat round.",
         "details": ["Technique command. Costs 2 stamina, skips your next outgoing round attack, improves evasion, and reduces incoming damage for that round."]
     },
+    "highfive": {
+        "summary": "High-five a character at your location.",
+        "details": ["Catalog social. This friendly action does not require explicit consent."]
+    },
+    "holdhands": {
+        "summary": "Hold hands with a consenting character.",
+        "details": ["Mechanical catalog social. The target must consent to utility and mechanical socials. While active, your movement can lead them along."]
+    },
+    "hug": {
+        "summary": "Hug a consenting character at your location.",
+        "details": ["Catalog social. The target must consent to friendly socials from you or to the friendly category."]
+    },
     "help": {
         "summary": "List commands or explain one command.",
         "details": ["Help prose is loaded from helpfiles/commands.json and can be refreshed without restarting the server."]
@@ -171,6 +199,14 @@
         "summary": "List available jutsus, inspect one, or show the full catalog.",
         "details": ["Use jutsu all to include catalog placeholders that are not implemented yet."]
     },
+    "kneel": {
+        "summary": "Kneel as an opt-in adult social action.",
+        "details": ["Catalog social. Hidden unless you opt into BDSM socials."]
+    },
+    "laugh": {
+        "summary": "Laugh as a social action.",
+        "details": ["Catalog social. Visible to characters at your location."]
+    },
     "loc": {
         "summary": "Display your grid coordinates and area.",
         "details": ["Coordinates are the canonical source of truth; overlay VNUMs are optional authored metadata."]
@@ -191,6 +227,14 @@
         "summary": "Move northwest.",
         "details": ["Alias: nw."]
     },
+    "nod": {
+        "summary": "Nod as a social action.",
+        "details": ["Catalog social. Visible to characters at your location."]
+    },
+    "nuzzle": {
+        "summary": "Nuzzle a consenting character.",
+        "details": ["Adult catalog social. Hidden unless you opt into intimate socials, and the target must consent."]
+    },
     "medit": {
         "summary": "Edit an authored NPC template.",
         "details": [
@@ -209,6 +253,14 @@
     "ooc": {
         "summary": "Speak on the global out-of-character channel.",
         "details": ["Use this for player discussion that is not spoken by your character."]
+    },
+    "pat": {
+        "summary": "Give a consenting character a playful pat.",
+        "details": ["Catalog social. The target must consent to playful socials from you or to the playful category."]
+    },
+    "poke": {
+        "summary": "Poke a character playfully.",
+        "details": ["Catalog social. Visible to characters at your location."]
     },
     "placezone": {
         "summary": "Anchor a zone file on the world grid.",
@@ -245,6 +297,18 @@
     "remove": {
         "summary": "Unequip a carried item.",
         "details": []
+    },
+    "release": {
+        "summary": "Release social holds or restraints you control.",
+        "details": ["Use release <character> or release all to clear active handholding or restraint states."]
+    },
+    "resist": {
+        "summary": "Break an active restrictive social state.",
+        "details": ["Use resist to clear a restraint affecting you. Consent can always be withdrawn or resisted."]
+    },
+    "restrain": {
+        "summary": "Restrain a consenting character.",
+        "details": ["Adult mechanical social. Hidden unless you opt into BDSM socials, and the target must consent to BDSM and restrictive socials."]
     },
     "rest": {
         "summary": "Recover stamina and chakra through a short rest.",
@@ -296,6 +360,14 @@
     "shout": {
         "summary": "Speak to characters within one grid cell.",
         "details": ["Shouts reach your room and adjacent grid coordinates."]
+    },
+    "smile": {
+        "summary": "Smile as a social action.",
+        "details": ["Catalog social. Visible to characters at your location."]
+    },
+    "socials": {
+        "summary": "List catalog-backed social actions.",
+        "details": ["Use socials to list visible socials, socials <category> for one category, or socials all to inspect the full catalog including opt-in adult categories."]
     },
     "shutdown": {
         "summary": "Stop the server.",
@@ -357,6 +429,10 @@
         "summary": "Perform the built-in thinking emote.",
         "details": []
     },
+    "tie": {
+        "summary": "Tie or restrain a consenting character.",
+        "details": ["Adult mechanical social. Hidden unless you opt into BDSM socials, and the target must consent to BDSM and restrictive socials."]
+    },
     "throw": {
         "summary": "Throw a carried ranged item at a nearby hostile character.",
         "details": ["Valid throws increase Throw proficiency and land the item at the target location, even on a miss."]
@@ -372,6 +448,10 @@
     "west": {
         "summary": "Move west.",
         "details": []
+    },
+    "wave": {
+        "summary": "Wave as a social action.",
+        "details": ["Catalog social. Visible to characters at your location."]
     },
     "whisper": {
         "summary": "Send a private message to an online character.",

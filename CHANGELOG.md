@@ -1,5 +1,32 @@
 # Changelog
 
+## 2026-06-04 18:02 -0500 - Expansive Socials and Consent Foundation
+
+### Added
+
+- Added migration `24` for catalog-backed social templates, social consent settings, and active social states.
+- Added `socials`, `consent`, `release`, and `resist` commands.
+- Added direct social wrappers for normal, friendly, playful, intimate, utility, and opt-in BDSM categories.
+- Added handholding as a consent-gated movement state that can lead another character through normal movement.
+- Added opt-in restrictive states through `tie` and `restrain`, with `resist` and `release` as state clear paths.
+
+### Changed
+
+- Updated movement to block restrained characters and move handholding followers after successful leader movement.
+- Updated command help, social categories, README, TODO, and tests for the consent-backed social foundation.
+
+### Verification
+
+- `python -m unittest tests.test_socials -v`
+- `python -m unittest tests.test_commands -v`
+- `python -m unittest tests.test_socials tests.test_multiplayer tests.test_commands -v`
+- `python -m unittest discover -s tests -v`
+- `python -m compileall .`
+- JSON validation for `helpfiles/commands.json` and `helpfiles/command_categories.json`
+- JSON validation for `zones/*.json`
+- `git diff --check`
+- `python update_schema.py` and local schema readback confirmed migration `24`
+
 ## 2026-06-04 17:23 -0500 - Round Combat and NPC Stat Sheets
 
 ### Added

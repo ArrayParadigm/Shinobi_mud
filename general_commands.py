@@ -1,5 +1,6 @@
 import json
 import logging
+import sqlite3
 import presentation
 from body import apply_vacuum_exposure, body_state, body_warnings, chakra_recovery_amount, rest_character
 from combat import (
@@ -38,6 +39,7 @@ from locations import (
     online_players,
 )
 from npcs import consider_npc, npc_locations, talk_to_npc, throw_item_at_npc
+from socials import move_social_followers, movement_block
 from techniques import (
     activate_jutsu,
     jutsu_detail,
@@ -116,7 +118,21 @@ def handle_movement(player, direction):
         return
 
     try:
+        block = movement_block(player.cursor, player.username)
+        if block:
+            player.sendLine(block.encode("utf-8"))
+            return
+        previous_location = coordinate_key(player.x, player.y)
         if move_player(player, direction, world_map, players_in_rooms):
+            moved_followers = move_social_followers(
+                player,
+                direction,
+                world_map,
+                players_in_rooms,
+                from_location=previous_location,
+            )
+            for follower_name in moved_followers:
+                player.sendLine(f"You lead {follower_name} {direction}.".encode("utf-8"))
             UTILITIES["render_room"](player, WORLD_OVERLAYS)
             flags = _current_room_flags(player)
             if "vacuum" in flags:
@@ -157,6 +173,9 @@ def handle_movement(player, direction):
             player.sendLine(b"You can't go that way.")
     except LocationPersistenceError:
         logging.warning("Movement save blocked for player %s.", player.username)
+        player.sendLine(b"Movement could not be saved. Please try again.")
+    except sqlite3.OperationalError:
+        logging.warning("Movement social-state lookup blocked for player %s.", player.username)
         player.sendLine(b"Movement could not be saved. Please try again.")
 
 def handle_score(player, players_in_rooms=None):

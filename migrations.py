@@ -5,6 +5,7 @@ from combat import create_combat_tables, ensure_stance_columns, retire_initial_s
 from body import ensure_body_columns
 from items import create_item_tables, ensure_item_seed_tracking
 from npcs import create_npc_tables
+from socials import create_social_tables
 from techniques import (
     create_technique_tables,
     ensure_catalog_availability_columns,
@@ -350,6 +351,11 @@ def migration_023_npc_stat_sheets_and_round_combat(cursor):
     create_combat_tables(cursor)
 
 
+def migration_024_social_catalog_and_consent(cursor):
+    """Add catalog-backed socials, consent settings, and active social states."""
+    create_social_tables(cursor)
+
+
 MIGRATIONS = (
     (1, migration_001_non_admin_default),
     (2, migration_002_persistent_items),
@@ -374,6 +380,7 @@ MIGRATIONS = (
     (21, migration_021_player_login_timestamps),
     (22, migration_022_combat_techniques),
     (23, migration_023_npc_stat_sheets_and_round_combat),
+    (24, migration_024_social_catalog_and_consent),
 )
 
 

@@ -167,6 +167,13 @@ The authored `aexpanse` overlay is anchored at `(1, 1)` with two rooms and a see
 - `shout <message>`: speak to characters at your location and adjacent grid coordinates.
 - `emote <action>`: perform an action at your grid location.
 - `think`: perform the built-in thinking emote at your grid location.
+- `socials [category|all]`: list catalog-backed social actions; opt-in adult categories are hidden from the default list.
+- `consent [allow|deny <category> [character] | revoke <character>]`: manage social consent for categories such as friendly, playful, intimate, BDSM, mechanical, and restrictive.
+- `wave`, `smile`, `nod`, `bow`, `laugh`, `highfive`, `poke`: perform simple social actions.
+- `hug`, `pat`, `cuddle`, `nuzzle`: perform consent-gated social actions. Intimate socials require opt-in before use.
+- `holdhands <character>`: create a consent-gated handholding state. When you move, the held character is led along if the destination is valid.
+- `tie <character>` and `restrain <character>`: create opt-in adult restrictive states that block movement until `release` or `resist`.
+- `release <character|all>` and `resist`: end active social holds or restraints. Consent can always be withdrawn or resisted.
 - `ooc <message>`: speak on the global out-of-character channel.
 - `suggest <message>`: append a timestamped player suggestion to `suggestions.md`.
 - `bug <message>`: append a timestamped bug report to `bugs.md`.
@@ -178,6 +185,12 @@ Commands accept unique prefixes. The stable shortcuts `n`, `s`, `e`, `w`, `ne`, 
 Item targets accept authored keywords and abbreviations. Exact names win first; otherwise the first stable matching instance is used. Use an ordinal such as `get 2.kun` when duplicate items need an explicit selection.
 
 NPC targets for `talk`, `consider`, `attack`, and `throw` accept name prefixes and ordinals such as `talk guard` or `consider 2.guard`, which keeps long builder-authored names usable from the command line.
+
+### Social Consent
+
+Socials now have authored catalog records instead of only free-form `emote` text. Normal socials are visible by default, while adult intimate and BDSM categories require explicit opt-in through `consent` before they appear in `socials` or can be used. Targeted socials that touch, pull, restrain, or otherwise affect another character check the target's consent before they resolve.
+
+Mechanical social states are intentionally revocable. `holdhands` can lead a consenting character through ordinary movement. `tie` and `restrain` block movement only after explicit consent, and the target can always use `resist` or revoke consent. `release` clears states controlled by the acting character.
 
 ### Editable Help Files
 
