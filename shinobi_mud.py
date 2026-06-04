@@ -487,8 +487,12 @@ class NinjaMUDProtocol(basic.LineReceiver):
                 "UPDATE players SET password=? WHERE username=?",
                 (hash_password(password), self.username),
             )
-            self.cursor.connection.commit()
             logging.info("Upgraded legacy password hash for %s.", self.username)
+        self.cursor.execute(
+            "UPDATE players SET last_login_at=CURRENT_TIMESTAMP WHERE username=?",
+            (self.username,),
+        )
+        self.cursor.connection.commit()
 
         self.x = player["x"]
         self.y = player["y"]
@@ -650,9 +654,10 @@ class NinjaMUDProtocol(basic.LineReceiver):
             self.cursor.execute("""
                 INSERT INTO players (
                     username, password, x, y, is_admin, is_builder,
-                    strength, dexterity, agility, intelligence, wisdom
+                    strength, dexterity, agility, intelligence, wisdom,
+                    created_at, last_login_at
                 )
-                VALUES (?, ?, ?, ?, ?, ?, 10, 10, 10, 10, 10)
+                VALUES (?, ?, ?, ?, ?, ?, 10, 10, 10, 10, 10, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             """, (self.username, hashed_password, self.x, self.y, self.is_admin, self.is_builder))
             self.cursor.connection.commit()
             del self.character_creation_data['password']

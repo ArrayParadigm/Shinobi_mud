@@ -8,6 +8,7 @@ from content import sync_authored_content
 from locations import DIRECTION_OFFSETS, is_within_bounds, online_players, teleport_player
 from twisted.internet import reactor
 from combat import combat_status
+from techniques import list_jutsus, list_skills, proficiency_label
 from shinobi_mud import ACTIVE_CONFIG, UTILITIES, WORLD_MAP, WORLD_OVERLAYS, players_in_rooms, COMMAND_REGISTRY
 
 logging.info("admin_commands imported")
@@ -1502,11 +1503,12 @@ def _online_player(username):
 def _player_row(protocol, username):
     return protocol.cursor.execute(
         """
-        SELECT username, is_admin, role_type, clan, natural_release, dojo_alignment,
+        SELECT id, username, is_admin, role_type, clan, natural_release, dojo_alignment,
                is_builder,
                health, max_health, stamina, max_stamina, chakra, max_chakra,
                strength, dexterity, agility, intelligence, wisdom,
-               nutrition, hydration, fatigue, recovery_state, description, x, y
+               nutrition, hydration, fatigue, recovery_state, description, x, y,
+               created_at, last_login_at
         FROM players
         WHERE username=? COLLATE NOCASE
         """,
@@ -1514,22 +1516,89 @@ def _player_row(protocol, username):
     ).fetchone()
 
 
-def pstat(protocol, username):
-    """Display builder-facing persistent player state without sensitive fields."""
+def _format_timestamp(value):
+    return value if value else "never"
+
+
+def _format_progress_row(row):
+    availability = "available" if row["is_available"] else "catalog"
+    return (
+        f"{row['name']}: {proficiency_label(row['progress_points'])} "
+        f"({row['progress_points']} pts, {row['progress_percent']}%, {availability})"
+    )
+
+
+def _send_progress_section(protocol, title, rows):
+    protocol.sendLine(f"  {title}:".encode("utf-8"))
+    if not rows:
+        protocol.sendLine(b"    none")
+        return
+    for row in rows:
+        protocol.sendLine(f"    {_format_progress_row(row)}".encode("utf-8"))
+
+
+def players(protocol):
+    """List every registered player account with access and login status."""
+    rows = protocol.cursor.execute(
+        """
+        SELECT username, is_admin, is_builder, role_type, clan, natural_release,
+               x, y, created_at, last_login_at
+        FROM players
+        ORDER BY username COLLATE NOCASE
+        """
+    ).fetchall()
+    online_names = {
+        player.username.casefold()
+        for player in online_players(players_in_rooms)
+        if getattr(player, "username", None)
+    }
+    protocol.sendLine(f"Registered players: {len(rows)}".encode("utf-8"))
+    if not rows:
+        protocol.sendLine(b"  none")
+        return
+    for row in rows:
+        access = []
+        if row["is_admin"]:
+            access.append("admin")
+        if row["is_builder"]:
+            access.append("builder")
+        if not access:
+            access.append("player")
+        status = "online" if row["username"].casefold() in online_names else "offline"
+        protocol.sendLine(
+            (
+                f"  {row['username']} [{status}; {', '.join(access)}] "
+                f"specialty={row['role_type']} clan={row['clan']} release={row['natural_release']} "
+                f"loc=({row['x']}, {row['y']}) last_login={_format_timestamp(row['last_login_at'])}"
+            ).encode("utf-8")
+        )
+    protocol.sendLine(b"Use finger <username> to inspect; use pedit/pset <username> <field> <value> to manage.")
+
+
+def finger(protocol, username):
+    """Display detailed persistent player state without sensitive auth fields."""
     player = _player_row(protocol, username)
     if not player:
         protocol.sendLine(f"Player not found: {username}".encode("utf-8"))
         return
-    protocol.sendLine(f"Player {player['username']}".encode("utf-8"))
+    online = _online_player(player["username"])
+    protocol.sendLine(f"Player {player['username']} (id {player['id']})".encode("utf-8"))
     protocol.sendLine(
         (
             f"  Admin: {'yes' if player['is_admin'] else 'no'}  "
             f"Builder: {'yes' if player['is_builder'] else 'no'}  "
+            f"Online: {'yes' if online else 'no'}  "
             f"Specialty: {player['role_type']}  Clan: {player['clan']}  "
             f"Release: {player['natural_release']}"
         ).encode("utf-8")
     )
     protocol.sendLine(f"  Dojo: {player['dojo_alignment']}".encode("utf-8"))
+    protocol.sendLine(
+        (
+            f"  Created: {_format_timestamp(player['created_at'])}  "
+            f"Last Login: {_format_timestamp(player['last_login_at'])}"
+        ).encode("utf-8")
+    )
     protocol.sendLine(f"  Description: {player['description']}".encode("utf-8"))
     protocol.sendLine(
         (
@@ -1554,6 +1623,14 @@ def pstat(protocol, username):
     if stance:
         protocol.sendLine(f"  Stance: {stance['stance_name']}".encode("utf-8"))
     protocol.sendLine(f"  Location: ({player['x']}, {player['y']})".encode("utf-8"))
+    _send_progress_section(protocol, "Skills", list_skills(protocol.cursor, player["username"], include_unavailable=True))
+    _send_progress_section(protocol, "Jutsus", list_jutsus(protocol.cursor, player["username"], include_unavailable=True))
+    protocol.sendLine(b"  Manage: pedit/pset <username> <field> <value>")
+
+
+def pstat(protocol, username):
+    """Backward-compatible admin player inspection alias."""
+    finger(protocol, username)
 
 
 def _parse_boolean(value):
@@ -1737,6 +1814,8 @@ COMMANDS = {
     "hedit": CommandSpec("hedit", lambda protocol, rooms, raw, args: hedit(protocol, args[0], args[1] if len(args) > 1 else "", " ".join(args[2:])), "hedit <command> <summary|detail|category|publish|unpublish> [text]", "Edit command help prose and publish state.", permission="builder", min_args=2),
     "shutdown": CommandSpec("shutdown", lambda protocol, rooms, raw, args: shutdown(protocol), "shutdown", "Stop the server.", permission="admin", max_args=0),
     "copyover": CommandSpec("copyover", lambda protocol, rooms, raw, args: copyover(protocol), "copyover", "Report the disabled soft-restart status.", permission="admin", max_args=0),
+    "players": CommandSpec("players", lambda protocol, rooms, raw, args: players(protocol), "players", "List every registered player account.", permission="admin", max_args=0),
+    "finger": CommandSpec("finger", lambda protocol, rooms, raw, args: finger(protocol, args[0]), "finger <username>", "Inspect detailed player account, stats, skills, and jutsus.", permission="admin", min_args=1, max_args=1),
     "pstat": CommandSpec("pstat", lambda protocol, rooms, raw, args: pstat(protocol, args[0]), "pstat <username>", "Inspect persistent player state.", permission="admin", min_args=1, max_args=1),
     "pset": CommandSpec("pset", lambda protocol, rooms, raw, args: pset(protocol, args[0], args[1], " ".join(args[2:])), "pset <username> <field> <value>", "Set a validated persistent player field.", permission="admin", min_args=3),
     "pedit": CommandSpec("pedit", lambda protocol, rooms, raw, args: pedit(protocol, args[0], args[1], " ".join(args[2:])), "pedit <username> <field> <value>", "Edit access and validated persistent player fields.", permission="admin", min_args=3),

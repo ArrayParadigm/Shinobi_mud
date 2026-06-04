@@ -41,6 +41,8 @@ PLAYER_COLUMNS = (
     "fatigue",
     "recovery_state",
     "description",
+    "created_at",
+    "last_login_at",
 )
 
 
@@ -74,7 +76,9 @@ def create_players_table(cursor, table_name="players"):
             hydration INTEGER NOT NULL DEFAULT 100,
             fatigue INTEGER NOT NULL DEFAULT 0,
             recovery_state TEXT NOT NULL DEFAULT 'ready',
-            description TEXT NOT NULL DEFAULT 'An undescribed shinobi stands here.'
+            description TEXT NOT NULL DEFAULT 'An undescribed shinobi stands here.',
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            last_login_at TEXT
         )
         """
     )
@@ -152,6 +156,19 @@ def ensure_builder_access_column(cursor):
     }
     if "is_builder" not in columns:
         cursor.execute("ALTER TABLE players ADD COLUMN is_builder BOOLEAN DEFAULT 0")
+
+
+def ensure_player_login_columns(cursor):
+    """Add non-sensitive account timestamps for admin inspection."""
+    columns = {
+        column[1]
+        for column in cursor.execute("PRAGMA table_info(players)")
+    }
+    if "created_at" not in columns:
+        cursor.execute("ALTER TABLE players ADD COLUMN created_at TEXT")
+        cursor.execute("UPDATE players SET created_at=CURRENT_TIMESTAMP WHERE created_at IS NULL")
+    if "last_login_at" not in columns:
+        cursor.execute("ALTER TABLE players ADD COLUMN last_login_at TEXT")
 
 
 def migration_005_inventory_and_character_foundation(cursor):
@@ -317,6 +334,11 @@ def migration_020_rich_item_npc_templates(cursor):
     create_npc_tables(cursor)
 
 
+def migration_021_player_login_timestamps(cursor):
+    """Add non-sensitive player account timestamps for admin inspection."""
+    ensure_player_login_columns(cursor)
+
+
 MIGRATIONS = (
     (1, migration_001_non_admin_default),
     (2, migration_002_persistent_items),
@@ -338,6 +360,7 @@ MIGRATIONS = (
     (18, migration_018_builder_publish_audit_columns),
     (19, migration_019_builder_access_flag),
     (20, migration_020_rich_item_npc_templates),
+    (21, migration_021_player_login_timestamps),
 )
 
 

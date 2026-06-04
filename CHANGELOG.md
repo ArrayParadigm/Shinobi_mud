@@ -1,5 +1,24 @@
 # Changelog
 
+## 2026-06-04 15:11 -0500 - Player Admin Inspection
+
+### Added
+
+- Added `players` for password-safe listing of every registered player account with online status, access flags, identity summary, saved location, and last login.
+- Added `finger <username>` for detailed admin inspection of player identity, access, login timestamps, stats, body state, stance, location, skills, and jutsus.
+- Added migration `21` for player `created_at` and `last_login_at` timestamps.
+
+### Changed
+
+- Updated `pstat <username>` to remain as a compatibility alias for the richer `finger` output.
+- Updated account creation and successful login to maintain non-sensitive account timestamps.
+- Updated command help, command categories, README, and tests for the expanded player-admin workflow.
+
+### Verification
+
+- `python -m unittest discover -s tests -v`
+- `python -m compileall .`
+
 ## 2026-06-03 09:58 -0500 - Builder Promotion and Rich Template Sprint
 
 ### Added

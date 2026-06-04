@@ -120,6 +120,10 @@
         "summary": "Inspect a visible or carried item.",
         "details": ["Item targets accept names, keywords, prefixes, and ordinals such as 2.kunai."]
     },
+    "finger": {
+        "summary": "Inspect detailed player account, stats, skills, and jutsus.",
+        "details": ["Admin command. Shows player access, online state, created and last-login timestamps, identity, resources, attributes, body state, location, skill progress, and jutsu progress without exposing password data."]
+    },
     "get": {
         "summary": "Pick up an item at your location.",
         "details": ["Item targets accept names, keywords, prefixes, and ordinals such as 2.kunai."]
@@ -202,6 +206,10 @@
         "summary": "Anchor a zone file on the world grid.",
         "details": ["Admin builder command. Reloads overlay coordinates after persisting the new anchor."]
     },
+    "players": {
+        "summary": "List every registered player account.",
+        "details": ["Admin command. Lists every saved player with online status, access flags, identity summary, location, and last-login timestamp. Use finger for full inspection and pedit or pset for edits."]
+    },
     "prac": {
         "summary": "List skills or inspect usage-based proficiency.",
         "details": ["Ordinary skill proficiency increases through valid gameplay use. Active practice reports visible tier progress without raw percentages."]
@@ -216,7 +224,7 @@
     },
     "pstat": {
         "summary": "Inspect persistent player state.",
-        "details": ["Admin command. Displays identity, access, resources, attributes, body state, and saved location without exposing password data."]
+        "details": ["Admin command. Compatibility alias for finger; displays detailed player state without exposing password data."]
     },
     "reloadcontent": {
         "summary": "Reload authored JSON content into live state.",

@@ -101,6 +101,8 @@
     "Admin": [
         "shutdown",
         "copyover",
+        "players",
+        "finger",
         "pstat",
         "pset",
         "pedit",

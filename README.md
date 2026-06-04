@@ -191,7 +191,9 @@ Keep executable command syntax, aliases, permissions, and validation rules in Py
 
 Admin access tools:
 
-- `pstat <username>`: inspect a player's persistent identity, access, resources, body state, and saved location without exposing password data.
+- `players`: list every registered account with online status, access flags, identity summary, saved location, and last-login timestamp.
+- `finger <username>`: inspect a player's persistent identity, admin/builder access, online state, created and last-login timestamps, resources, attributes, body state, stance, saved location, skills, and jutsus without exposing password data.
+- `pstat <username>`: compatibility alias for the detailed `finger` inspection.
 - `pedit <username> builder on|off`: grant or remove builder access without granting full admin access.
 - `pset <username> <field> <value>`: set a validated player field such as `admin`, `builder`, `specialty`, `clan`, `release`, `dojo`, description, resources, `intellect`, `condition`, other attributes, nutrition, hydration, or fatigue.
 - `copyover`: report that soft restarts are intentionally disabled for now.

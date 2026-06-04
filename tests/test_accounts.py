@@ -63,6 +63,8 @@ class AccountLifecycleTests(unittest.TestCase):
         self.assertEqual(row["agility"], 10)
         self.assertEqual(row["intelligence"], 10)
         self.assertEqual(row["wisdom"], 10)
+        self.assertIsNotNone(row["created_at"])
+        self.assertIsNotNone(row["last_login_at"])
         self.assertEqual(player.state, "COMMAND")
 
     def test_login_restores_saved_character_fields(self):
@@ -84,6 +86,10 @@ class AccountLifecycleTests(unittest.TestCase):
         self.assertFalse(player.is_builder)
         self.assertEqual(player.player_class, "a")
         self.assertEqual(player.state, "COMMAND")
+        last_login = self.connection.execute(
+            "SELECT last_login_at FROM players WHERE username='ReturningUser'"
+        ).fetchone()["last_login_at"]
+        self.assertIsNotNone(last_login)
 
     def test_legacy_sha256_password_is_upgraded_after_login(self):
         legacy_hash = hashlib.sha256(b"legacy password").hexdigest()
@@ -257,6 +263,53 @@ class PlayerAdminTests(unittest.TestCase):
                 0,
             ),
         )
+        self.connection.execute(
+            """
+            INSERT INTO players (
+                username, password, is_admin, is_builder, role_type, clan, natural_release,
+                x, y, last_login_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            ("BuilderTarget", "builder-secret", 0, 1, "Taijutsu", "Sand", "Wind", 501, 500, "2026-06-03 12:00:00"),
+        )
+        self.connection.execute(
+            """
+            INSERT INTO skill_definitions (skill_key, name, description, usage_gain, is_available)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            ("throw", "Throw", "Throwing weapons.", 1, 1),
+        )
+        self.connection.execute(
+            """
+            INSERT INTO jutsu_definitions (jutsu_key, name, description, usage_gain, is_available)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            ("substitution-technique", "Substitution Technique", "Body replacement.", 1, 1),
+        )
+        target_id = self.connection.execute(
+            "SELECT id FROM players WHERE username='Target'"
+        ).fetchone()["id"]
+        skill_id = self.connection.execute(
+            "SELECT id FROM skill_definitions WHERE skill_key='throw'"
+        ).fetchone()["id"]
+        jutsu_id = self.connection.execute(
+            "SELECT id FROM jutsu_definitions WHERE jutsu_key='substitution-technique'"
+        ).fetchone()["id"]
+        self.connection.execute(
+            """
+            INSERT INTO character_skills (player_id, skill_definition_id, progress_percent, progress_points)
+            VALUES (?, ?, ?, ?)
+            """,
+            (target_id, skill_id, 25, 250),
+        )
+        self.connection.execute(
+            """
+            INSERT INTO character_jutsus (player_id, jutsu_definition_id, progress_percent, progress_points)
+            VALUES (?, ?, ?, ?)
+            """,
+            (target_id, jutsu_id, 5, 50),
+        )
         self.connection.commit()
         self.admin = TestProtocol(self.connection.cursor())
         self.admin.username = "Admin"
@@ -270,12 +323,38 @@ class PlayerAdminTests(unittest.TestCase):
         admin_commands.pstat(self.admin, "Target")
 
         rendered = "\n".join(self.admin.messages)
-        self.assertIn("Player Target", rendered)
+        self.assertIn("Player Target (id ", rendered)
         self.assertIn("Admin: no  Builder: no", rendered)
+        self.assertIn("Online: no", rendered)
         self.assertIn("Specialty: Ninjutsu  Clan: Leaf  Release: Fire", rendered)
+        self.assertIn("Created:", rendered)
+        self.assertIn("Last Login:", rendered)
         self.assertIn("Body: nutrition=100 hydration=100 fatigue=0", rendered)
         self.assertIn("Stance: S3 - Balance", rendered)
+        self.assertIn("Skills:", rendered)
+        self.assertIn("Throw: Novice (250 pts, 16%, available)", rendered)
+        self.assertIn("Jutsus:", rendered)
+        self.assertIn("Substitution Technique: Unlearned (50 pts, 43%, available)", rendered)
+        self.assertIn("Manage: pedit/pset <username> <field> <value>", rendered)
         self.assertNotIn("secret-hash", rendered)
+
+    def test_players_lists_registered_accounts_for_admin_management(self):
+        online_target = TestProtocol(self.connection.cursor())
+        online_target.username = "Target"
+        online_target.x = 500
+        online_target.y = 500
+        online_target.track_player()
+
+        admin_commands.players(self.admin)
+
+        rendered = "\n".join(self.admin.messages)
+        self.assertIn("Registered players: 2", rendered)
+        self.assertIn("Target [online; player]", rendered)
+        self.assertIn("BuilderTarget [offline; builder]", rendered)
+        self.assertIn("last_login=2026-06-03 12:00:00", rendered)
+        self.assertIn("Use finger <username> to inspect; use pedit/pset", rendered)
+        self.assertNotIn("secret-hash", rendered)
+        self.assertNotIn("builder-secret", rendered)
 
     def test_pset_updates_validated_fields_and_clamps_current_resource(self):
         admin_commands.pset(self.admin, "Target", "health", "9")
