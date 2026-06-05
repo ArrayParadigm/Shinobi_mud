@@ -318,7 +318,7 @@
         {
             "key": "travel-ration",
             "name": "Travel Ration",
-            "description": "A compact ration packed for a shinobi on the move.",
+            "description": "A compact ration packed for a veilborn on the move.",
             "keywords": [
                 "ration",
                 "food",
@@ -385,7 +385,7 @@
             "behavior": "hostile",
             "max_health": 12,
             "max_stamina": 10,
-            "max_chakra": 10,
+            "max_wisp": 10,
             "strength": 4,
             "dexterity": 5,
             "agility": 5,
@@ -422,9 +422,9 @@
             "usage_gain": 1
         },
         {
-            "key": "chakra-control",
-            "name": "Chakra Control",
-            "description": "Precision training for shaping and maintaining chakra.",
+            "key": "wisp-control",
+            "name": "Wisp Control",
+            "description": "Precision training for shaping and maintaining wisp.",
             "available": false
         },
         {
@@ -440,25 +440,25 @@
             "available": false
         },
         {
-            "key": "taijutsu",
-            "name": "Taijutsu",
+            "key": "bodycraft",
+            "name": "Bodycraft",
             "description": "Close-combat training for unarmed strikes and defensive exchanges.",
             "available": false
         },
         {
             "key": "weapon-handling",
             "name": "Weapon Handling",
-            "description": "General training for wielding and maintaining ninja tools.",
+            "description": "General training for wielding and maintaining veilborn tools.",
             "available": false
         }
     ],
-    "jutsu_templates": [
+    "expression_templates": [
         {
             "key": "substitution-technique",
-            "name": "Substitution Technique",
+            "name": "Substitution Expression",
             "description": "Defensive-response training for escaping a strike through substitution.",
             "usage_gain": 1,
-            "chakra_cost": 3,
+            "wisp_cost": 3,
             "activation_seconds": 30,
             "cooldown_seconds": 60,
             "effect_key": "substitution"
@@ -484,13 +484,13 @@
         {
             "key": "tree-climbing-practice",
             "name": "Tree Climbing Practice",
-            "description": "Chakra-control exercise for maintaining footing on vertical surfaces.",
+            "description": "Wisp-control exercise for maintaining footing on vertical surfaces.",
             "available": false
         },
         {
             "key": "water-surface-walking-practice",
             "name": "Water Surface Walking Practice",
-            "description": "Chakra-control exercise for maintaining footing on unstable water.",
+            "description": "Wisp-control exercise for maintaining footing on unstable water.",
             "available": false
         }
     ],

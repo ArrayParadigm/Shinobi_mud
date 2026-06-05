@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 
 import general_commands
-import shinobi_mud
+import veilborn_mud
 import utils
 from content import sync_authored_content
 from items import inventory_items, room_items
@@ -18,45 +18,45 @@ class ItemPersistenceTests(unittest.TestCase):
     def setUp(self):
         self.connection = sqlite3.connect(":memory:")
         self.connection.row_factory = sqlite3.Row
-        shinobi_mud.conn = self.connection
-        shinobi_mud.cursor = self.connection.cursor()
-        shinobi_mud.ensure_tables_exist(self.connection)
+        veilborn_mud.conn = self.connection
+        veilborn_mud.cursor = self.connection.cursor()
+        veilborn_mud.ensure_tables_exist(self.connection)
         apply_migrations(self.connection)
-        shinobi_mud.players_in_rooms.clear()
-        shinobi_mud.WORLD_OVERLAYS.clear()
+        veilborn_mud.players_in_rooms.clear()
+        veilborn_mud.WORLD_OVERLAYS.clear()
         utils.preload_zones_with_anchors(
-            shinobi_mud.WORLD_OVERLAYS,
+            veilborn_mud.WORLD_OVERLAYS,
             str(PROJECT_ROOT / "zones"),
         )
         sync_authored_content(
             self.connection,
             str(PROJECT_ROOT / "zones"),
-            shinobi_mud.WORLD_OVERLAYS,
+            veilborn_mud.WORLD_OVERLAYS,
         )
         self.connection.execute(
             """
             INSERT INTO players (username, password, x, y)
             VALUES (?, ?, ?, ?)
             """,
-            ("Collector", shinobi_mud.hash_password("password"), 500, 500),
+            ("Collector", veilborn_mud.hash_password("password"), 500, 500),
         )
         self.connection.commit()
-        self.player = TestProtocol(shinobi_mud.cursor)
+        self.player = TestProtocol(veilborn_mud.cursor)
         self.player.username = "Collector"
         self.player.x = 500
         self.player.y = 500
         self.player.state = "COMMAND"
 
     def tearDown(self):
-        shinobi_mud.players_in_rooms.clear()
-        shinobi_mud.WORLD_OVERLAYS.clear()
+        veilborn_mud.players_in_rooms.clear()
+        veilborn_mud.WORLD_OVERLAYS.clear()
         self.connection.close()
 
     def test_migration_seeds_eves_haven_items_once(self):
         imported = sync_authored_content(
             self.connection,
             str(PROJECT_ROOT / "zones"),
-            shinobi_mud.WORLD_OVERLAYS,
+            veilborn_mud.WORLD_OVERLAYS,
         )
 
         definitions = self.connection.execute(
@@ -107,7 +107,7 @@ class ItemPersistenceTests(unittest.TestCase):
 
     def test_inventory_persists_through_reconnect(self):
         general_commands.handle_get(self.player, "Haven Map")
-        returning_player = TestProtocol(shinobi_mud.cursor)
+        returning_player = TestProtocol(veilborn_mud.cursor)
 
         returning_player.handle_username("Collector")
         returning_player.handle_password("password")
@@ -125,7 +125,7 @@ class ItemPersistenceTests(unittest.TestCase):
         imported = sync_authored_content(
             self.connection,
             str(PROJECT_ROOT / "zones"),
-            shinobi_mud.WORLD_OVERLAYS,
+            veilborn_mud.WORLD_OVERLAYS,
         )
 
         self.assertEqual(imported["item_spawns"], 0)
@@ -206,7 +206,7 @@ class ItemPersistenceTests(unittest.TestCase):
         general_commands.handle_get(self.player, "kun")
         general_commands.handle_wield(self.player, "kun")
 
-        returning_player = TestProtocol(shinobi_mud.cursor)
+        returning_player = TestProtocol(veilborn_mud.cursor)
         returning_player.username = "Collector"
         general_commands.handle_inventory(returning_player)
         general_commands.handle_remove(returning_player, "kun")
@@ -314,7 +314,7 @@ class ItemPersistenceTests(unittest.TestCase):
         imported = sync_authored_content(
             self.connection,
             str(PROJECT_ROOT / "zones"),
-            shinobi_mud.WORLD_OVERLAYS,
+            veilborn_mud.WORLD_OVERLAYS,
         )
 
         self.assertEqual(imported["item_spawns"], 0)

@@ -1,5 +1,31 @@
 # Changelog
 
+## 2026-06-04 22:27 -0500 - Veilborn Refactor
+
+### Added
+
+- Added Veilborn framework modules for essences, essence ability placeholders, lineage, pregnancy, consent, and centralized schema entrypoints.
+- Added `docs/ESSENCE_TYPES.md` and moved design-reference docs under `docs/design/`.
+- Added domain command modules under `commands/` for movement, inventory, vitality, progression, combat, socials, builder tools, player admin, world admin, and help/feedback.
+
+### Changed
+
+- Renamed active project identity to `Veilborn_mud`, including entrypoint, run script, config DB name, protocol/factory classes, tests, docs, and command metadata.
+- Replaced active terminology with Wisp, House, Essence, and Expression, including schema/table/column names for fresh dev databases.
+- Renamed supernatural ability command surface to `expression` and `useexpression`, with no old ability aliases kept.
+- Archived the old local dev database under `.local/archive/` and reset runtime config to `veilborn_mud.db`.
+- Reworked `TODO.md` into a clean Veilborn refactor checklist.
+
+### Verification
+
+- `python -m unittest tests.test_commands -v`
+- `python -m unittest discover -s tests -v`
+- `python -m compileall .`
+- JSON validation for `helpfiles/*.json` and `zones/*.json`
+- Banned old-term grep for active files
+- Fresh `python reset_dev_db.py`
+- Startup smoke through `veilborn_mud.run_server(...)` with a fake reactor
+
 ## 2026-06-04 18:49 -0500 - Pregnancy, Injury, Appearance, and Expanded XSocials
 
 ### Added
@@ -30,10 +56,10 @@
 ### Added
 
 - Added migration `24` for catalog-backed social templates, social consent settings, and active social states.
-- Added `socials`, `consent`, `release`, and `resist` commands.
+- Added `socials`, `consent`, `free`, and `resist` commands.
 - Added direct social wrappers for normal, friendly, playful, intimate, utility, and opt-in BDSM categories.
 - Added handholding as a consent-gated movement state that can lead another character through normal movement.
-- Added opt-in restrictive states through `tie` and `restrain`, with `resist` and `release` as state clear paths.
+- Added opt-in restrictive states through `tie` and `restrain`, with `resist` and `free` as state clear paths.
 
 ### Changed
 
@@ -57,7 +83,7 @@
 ### Added
 
 - Added migration `23` for player-like NPC resources/stats and precise combat round timing.
-- Added NPC template fields for health, stamina, chakra, Strength, Dexterity, Agility, Intelligence, Wisdom, combat techniques, and jutsus.
+- Added NPC template fields for health, stamina, wisp, Strength, Dexterity, Agility, Intelligence, Wisdom, combat techniques, and expressions.
 - Added Dex/Agi combat round timing from `1` to `5` attacks per second, with `next_round_at` preserving sub-second scheduling.
 - Added NPC stamina spending for authored combat techniques such as Strike.
 
@@ -101,7 +127,7 @@
 ### Added
 
 - Added `players` for password-safe listing of every registered player account with online status, access flags, identity summary, saved location, and last login.
-- Added `finger <username>` for detailed admin inspection of player identity, access, login timestamps, stats, body state, stance, location, skills, and jutsus.
+- Added `finger <username>` for detailed admin inspection of player identity, access, login timestamps, stats, body state, stance, location, skills, and expressions.
 - Added migration `21` for player `created_at` and `last_login_at` timestamps.
 
 ### Changed
@@ -166,13 +192,13 @@
 ### Changed
 
 - Restored the tracked `world.map` startup dependency so imports and tests can load the world map again.
-- Hid raw backend percentages from active `prac <skill>` and `train <jutsu>` action feedback while preserving stored progress and inspection output.
+- Hid raw backend percentages from active `prac <skill>` and `train <expression>` action feedback while preserving stored progress and inspection output.
 - Updated `TODO.md` to put immediate stabilization ahead of Sprint 26 and moved combat attack-speed tuning into the post-soak backlog.
 
 ### Verification
 
 - Added focused regression coverage for active `prac` and `train` output without percent signs.
-- Passed `python -m unittest tests.test_techniques -q`.
+- Passed `python -m unittest tests.test_expressions -q`.
 - Passed `python -m unittest discover -s tests -q` with `178` tests.
 - Passed a temporary-database TCP smoke covering registration, `look`, movement, `body`, `rest`, `prac throw`, and `train substitution`.
 
@@ -207,11 +233,11 @@
 
 ### Changed
 
-- Reworked `score` into vertical health, stamina, chakra, qualitative fatigue, horizontal stats, and description output.
+- Reworked `score` into vertical health, stamina, wisp, qualitative fatigue, horizontal stats, and description output.
 - Mapped displayed `Intellect` to persisted `intelligence` and `Condition` to persisted `wisdom` while preserving DB compatibility.
 - Extended `pstat` and `pset` to expose descriptions plus `intellect` and `condition` aliases safely.
 - Applied room-flag consequences for `indoor`, `outdoor`, `vacuum`, `darkness`, `brightness`, `safe`, `no-combat`, and `recovery-friendly`.
-- Reworked skill and jutsu progress to hidden point thresholds while keeping tier and percent display for `prac`, `train`, gameplay use, `skill`, and `jutsu`.
+- Reworked skill and expression progress to hidden point thresholds while keeping tier and percent display for `prac`, `train`, gameplay use, `skill`, and `expression`.
 
 ### Verification
 
@@ -293,9 +319,9 @@
 
 ### Changed
 
-- Kept `setrole`, `setstat`, and `setdojo` as compatibility wrappers around the validated `pset` path.
+- Kept `setrole`, `setstat`, and `sethouse` as compatibility wrappers around the validated `pset` path.
 - Refresh connected protocol metadata immediately when `pset` changes admin access or specialty.
-- Clamp current health, stamina, or chakra when an administrator lowers the corresponding maximum.
+- Clamp current health, stamina, or wisp when an administrator lowers the corresponding maximum.
 
 ### Verification
 
@@ -380,7 +406,7 @@
 - Added `dig <direction> <room_name>` for persisted coordinate-aware rooms with reciprocal exits.
 - Added `roomdesc <description>` for authored overlay room editing.
 - Added `createnpc <npc_key> <name>` and `spawnnpc <npc_key>` for basic static NPC templates and persistent seeded spawns.
-- Documented Eve's Haven entrance and garden as a compact training path for recovery, melee, Throw, and Substitution Technique.
+- Documented Eve's Haven entrance and garden as a compact training path for recovery, melee, Throw, and Substitution Expression.
 
 ### Changed
 
@@ -392,22 +418,22 @@
 - Passed `python -m unittest discover -s tests -v` with 135 tests.
 - Passed Python syntax compilation and `git diff --check`.
 
-## 2026-06-02 10:59 -0500 - Substitution Technique Vertical Slice
+## 2026-06-02 10:59 -0500 - Substitution Expression Vertical Slice
 
 ### Added
 
-- Added authored jutsu execution metadata and persisted per-character activation state through migration 13.
-- Added `usejutsu <jutsu>` and implemented Substitution Technique as a `3` chakra preparation with a `30` second defensive window and a `60` second cooldown.
-- Added scheduler cleanup for expired jutsu activations and cooldowns.
+- Added authored expression execution metadata and persisted per-character activation state through migration 13.
+- Added `useexpression <expression>` and implemented Substitution Expression as a `3` wisp preparation with a `30` second defensive window and a `60` second cooldown.
+- Added scheduler cleanup for expired expression activations and cooldowns.
 
 ### Changed
 
-- Made the next eligible hostile NPC strike consume prepared Substitution Technique instead of damaging the player.
+- Made the next eligible hostile NPC strike consume prepared Substitution Expression instead of damaging the player.
 - Raised Substitution proficiency when its defensive effect resolves successfully.
 
 ### Verification
 
-- Added activation, insufficient-chakra, persistence, expiry, defensive-resolution, cooldown, and transactional rollback coverage.
+- Added activation, insufficient-wisp, persistence, expiry, defensive-resolution, cooldown, and transactional rollback coverage.
 - Passed `python -m unittest discover -s tests -v` with 132 tests.
 - Passed Python syntax compilation and `git diff --check`.
 
@@ -416,7 +442,7 @@
 ### Changed
 
 - Reorganized `TODO.md` into a concise active roadmap with completed checkpoints summarized once.
-- Made Substitution Technique the single active Sprint 16 implementation queue.
+- Made Substitution Expression the single active Sprint 16 implementation queue.
 - Added timestamps to roadmap-era changelog headings using corresponding Git commit times.
 
 ## 2026-06-02 10:33 -0500 - Throw Skill Vertical Slice
@@ -433,21 +459,21 @@
 - Passed `python -m unittest discover -s tests -v` with 127 tests.
 - Passed Python syntax compilation and `git diff --check`.
 
-## 2026-06-02 10:19 -0500 - Usage-Based Skill and Jutsu Framework
+## 2026-06-02 10:19 -0500 - Usage-Based Skill and Expression Framework
 
 ### Added
 
-- Added separate authored skill and jutsu definitions with persistent per-character proficiency through migrations 9 and 10.
-- Added `prac [skill]` and `train [jutsu]` for listing ordinary skills and jutsus or inspecting proficiency.
-- Seeded `Throw` and `Substitution Technique` as the first framework records.
+- Added separate authored skill and expression definitions with persistent per-character proficiency through migrations 9 and 10.
+- Added `prac [skill]` and `train [expression]` for listing ordinary skills and expressions or inspecting proficiency.
+- Seeded `Throw` and `Substitution Expression` as the first framework records.
 - Added reusable valid-use progression helpers with authored gains, a `100%` cap, and `Novice` through `Grandmaster` display tiers.
-- Added `skill [all|skill]` and `jutsu [all|jutsu]` discovery commands.
-- Added catalog-only placeholder skills and jutsus through migration 11; placeholders are marked `[unimplemented]` and cannot gain proficiency.
+- Added `skill [all|skill]` and `expression [all|expression]` discovery commands.
+- Added catalog-only placeholder skills and expressions through migration 11; placeholders are marked `[unimplemented]` and cannot gain proficiency.
 
 ### Changed
 
 - Replaced point-spend advancement with usage-based proficiency.
-- Deferred ranged attacks, chakra costs, cooldowns, cast timing, and Substitution combat effects to the first technique vertical slice.
+- Deferred ranged attacks, wisp costs, cooldowns, cast timing, and Substitution combat effects to the first technique vertical slice.
 
 ### Verification
 
@@ -479,13 +505,13 @@
 ### Added
 
 - Added persistent abstract nutrition, hydration, fatigue, and recovery-readiness fields through migration 7.
-- Added `body` for condition inspection and `rest` for deliberate stamina and chakra recovery.
+- Added `body` for condition inspection and `rest` for deliberate stamina and wisp recovery.
 - Added private online `whisper` messages and nearby `shout` messages for the current and adjacent grid coordinates.
 
 ### Changed
 
 - Increased fatigue through ordinary movement and valid hostile combat turns.
-- Made short-rest chakra recovery depend on wisdom, nutrition, hydration, and fatigue.
+- Made short-rest wisp recovery depend on wisdom, nutrition, hydration, and fatigue.
 - Extended terminal-control sanitization to whispers and shouts.
 - Deferred reproductive and mature-consequence mechanics until an explicit adult-only opt-in roleplay design exists.
 
@@ -558,12 +584,12 @@
 - Added authored item keywords, item types, equipment slots, usage text, and future-facing damage bonuses.
 - Added abbreviated and ordinal item targeting, including commands such as `get kun` and `get 2.kun`.
 - Added `examine`, `look at`, `wield`, and `remove`, with persistent equipped slots and clearer inventory formatting.
-- Added durable maximum health, stamina, and chakra fields alongside clan and natural release.
+- Added durable maximum health, stamina, and wisp fields alongside clan and essence.
 
 ### Changed
 
 - Replaced incremental character stats with one named allocation line whose bonuses total exactly 10.
-- Added specialty, clan, and natural-release choices to new-character creation and displayed them in `score`.
+- Added specialty, clan, and natural-free choices to new-character creation and displayed them in `score`.
 - Made routine room views compact while keeping the larger terrain map under `survey`.
 - Grouped room details into readable blocks and removed noisy empty-room lines.
 - Recovered defeated players to their stored maximum health.
@@ -583,7 +609,7 @@
 - Planned authored item keywords, abbreviated item targeting, ordinal duplicate selection, examination, equipment persistence, and wielding.
 - Defined the Practice Kunai as the first authored weapon/tool while deferring thrown attacks until ranged combat rules are deliberate.
 - Added a presentation cleanup pass for compact maps and readable room sections.
-- Shifted combat reliability, character foundation, chakra abilities, builder tooling, and the private-alpha exercise to Sprints 13 through 17.
+- Shifted combat reliability, character foundation, wisp abilities, builder tooling, and the private-alpha exercise to Sprints 13 through 17.
 
 ## 2026-06-01 15:34 -0500 - Post-Combat Roadmap Checkpoint
 
@@ -591,8 +617,8 @@
 
 - Reconciled the active roadmap after the basic NPC combat slice.
 - Adopted milestone sprints with one testable vertical slice, regression coverage, smoke-test notes, documentation, changelog updates, and a focused commit per sprint.
-- Ordered the next work as combat reliability, character foundation, first chakra ability, builder tools and training content, then a private Linux exercise.
-- Clarified that `TODO.md` is the active implementation queue while documents under `Content/` remain long-term design references.
+- Ordered the next work as combat reliability, character foundation, first wisp ability, builder tools and training content, then a private Linux exercise.
+- Clarified that `TODO.md` is the active implementation queue while documents under `docs/design/` remain long-term design references.
 
 ### Verification
 
@@ -631,7 +657,7 @@
 
 ### Changed
 
-- Renamed the configured local SQLite database from `mud_game_10_rooms.db` to `shinobi_mud.db`.
+- Renamed the configured local SQLite database from `mud_game_10_rooms.db` to `veilborn_mud.db`.
 - Preserved authored item provenance so content reloads do not recreate objects after players pick them up.
 
 ### Verification
@@ -810,7 +836,7 @@
 
 - Loaded the TCP listening port from `config.json` instead of hardcoding `4000`.
 - Split server initialization from reactor startup so runtime behavior can be smoke-tested without opening a real socket.
-- Reused the active `shinobi_mud` module when launched as a script so command imports do not create a second copy of global server state.
+- Reused the active `veilborn_mud` module when launched as a script so command imports do not create a second copy of global server state.
 - Made repeated logging initialization close and replace existing handlers cleanly.
 
 ### Verification
@@ -838,7 +864,7 @@
 - Replaced fragile numeric login indexes with named SQLite row fields.
 - Corrected loading of saved coordinates, admin status, and role data during login.
 - Rejected zero, negative, and over-budget stat allocations.
-- Updated setup documentation for Windows and Linux testing.
+- Updated setup documentation for Felineows and Linux testing.
 - Repaired the command module template so the repository compiles cleanly.
 
 ### Repository Hygiene

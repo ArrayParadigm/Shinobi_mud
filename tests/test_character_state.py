@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 import admin_commands
 import general_commands
-import shinobi_mud
+import veilborn_mud
 import social_commands
 from character_state import feature_state, injury_rows
 from migrations import apply_migrations
@@ -15,12 +15,12 @@ class CharacterStateTests(unittest.TestCase):
     def setUp(self):
         self.connection = sqlite3.connect(":memory:")
         self.connection.row_factory = sqlite3.Row
-        shinobi_mud.conn = self.connection
-        shinobi_mud.cursor = self.connection.cursor()
-        shinobi_mud.ensure_tables_exist(self.connection)
+        veilborn_mud.conn = self.connection
+        veilborn_mud.cursor = self.connection.cursor()
+        veilborn_mud.ensure_tables_exist(self.connection)
         apply_migrations(self.connection)
-        shinobi_mud.players_in_rooms.clear()
-        shinobi_mud.WORLD_OVERLAYS.clear()
+        veilborn_mud.players_in_rooms.clear()
+        veilborn_mud.WORLD_OVERLAYS.clear()
         self.world_map = [list("..."), list("..."), list("...")]
         self.array = self.create_player("Array", 1, 1)
         self.eve = self.create_player("Eve", 1, 1)
@@ -30,8 +30,8 @@ class CharacterStateTests(unittest.TestCase):
             player.messages.clear()
 
     def tearDown(self):
-        shinobi_mud.players_in_rooms.clear()
-        shinobi_mud.WORLD_OVERLAYS.clear()
+        veilborn_mud.players_in_rooms.clear()
+        veilborn_mud.WORLD_OVERLAYS.clear()
         self.connection.close()
 
     def create_player(self, username, x, y):
@@ -65,7 +65,7 @@ class CharacterStateTests(unittest.TestCase):
         admin_commands.pset(self.admin, "Eve", "pregnancy_stage", "middle")
         self.array.messages.clear()
 
-        general_commands.handle_look(self.array, shinobi_mud.players_in_rooms, "at Eve")
+        general_commands.handle_look(self.array, veilborn_mud.players_in_rooms, "at Eve")
 
         rendered = "\n".join(self.array.messages)
         self.assertIn("You see Eve.", rendered)
@@ -81,13 +81,13 @@ class CharacterStateTests(unittest.TestCase):
         admin_commands.pset(self.admin, "Eve", "repro", "can_carry")
         admin_commands.pset(self.admin, "Eve", "cycle_day", "14")
         for category in ("intimate",):
-            social_commands.handle_consent(self.eve, f"allow {category} Array", ["allow", category, "Array"], shinobi_mud.players_in_rooms)
-        social_commands.handle_consent(self.array, "allow intimate", ["allow", "intimate"], shinobi_mud.players_in_rooms)
+            social_commands.handle_consent(self.eve, f"allow {category} Array", ["allow", category, "Array"], veilborn_mud.players_in_rooms)
+        social_commands.handle_consent(self.array, "allow intimate", ["allow", "intimate"], veilborn_mud.players_in_rooms)
         self.array.messages.clear()
         self.eve.messages.clear()
 
         with patch("character_state.random.randint", return_value=1):
-            social_commands.handle_catalog_social(self.array, "Eve", ["Eve"], shinobi_mud.players_in_rooms, "breed")
+            social_commands.handle_catalog_social(self.array, "Eve", ["Eve"], veilborn_mud.players_in_rooms, "breed")
 
         row = feature_state(self.connection.cursor(), "Eve")
         self.assertEqual(row["pregnancy_status"], "pregnant")
@@ -103,24 +103,24 @@ class CharacterStateTests(unittest.TestCase):
             general_commands.handle_movement(self.eve, "east")
         finally:
             general_commands.UTILITIES["WORLD_MAP"] = original_map
-        social_commands.handle_say(self.eve, "hello", ["hello"], shinobi_mud.players_in_rooms)
+        social_commands.handle_say(self.eve, "hello", ["hello"], veilborn_mud.players_in_rooms)
 
         self.assertTrue(any("Your injuries prevent ordinary movement." in message for message in self.eve.messages))
         self.assertIn("You cannot speak clearly right now.", self.eve.messages)
 
         admin_commands.treatinjury(self.admin, "Eve", "all")
         self.eve.messages.clear()
-        social_commands.handle_say(self.eve, "hello", ["hello"], shinobi_mud.players_in_rooms)
+        social_commands.handle_say(self.eve, "hello", ["hello"], veilborn_mud.players_in_rooms)
         self.assertIn('Eve says, "hello"', self.eve.messages)
 
     def test_carry_can_move_injured_target_with_consent(self):
         admin_commands.pset(self.admin, "Eve", "injury", "add missing_left_leg")
         for category in ("utility", "mechanical"):
-            social_commands.handle_consent(self.eve, f"allow {category} Array", ["allow", category, "Array"], shinobi_mud.players_in_rooms)
+            social_commands.handle_consent(self.eve, f"allow {category} Array", ["allow", category, "Array"], veilborn_mud.players_in_rooms)
         self.array.messages.clear()
         self.eve.messages.clear()
 
-        social_commands.handle_catalog_social(self.array, "Eve", ["Eve"], shinobi_mud.players_in_rooms, "carry")
+        social_commands.handle_catalog_social(self.array, "Eve", ["Eve"], veilborn_mud.players_in_rooms, "carry")
 
         original_map = general_commands.UTILITIES["WORLD_MAP"]
         original_render_room = general_commands.UTILITIES["render_room"]

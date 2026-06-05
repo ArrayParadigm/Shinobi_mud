@@ -15,7 +15,7 @@ import time
 from pathlib import Path
 
 import admin_commands
-import shinobi_mud
+import veilborn_mud
 import utils
 from migrations import apply_migrations
 
@@ -106,7 +106,7 @@ def run_player_soak(run_dir):
         "log_file": str(log_path),
     }
     config_path.write_text(json.dumps(config, indent=4), encoding="utf-8")
-    server_code = "import shinobi_mud; shinobi_mud.run_server(%r)" % str(config_path)
+    server_code = "import veilborn_mud; veilborn_mud.run_server(%r)" % str(config_path)
     server = subprocess.Popen(
         [sys.executable, "-c", server_code],
         cwd=str(ROOT),
@@ -158,8 +158,8 @@ def run_player_soak(run_dir):
         required = [
             "You practice Throw.",
             "Throw: Untrained",
-            "You train Substitution Technique.",
-            "Substitution Technique: Untrained",
+            "You train Substitution Expression.",
+            "Substitution Expression: Untrained",
             "Body",
             "You rest and recover",
             "You engage Practice Construct.",
@@ -167,7 +167,7 @@ def run_player_soak(run_dir):
         missing = [text for text in required if text not in combined]
         if missing:
             raise AssertionError(f"player soak missing expected output: {missing}")
-        if "Throw: Untrained (" in combined or "Substitution Technique: Untrained (" in combined:
+        if "Throw: Untrained (" in combined or "Substitution Expression: Untrained (" in combined:
             raise AssertionError("player soak exposed backend progression percentages")
         return {"port": port, "alpha": alpha_user, "beta": beta_user}
     finally:
@@ -186,29 +186,29 @@ def run_player_soak(run_dir):
 
 def run_builder_soak(run_dir):
     original_cwd = Path.cwd()
-    original_overlays = dict(shinobi_mud.WORLD_OVERLAYS)
-    original_config = shinobi_mud.ACTIVE_CONFIG.copy()
+    original_overlays = dict(veilborn_mud.WORLD_OVERLAYS)
+    original_config = veilborn_mud.ACTIVE_CONFIG.copy()
     original_admin_config = admin_commands.ACTIVE_CONFIG.copy()
     with tempfile.TemporaryDirectory() as temporary_directory:
         work = Path(temporary_directory)
         (work / "zones").mkdir()
         db = sqlite3.connect(":memory:")
         db.row_factory = sqlite3.Row
-        shinobi_mud.conn = db
-        shinobi_mud.cursor = db.cursor()
-        shinobi_mud.ensure_tables_exist(db)
+        veilborn_mud.conn = db
+        veilborn_mud.cursor = db.cursor()
+        veilborn_mud.ensure_tables_exist(db)
         apply_migrations(db)
         protocol = BuilderProtocol(db.cursor())
         try:
-            shinobi_mud.WORLD_OVERLAYS.clear()
-            shinobi_mud.ACTIVE_CONFIG["zone_directory"] = "zones"
+            veilborn_mud.WORLD_OVERLAYS.clear()
+            veilborn_mud.ACTIVE_CONFIG["zone_directory"] = "zones"
             admin_commands.ACTIVE_CONFIG["zone_directory"] = "zones"
             help_file = work / "commands.json"
             category_file = work / "categories.json"
             help_file.write_text(json.dumps({"look": {"summary": "Look.", "details": [], "published": False}}), encoding="utf-8")
             category_file.write_text(json.dumps({"Other": ["look"]}), encoding="utf-8")
-            shinobi_mud.ACTIVE_CONFIG["help_file"] = str(help_file)
-            shinobi_mud.ACTIVE_CONFIG["command_categories_file"] = str(category_file)
+            veilborn_mud.ACTIVE_CONFIG["help_file"] = str(help_file)
+            veilborn_mud.ACTIVE_CONFIG["command_categories_file"] = str(category_file)
             admin_commands.ACTIVE_CONFIG["help_file"] = str(help_file)
             admin_commands.ACTIVE_CONFIG["command_categories_file"] = str(category_file)
             os.chdir(work)
@@ -250,10 +250,10 @@ def run_builder_soak(run_dir):
         finally:
             db.close()
             os.chdir(original_cwd)
-            shinobi_mud.WORLD_OVERLAYS.clear()
-            shinobi_mud.WORLD_OVERLAYS.update(original_overlays)
-            shinobi_mud.ACTIVE_CONFIG.clear()
-            shinobi_mud.ACTIVE_CONFIG.update(original_config)
+            veilborn_mud.WORLD_OVERLAYS.clear()
+            veilborn_mud.WORLD_OVERLAYS.update(original_overlays)
+            veilborn_mud.ACTIVE_CONFIG.clear()
+            veilborn_mud.ACTIVE_CONFIG.update(original_config)
             admin_commands.ACTIVE_CONFIG.clear()
             admin_commands.ACTIVE_CONFIG.update(original_admin_config)
 

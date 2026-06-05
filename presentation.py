@@ -65,13 +65,13 @@ def command_usage(usage, enabled=False):
     return f"{command_name(parts[0], enabled)} {style(parts[1], DIM, enabled=enabled)}"
 
 
-def prompt(health, max_health, stamina, max_stamina, chakra, max_chakra, location, enabled=False):
+def prompt(health, max_health, stamina, max_stamina, wisp, max_wisp, location, enabled=False):
     """Render a compact resource prompt."""
     health_text = style(f"HP:{health}/{max_health}", BRIGHT_RED, enabled=enabled)
     stamina_text = style(f"ST:{stamina}/{max_stamina}", GREEN, enabled=enabled)
-    chakra_text = style(f"CH:{chakra}/{max_chakra}", BRIGHT_CYAN, enabled=enabled)
+    wisp_text = style(f"CH:{wisp}/{max_wisp}", BRIGHT_CYAN, enabled=enabled)
     location_text = style(location, DIM, enabled=enabled)
-    return f"[{health_text} {stamina_text} {chakra_text} | {location_text}]"
+    return f"[{health_text} {stamina_text} {wisp_text} | {location_text}]"
 
 
 def map_symbol(symbol, enabled=False):

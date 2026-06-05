@@ -62,7 +62,7 @@
     "body": {
         "summary": "Display your body resources and recovery readiness.",
         "details": [
-            "Shows nutrition, hydration, fatigue, recovery state, and short-rest chakra recovery."
+            "Shows nutrition, hydration, fatigue, recovery state, and short-rest wisp recovery."
         ]
     },
     "bounce": {
@@ -165,7 +165,7 @@
     "combat": {
         "summary": "Display your active combat engagement and stance.",
         "details": [
-            "Combat persists while you reposition. Basic auto attacks only connect up close; skills and jutsus can later queue range, accuracy, damage, and status modifiers."
+            "Combat persists while you reposition. Basic auto attacks only connect up close; skills and expressions can later queue range, accuracy, damage, and status modifiers."
         ]
     },
     "commands": {
@@ -339,9 +339,9 @@
         ]
     },
     "finger": {
-        "summary": "Inspect detailed player account, stats, skills, and jutsus.",
+        "summary": "Inspect detailed player account, stats, skills, and expressions.",
         "details": [
-            "Admin command. Shows player access, online state, created and last-login timestamps, identity, resources, attributes, body state, location, skill progress, and jutsu progress without exposing password data."
+            "Admin command. Shows player access, online state, created and last-login timestamps, identity, resources, attributes, body state, location, skill progress, and expression progress without exposing password data."
         ]
     },
     "fondle": {
@@ -483,10 +483,10 @@
             "Admin builder command. Displays the current editable fields for one globally keyed item template."
         ]
     },
-    "jutsu": {
-        "summary": "List available jutsus, inspect one, or show the full catalog.",
+    "expression": {
+        "summary": "List available expressions, inspect one, or show the full catalog.",
         "details": [
-            "Use jutsu all to include catalog placeholders that are not implemented yet."
+            "Use expression all to include catalog placeholders that are not implemented yet."
         ]
     },
     "kiss": {
@@ -547,7 +547,7 @@
         "summary": "Edit an authored NPC template.",
         "details": [
             "Builder command. Use medit <npc_key> <field> <value> after createnpc to revise authored NPC data.",
-            "Supported fields include name, description, dialogue, behavior, movement, aggression, loot, emote, health, stamina, chakra, strength, dexterity, agility, intelligence, wisdom, damage, accuracy, evasion, techniques, jutsus, respawn, and leash. Use mstat before spawning to verify the template."
+            "Supported fields include name, description, dialogue, behavior, movement, aggression, loot, emote, health, stamina, wisp, strength, dexterity, agility, intelligence, wisdom, damage, accuracy, evasion, techniques, expressions, respawn, and leash. Use mstat before spawning to verify the template."
         ]
     },
     "meditate": {
@@ -689,7 +689,7 @@
     "pset": {
         "summary": "Set a validated persistent player field.",
         "details": [
-            "Admin command. Supports admin and builder access, specialty, dojo, clan, release, resources, attributes, nutrition, hydration, and fatigue. Passwords, usernames, and locations require separate workflows."
+            "Admin command. Supports admin and builder access, specialty, house, clan, essence, resources, attributes, nutrition, hydration, and fatigue. Passwords, usernames, and locations require separate workflows."
         ]
     },
     "pstat": {
@@ -717,10 +717,10 @@
             "Use redit flag <flag> <on|off>, redit exit <direction> <vnum|none>, redit link <direction> <vnum> [oneway], or redit unlink <direction> [oneway]."
         ]
     },
-    "release": {
-        "summary": "Release social holds or restraints you control.",
+    "free": {
+        "summary": "Essence social holds or restraints you control.",
         "details": [
-            "Use release <character> or release all to clear active handholding or restraint states."
+            "Use free <character> or free all to clear active handholding or restraint states."
         ]
     },
     "reloadcontent": {
@@ -740,7 +740,7 @@
         ]
     },
     "rest": {
-        "summary": "Recover stamina and chakra through a short rest.",
+        "summary": "Recover stamina and wisp through a short rest.",
         "details": [
             "Rest consumes nutrition and hydration. Depleted nutrition or hydration blocks recovery."
         ]
@@ -782,11 +782,11 @@
     "score": {
         "summary": "Display your character sheet.",
         "details": [
-            "Shows core resources, attributes, specialty, clan, release, dojo alignment, and location."
+            "Shows core resources, attributes, specialty, clan, essence, house alignment, and location."
         ]
     },
-    "setdojo": {
-        "summary": "Set a character dojo alignment.",
+    "sethouse": {
+        "summary": "Set a character house alignment.",
         "details": [
             "Admin command."
         ]
@@ -1022,9 +1022,9 @@
         ]
     },
     "train": {
-        "summary": "List jutsus or inspect usage-based proficiency.",
+        "summary": "List expressions or inspect usage-based proficiency.",
         "details": [
-            "Jutsu proficiency increases through valid gameplay use. Active training reports visible tier progress without raw percentages."
+            "Expression proficiency increases through valid gameplay use. Active training reports visible tier progress without raw percentages."
         ]
     },
     "treatinjury": {
@@ -1045,10 +1045,10 @@
             "Catalog social. Flags: requires consent, adult opt-in."
         ]
     },
-    "usejutsu": {
-        "summary": "Activate an implemented jutsu.",
+    "useexpression": {
+        "summary": "Activate an implemented expression.",
         "details": [
-            "Substitution Technique currently spends 3 chakra, lasts 30 seconds, and has a 60 second cooldown."
+            "Substitution Expression currently spends 3 wisp, lasts 30 seconds, and has a 60 second cooldown."
         ]
     },
     "wave": {

@@ -1,24 +1,24 @@
 # Development Route Plan
 
 ## Introduction
-This plan outlines a **development sequence** for Shinobi MUD, focusing on creating core systems first, iterating on them, and gradually building toward advanced features like expansions and RTS mechanics. Each phase includes objectives, key tasks, and dependencies.
+This plan outlines a **development sequence** for Veilborn MUD, focusing on creating core systems first, iterating on them, and gradually building toward advanced features like expansions and RTS mechanics. Each phase includes objectives, key tasks, and dependencies.
 
 ---
 
-## Phase 1: Core Framework and Ninja Gameplay (MVP)
+## Phase 1: Core Framework and Veilborn Gameplay (MVP)
 ### Objectives
 - Establish the foundational mechanics, ensuring the game is playable with basic combat, progression, and character creation.
-- Build the **grid-based combat system** and core ninja abilities.
+- Build the **grid-based combat system** and core veilborn abilities.
 
 ### Key Tasks
 1. **Environment Setup**:
    - Build the game world:
-     - Create the ninja continent with at least 3 villages, 2 training zones, and 1 neutral battlefield.
+     - Create the veilborn continent with at least 3 villages, 2 training zones, and 1 neutral battlefield.
      - Implement a simple map system with grid-based navigation.
 
 2. **Character Creation**:
    - Add clan selection during character creation.
-   - Implement natural chakra releases (Fire, Water, Earth, Lightning, Wind).
+   - Implement natural wisp frees (Unimbued, Water, Earth, Lightning, Feline).
    - Allow stat customization (Dexterity, Strength, CIS, etc.).
 
 3. **Combat System**:
@@ -26,21 +26,21 @@ This plan outlines a **development sequence** for Shinobi MUD, focusing on creat
      - Movement rules based on speed stats.
      - Stance mechanics (Offensive, Defensive, Balanced).
      - Hitroll, damroll, and automated basic attacks.
-   - Add timer-based jutsu casting with cooldowns and proficiency scaling.
-   - Test elemental interactions (Fire > Wind, etc.).
+   - Add timer-based expression casting with cooldowns and proficiency scaling.
+   - Test elemental interactions (Unimbued > Feline, etc.).
 
 4. **Progression System**:
    - Introduce grindy and non-grindy training mechanics.
    - Add basic questlines to reward progression milestones.
 
 5. **Basic NPC AI**:
-   - Implement AI for training dummies and basic enemy ninjas.
+   - Implement AI for training dummies and basic enemy veilborns.
 
 ---
 
-## Phase 2: Ninja Continent Expansion and Features
+## Phase 2: Veilborn Continent Expansion and Features
 ### Objectives
-- Expand the ninja gameplay experience with more locations, NPCs, and training opportunities.
+- Expand the veilborn gameplay experience with more locations, NPCs, and training opportunities.
 - Flesh out clan-specific abilities and advanced combat features.
 
 ### Key Tasks
@@ -50,13 +50,13 @@ This plan outlines a **development sequence** for Shinobi MUD, focusing on creat
 
 2. **Clan-Specific Features**:
    - Develop unique clan abilities:
-     - Passive bonuses (e.g., faster chakra regen for Clan A).
-     - Signature jutsus (e.g., fire-based AoE for Clan B).
+     - Passive bonuses (e.g., faster wisp regen for Clan A).
+     - Signature expressions (e.g., fire-based AoE for Clan B).
    - Add clan-specific questlines for progression.
 
 3. **Advanced Combat Features**:
    - Add mid-range and long-range weapons (kunai, shuriken, short bows).
-   - Introduce more status effects (e.g., Chakra Burn, Fatigue, Stun).
+   - Introduce more status effects (e.g., Wisp Burn, Fatigue, Stun).
 
 4. **NPC Interactions**:
    - Add recruitable NPCs for group missions.
@@ -71,7 +71,7 @@ This plan outlines a **development sequence** for Shinobi MUD, focusing on creat
 
 ### Key Tasks
 1. **Samurai Gameplay**:
-   - Implement kenjutsu styles with melee-focused stances and abilities:
+   - Implement bladecraft styles with melee-focused stances and abilities:
      - **Slash Zone**: Attack all adjacent squares.
      - **Blade Dash**: Close the gap and strike in one turn.
    - Add bow/crossbow weapons for mid-range versatility.
@@ -85,7 +85,7 @@ This plan outlines a **development sequence** for Shinobi MUD, focusing on creat
 
 4. **Faction Mechanics**:
    - Introduce faction-based questlines and rewards.
-   - Enable basic faction rivalries (e.g., Ninja vs Samurai skirmishes).
+   - Enable basic faction rivalries (e.g., Veilborn vs Samurai skirmishes).
 
 ---
 
@@ -97,7 +97,7 @@ This plan outlines a **development sequence** for Shinobi MUD, focusing on creat
 ### Key Tasks
 1. **Magic System**:
    - Implement spellcasting mechanics:
-     - Fire, Frost, Arcane, Necromancy, and Holy magic types.
+     - Unimbued, Frost, Arcane, Necromancy, and Holy magic types.
      - Add mana management and spell cooldowns.
    - Develop magic interactions with the environment (e.g., fire stronger in dry zones).
 
@@ -170,11 +170,11 @@ This plan outlines a **development sequence** for Shinobi MUD, focusing on creat
 ---
 
 ## Next Steps (Immediate Focus)
-1. **Build Core Ninja Framework**:
+1. **Build Core Veilborn Framework**:
    - Finalize grid-based combat, basic NPC AI, and elemental interactions.
-   - Test proficiency-based jutsu mechanics.
+   - Test proficiency-based expression mechanics.
 2. **Create Initial World**:
-   - Design 3 core villages and training zones for the ninja continent.
+   - Design 3 core villages and training zones for the veilborn continent.
    - Add environmental effects to the map.
 3. **Iterate on Character Creation**:
    - Implement clan selection and stat customization.
@@ -183,5 +183,5 @@ This plan outlines a **development sequence** for Shinobi MUD, focusing on creat
 ---
 
 ## Summary
-This development route provides a clear path to building a scalable and feature-rich MUD. By focusing on **core mechanics first** and layering expansions iteratively, Shinobi MUD will evolve into a dynamic and engaging experience for players at every level.
+This development route provides a clear path to building a scalable and feature-rich MUD. By focusing on **core mechanics first** and layering expansions iteratively, Veilborn MUD will evolve into a dynamic and engaging experience for players at every level.
 

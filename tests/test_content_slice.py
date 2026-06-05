@@ -8,7 +8,7 @@ from pathlib import Path
 
 import admin_commands
 import general_commands
-import shinobi_mud
+import veilborn_mud
 import social_commands
 import utils
 from content import sync_authored_content
@@ -24,12 +24,12 @@ class ContentSliceTests(unittest.TestCase):
     def setUp(self):
         self.connection = sqlite3.connect(":memory:")
         self.connection.row_factory = sqlite3.Row
-        shinobi_mud.conn = self.connection
-        shinobi_mud.cursor = self.connection.cursor()
-        shinobi_mud.ensure_tables_exist(self.connection)
+        veilborn_mud.conn = self.connection
+        veilborn_mud.cursor = self.connection.cursor()
+        veilborn_mud.ensure_tables_exist(self.connection)
         apply_migrations(self.connection)
-        shinobi_mud.players_in_rooms.clear()
-        shinobi_mud.WORLD_OVERLAYS.clear()
+        veilborn_mud.players_in_rooms.clear()
+        veilborn_mud.WORLD_OVERLAYS.clear()
         self.world_map = [list("...."), list("...."), list("....")]
         self.original_general_map = general_commands.UTILITIES["WORLD_MAP"]
         general_commands.UTILITIES["WORLD_MAP"] = self.world_map
@@ -37,8 +37,8 @@ class ContentSliceTests(unittest.TestCase):
 
     def tearDown(self):
         general_commands.UTILITIES["WORLD_MAP"] = self.original_general_map
-        shinobi_mud.players_in_rooms.clear()
-        shinobi_mud.WORLD_OVERLAYS.clear()
+        veilborn_mud.players_in_rooms.clear()
+        veilborn_mud.WORLD_OVERLAYS.clear()
         self.connection.close()
 
     def create_player(self, username, x, y):
@@ -47,7 +47,7 @@ class ContentSliceTests(unittest.TestCase):
             (username, "hash", x, y),
         )
         self.connection.commit()
-        player = TestProtocol(shinobi_mud.cursor)
+        player = TestProtocol(veilborn_mud.cursor)
         player.username = username
         player.x = x
         player.y = y
@@ -65,7 +65,7 @@ class ContentSliceTests(unittest.TestCase):
                 Path("zones").mkdir()
                 zone_path = Path("zones/sample.json")
                 zone_path.write_text(json.dumps(zone_data), encoding="utf-8")
-                utils.preload_zones_with_anchors(shinobi_mud.WORLD_OVERLAYS, "zones")
+                utils.preload_zones_with_anchors(veilborn_mud.WORLD_OVERLAYS, "zones")
                 yield zone_path
             finally:
                 os.chdir(original_directory)
@@ -86,7 +86,7 @@ class ContentSliceTests(unittest.TestCase):
         )
 
     def test_entry_exit_chat_and_overlay_description_remain_coordinate_first(self):
-        shinobi_mud.WORLD_OVERLAYS[(2, 1)] = {
+        veilborn_mud.WORLD_OVERLAYS[(2, 1)] = {
             "zone_name": "Test Town",
             "vnum": 3000,
             "room": {"description": "A compact town square.", "exits": {"west": 2999}},
@@ -98,7 +98,7 @@ class ContentSliceTests(unittest.TestCase):
             self.player,
             "hello",
             ["hello"],
-            shinobi_mud.players_in_rooms,
+            veilborn_mud.players_in_rooms,
         )
         general_commands.handle_movement(self.player, "west")
 
@@ -113,7 +113,7 @@ class ContentSliceTests(unittest.TestCase):
         self.assertEqual(tuple(saved), (1, 1))
 
     def test_admin_goto_and_zoneinfo_use_overlay_coordinates(self):
-        shinobi_mud.WORLD_OVERLAYS[(2, 1)] = {
+        veilborn_mud.WORLD_OVERLAYS[(2, 1)] = {
             "zone_name": "Test Town",
             "vnum": 3000,
             "room": {"description": "A compact town square.", "exits": {}},
@@ -149,26 +149,26 @@ class ContentSliceTests(unittest.TestCase):
         )
 
     def test_reconnect_restores_coordinate_inside_overlay(self):
-        shinobi_mud.WORLD_OVERLAYS[(2, 1)] = {
+        veilborn_mud.WORLD_OVERLAYS[(2, 1)] = {
             "zone_name": "Test Town",
             "vnum": 3000,
             "room": {"description": "A compact town square.", "exits": {}},
         }
         self.connection.execute(
             "UPDATE players SET password=? WHERE username=?",
-            (shinobi_mud.hash_password("password"), "Explorer"),
+            (veilborn_mud.hash_password("password"), "Explorer"),
         )
         self.connection.commit()
         general_commands.handle_movement(self.player, "east")
-        shinobi_mud.players_in_rooms.clear()
-        returning_player = TestProtocol(shinobi_mud.cursor)
+        veilborn_mud.players_in_rooms.clear()
+        returning_player = TestProtocol(veilborn_mud.cursor)
 
         returning_player.handle_username("Explorer")
         returning_player.handle_password("password")
 
         self.assertEqual((returning_player.x, returning_player.y), (2, 1))
         self.assertEqual(
-            shinobi_mud.WORLD_OVERLAYS[(returning_player.x, returning_player.y)]["vnum"],
+            veilborn_mud.WORLD_OVERLAYS[(returning_player.x, returning_player.y)]["vnum"],
             3000,
         )
 
@@ -201,7 +201,7 @@ class ContentSliceTests(unittest.TestCase):
 
                 zone_data = json.loads(zone_path.read_text(encoding="utf-8"))
                 self.assertEqual(zone_data["anchor"], {"x": 10, "y": 20})
-                self.assertEqual(shinobi_mud.WORLD_OVERLAYS[(10, 20)]["vnum"], 7000)
+                self.assertEqual(veilborn_mud.WORLD_OVERLAYS[(10, 20)]["vnum"], 7000)
             finally:
                 os.chdir(original_directory)
 
@@ -225,13 +225,13 @@ class ContentSliceTests(unittest.TestCase):
                     ),
                     encoding="utf-8",
                 )
-                shinobi_mud.WORLD_OVERLAYS[(99, 99)] = {"vnum": 9999}
+                veilborn_mud.WORLD_OVERLAYS[(99, 99)] = {"vnum": 9999}
 
                 admin_commands.placezone(self.player, "sample", "10", "20")
 
                 zone_data = json.loads(zone_path.read_text(encoding="utf-8"))
                 self.assertNotIn("anchor", zone_data)
-                self.assertEqual(shinobi_mud.WORLD_OVERLAYS, {})
+                self.assertEqual(veilborn_mud.WORLD_OVERLAYS, {})
                 self.assertIn("Unable to place zone", self.player.messages[-1])
             finally:
                 os.chdir(original_directory)
@@ -265,7 +265,7 @@ class ContentSliceTests(unittest.TestCase):
 
                 zone_data = json.loads(zone_path.read_text(encoding="utf-8"))
                 self.assertNotIn("anchor", zone_data)
-                self.assertEqual(shinobi_mud.WORLD_OVERLAYS, {})
+                self.assertEqual(veilborn_mud.WORLD_OVERLAYS, {})
                 self.assertIn("outside the world map", self.player.messages[-1])
             finally:
                 os.chdir(original_directory)
@@ -300,15 +300,15 @@ class ContentSliceTests(unittest.TestCase):
                     "y_offset": -1,
                 },
             )
-            self.assertEqual(shinobi_mud.WORLD_OVERLAYS[(1, 0)]["vnum"], 7001)
+            self.assertEqual(veilborn_mud.WORLD_OVERLAYS[(1, 0)]["vnum"], 7001)
 
             self.player.x, self.player.y = 1, 0
             admin_commands.roomdesc(self.player, "A reinforced sparring alcove.")
-            shinobi_mud.WORLD_OVERLAYS.clear()
-            utils.preload_zones_with_anchors(shinobi_mud.WORLD_OVERLAYS, "zones")
+            veilborn_mud.WORLD_OVERLAYS.clear()
+            utils.preload_zones_with_anchors(veilborn_mud.WORLD_OVERLAYS, "zones")
 
             self.assertEqual(
-                shinobi_mud.WORLD_OVERLAYS[(1, 0)]["room"]["description"],
+                veilborn_mud.WORLD_OVERLAYS[(1, 0)]["room"]["description"],
                 "A reinforced sparring alcove.",
             )
 
@@ -347,7 +347,7 @@ class ContentSliceTests(unittest.TestCase):
             "npc_spawns": [],
         }
         with self.temporary_zone(zone_data) as zone_path:
-            sync_authored_content(self.connection, "zones", shinobi_mud.WORLD_OVERLAYS)
+            sync_authored_content(self.connection, "zones", veilborn_mud.WORLD_OVERLAYS)
 
             admin_commands.createnpc(self.player, "practice-dummy", "Practice Dummy")
             admin_commands.spawnnpc(self.player, "practice-dummy")
@@ -365,7 +365,7 @@ class ContentSliceTests(unittest.TestCase):
                         "behavior": "static",
                         "max_health": 10,
                         "max_stamina": 10,
-                        "max_chakra": 10,
+                        "max_wisp": 10,
                         "strength": 10,
                         "dexterity": 10,
                         "agility": 10,
@@ -376,7 +376,7 @@ class ContentSliceTests(unittest.TestCase):
                         "aggression_policy": "passive",
                         "loot_table": [],
                         "combat_techniques": [],
-                        "jutsus": [],
+                        "expressions": [],
                         "room_emote": "",
                     }
                 ],
@@ -413,7 +413,7 @@ class ContentSliceTests(unittest.TestCase):
                 self.assertEqual(persisted["anchor"], {"x": 10, "y": 20})
                 self.assertEqual(persisted["rooms"]["7000"]["name"], "Training Yard")
                 self.assertEqual((self.player.x, self.player.y), (10, 20))
-                self.assertEqual(shinobi_mud.WORLD_OVERLAYS[(10, 20)]["vnum"], 7000)
+                self.assertEqual(veilborn_mud.WORLD_OVERLAYS[(10, 20)]["vnum"], 7000)
                 self.assertIn(
                     "  training-yard.json: Training Yard [7000-7099] anchor=(10, 20) rooms=1",
                     self.player.messages,
@@ -437,7 +437,7 @@ class ContentSliceTests(unittest.TestCase):
             admin_commands.redit(self.player, "flag", "outdoor on")
             admin_commands.redit(self.player, "exit", "north 7001")
             admin_commands.rstat(self.player)
-            utils.render_room(self.player, shinobi_mud.WORLD_OVERLAYS)
+            utils.render_room(self.player, veilborn_mud.WORLD_OVERLAYS)
 
             persisted = json.loads(zone_path.read_text(encoding="utf-8"))
             self.assertEqual(persisted["rooms"]["7000"]["name"], "Village Square")
@@ -555,7 +555,7 @@ class ContentSliceTests(unittest.TestCase):
             "npc_templates": [],
         }
         with self.temporary_zone(zone_data) as zone_path:
-            sync_authored_content(self.connection, "zones", shinobi_mud.WORLD_OVERLAYS)
+            sync_authored_content(self.connection, "zones", veilborn_mud.WORLD_OVERLAYS)
             admin_commands.createnpc(self.player, "guard", "Village Guard")
             admin_commands.medit(self.player, "guard", "behavior", "hostile")
             admin_commands.medit(self.player, "guard", "health", "15")
@@ -576,7 +576,7 @@ class ContentSliceTests(unittest.TestCase):
             self.assertEqual(tuple(saved), ("hostile", 15, 4, "leashed", 2, "aggressive", "The guard watches the street."))
             self.assertIn("NPC guard: Village Guard", self.player.messages)
             self.assertIn("  AI: movement=leashed leash=2 aggression=aggressive", self.player.messages)
-            self.assertIn("  Resources: health=15 stamina=10 chakra=10", self.player.messages)
+            self.assertIn("  Resources: health=15 stamina=10 wisp=10", self.player.messages)
             self.assertIn("  Stats: str=10 dex=10 agi=10 int=10 wis=10", self.player.messages)
             self.assertIn("  Combat: damage_bonus=4 accuracy_bonus=5 evasion_bonus=5 respawn=60s", self.player.messages)
 
@@ -591,7 +591,7 @@ class ContentSliceTests(unittest.TestCase):
             "item_spawns": [],
         }
         with self.temporary_zone(zone_data) as zone_path:
-            sync_authored_content(self.connection, "zones", shinobi_mud.WORLD_OVERLAYS)
+            sync_authored_content(self.connection, "zones", veilborn_mud.WORLD_OVERLAYS)
             admin_commands.iedit(self.player, "create", "", "field-ration Field Ration")
             admin_commands.iedit(self.player, "field-ration", "type", "food")
             admin_commands.iedit(self.player, "field-ration", "nutrition", "30")
@@ -708,7 +708,7 @@ class ContentSliceTests(unittest.TestCase):
             "item_spawns": [{"key": "ration-7000", "item": "ration", "vnum": 7000}],
         }
         with self.temporary_zone(zone_data) as zone_path:
-            sync_authored_content(self.connection, "zones", shinobi_mud.WORLD_OVERLAYS)
+            sync_authored_content(self.connection, "zones", veilborn_mud.WORLD_OVERLAYS)
 
             admin_commands.cloneitem(self.player, "ration", "ration-copy")
             admin_commands.clonenpc(self.player, "guard", "guard-copy")
@@ -727,8 +727,8 @@ class ContentSliceTests(unittest.TestCase):
         self.assertIn("Undid builder action: zone edit.", self.player.messages)
 
     def test_hedit_updates_help_category_and_publish_state(self):
-        original_help = shinobi_mud.ACTIVE_CONFIG.get("help_file")
-        original_categories = shinobi_mud.ACTIVE_CONFIG.get("command_categories_file")
+        original_help = veilborn_mud.ACTIVE_CONFIG.get("help_file")
+        original_categories = veilborn_mud.ACTIVE_CONFIG.get("command_categories_file")
         original_admin_help = admin_commands.ACTIVE_CONFIG.get("help_file")
         original_admin_categories = admin_commands.ACTIVE_CONFIG.get("command_categories_file")
         with tempfile.TemporaryDirectory() as temporary_directory:
@@ -739,8 +739,8 @@ class ContentSliceTests(unittest.TestCase):
                 encoding="utf-8",
             )
             category_path.write_text(json.dumps({"Other": ["look"]}), encoding="utf-8")
-            shinobi_mud.ACTIVE_CONFIG["help_file"] = str(help_path)
-            shinobi_mud.ACTIVE_CONFIG["command_categories_file"] = str(category_path)
+            veilborn_mud.ACTIVE_CONFIG["help_file"] = str(help_path)
+            veilborn_mud.ACTIVE_CONFIG["command_categories_file"] = str(category_path)
             admin_commands.ACTIVE_CONFIG["help_file"] = str(help_path)
             admin_commands.ACTIVE_CONFIG["command_categories_file"] = str(category_path)
 
@@ -752,13 +752,13 @@ class ContentSliceTests(unittest.TestCase):
             categories = json.loads(category_path.read_text(encoding="utf-8"))
 
         if original_help is None:
-            shinobi_mud.ACTIVE_CONFIG.pop("help_file", None)
+            veilborn_mud.ACTIVE_CONFIG.pop("help_file", None)
         else:
-            shinobi_mud.ACTIVE_CONFIG["help_file"] = original_help
+            veilborn_mud.ACTIVE_CONFIG["help_file"] = original_help
         if original_categories is None:
-            shinobi_mud.ACTIVE_CONFIG.pop("command_categories_file", None)
+            veilborn_mud.ACTIVE_CONFIG.pop("command_categories_file", None)
         else:
-            shinobi_mud.ACTIVE_CONFIG["command_categories_file"] = original_categories
+            veilborn_mud.ACTIVE_CONFIG["command_categories_file"] = original_categories
         if original_admin_help is None:
             admin_commands.ACTIVE_CONFIG.pop("help_file", None)
         else:
@@ -774,12 +774,12 @@ class ContentSliceTests(unittest.TestCase):
         self.assertEqual(categories["Exploration"], ["look"])
 
     def test_room_flags_have_visible_player_consequences(self):
-        shinobi_mud.WORLD_OVERLAYS[(1, 1)] = {
+        veilborn_mud.WORLD_OVERLAYS[(1, 1)] = {
             "zone_name": "Flag Lab",
             "vnum": 7000,
             "room": {"name": "Dark Safe Room", "description": "Dark.", "flags": ["darkness", "safe"], "exits": {"east": 7001}},
         }
-        shinobi_mud.WORLD_OVERLAYS[(2, 1)] = {
+        veilborn_mud.WORLD_OVERLAYS[(2, 1)] = {
             "zone_name": "Flag Lab",
             "vnum": 7001,
             "room": {"name": "Vacuum Room", "description": "Thin air.", "flags": ["vacuum", "recovery-friendly"], "exits": {"west": 7000}},
@@ -794,13 +794,13 @@ class ContentSliceTests(unittest.TestCase):
             "SELECT fatigue FROM players WHERE username='Explorer'"
         ).fetchone()["fatigue"]
         self.connection.execute(
-            "UPDATE players SET stamina=2, chakra=1, fatigue=30 WHERE username='Explorer'"
+            "UPDATE players SET stamina=2, wisp=1, fatigue=30 WHERE username='Explorer'"
         )
         self.connection.commit()
         self.player.messages.clear()
         general_commands.handle_rest(self.player)
         saved = self.connection.execute(
-            "SELECT stamina, chakra, fatigue FROM players WHERE username='Explorer'"
+            "SELECT stamina, wisp, fatigue FROM players WHERE username='Explorer'"
         ).fetchone()
 
         self.assertIn("It is too dark to survey the area.", before_move_messages)
@@ -809,7 +809,7 @@ class ContentSliceTests(unittest.TestCase):
         self.assertGreater(fatigue, 0)
         self.assertIn("This room supports recovery.", self.player.messages)
         self.assertGreater(saved["stamina"], 2)
-        self.assertGreater(saved["chakra"], 1)
+        self.assertGreater(saved["wisp"], 1)
         self.assertLess(saved["fatigue"], 30)
 
 

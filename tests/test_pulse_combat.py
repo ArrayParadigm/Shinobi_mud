@@ -4,7 +4,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import general_commands
-import shinobi_mud
+import veilborn_mud
 import utils
 from combat import (
     combat_round_timing,
@@ -32,20 +32,20 @@ class PulseCombatTests(unittest.TestCase):
     def setUp(self):
         self.connection = sqlite3.connect(":memory:")
         self.connection.row_factory = sqlite3.Row
-        shinobi_mud.conn = self.connection
-        shinobi_mud.cursor = self.connection.cursor()
-        shinobi_mud.ensure_tables_exist(self.connection)
+        veilborn_mud.conn = self.connection
+        veilborn_mud.cursor = self.connection.cursor()
+        veilborn_mud.ensure_tables_exist(self.connection)
         apply_migrations(self.connection)
-        shinobi_mud.players_in_rooms.clear()
-        shinobi_mud.WORLD_OVERLAYS.clear()
+        veilborn_mud.players_in_rooms.clear()
+        veilborn_mud.WORLD_OVERLAYS.clear()
         utils.preload_zones_with_anchors(
-            shinobi_mud.WORLD_OVERLAYS,
+            veilborn_mud.WORLD_OVERLAYS,
             str(PROJECT_ROOT / "zones"),
         )
         sync_authored_content(
             self.connection,
             str(PROJECT_ROOT / "zones"),
-            shinobi_mud.WORLD_OVERLAYS,
+            veilborn_mud.WORLD_OVERLAYS,
         )
         self.connection.execute(
             """
@@ -55,15 +55,15 @@ class PulseCombatTests(unittest.TestCase):
             ("Fighter", "hash", 500, 499, 10, 10),
         )
         self.connection.commit()
-        self.player = TestProtocol(shinobi_mud.cursor)
+        self.player = TestProtocol(veilborn_mud.cursor)
         self.player.username = "Fighter"
         self.player.x = 500
         self.player.y = 499
         self.player.state = "COMMAND"
 
     def tearDown(self):
-        shinobi_mud.players_in_rooms.clear()
-        shinobi_mud.WORLD_OVERLAYS.clear()
+        veilborn_mud.players_in_rooms.clear()
+        veilborn_mud.WORLD_OVERLAYS.clear()
         self.connection.close()
 
     def make_due(self):
@@ -383,7 +383,7 @@ class PulseCombatTests(unittest.TestCase):
         self.assertIn("Damage reduction: +2", self.player.messages[1])
 
     def test_substitution_resolves_on_hostile_pulse(self):
-        general_commands.handle_usejutsu(self.player, "sub")
+        general_commands.handle_useexpression(self.player, "sub")
         engage_npc(self.player.cursor, "Fighter", 500, 499, "practice")
         self.make_due()
 
@@ -401,7 +401,7 @@ class PulseCombatTests(unittest.TestCase):
         self.make_due()
 
         with patch("combat.random.randint", side_effect=[1, 1]):
-            shinobi_mud.run_combat_tick()
+            veilborn_mud.run_combat_tick()
 
         self.assertEqual(
             self.player.messages,

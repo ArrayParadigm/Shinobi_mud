@@ -4,12 +4,12 @@ import sqlite3
 import unittest
 
 import admin_commands
-import shinobi_mud
+import veilborn_mud
 from command_system import CommandSpec
 from migrations import apply_migrations, migration_005_inventory_and_character_foundation
 
 
-class TestProtocol(shinobi_mud.NinjaMUDProtocol):
+class TestProtocol(veilborn_mud.VeilbornMUDProtocol):
     __test__ = False
 
     def __init__(self, cursor):
@@ -28,18 +28,18 @@ class AccountLifecycleTests(unittest.TestCase):
     def setUp(self):
         self.connection = sqlite3.connect(":memory:")
         self.connection.row_factory = sqlite3.Row
-        shinobi_mud.conn = self.connection
-        shinobi_mud.cursor = self.connection.cursor()
-        shinobi_mud.ensure_tables_exist(self.connection)
+        veilborn_mud.conn = self.connection
+        veilborn_mud.cursor = self.connection.cursor()
+        veilborn_mud.ensure_tables_exist(self.connection)
         apply_migrations(self.connection)
-        shinobi_mud.players_in_rooms.clear()
+        veilborn_mud.players_in_rooms.clear()
 
     def tearDown(self):
-        shinobi_mud.players_in_rooms.clear()
+        veilborn_mud.players_in_rooms.clear()
         self.connection.close()
 
     def create_character(self, username="TestUser", password="secret pass"):
-        player = TestProtocol(shinobi_mud.cursor)
+        player = TestProtocol(veilborn_mud.cursor)
         player.handle_username(username)
         player.register_password(password)
         player.confirm_password(password)
@@ -57,7 +57,7 @@ class AccountLifecycleTests(unittest.TestCase):
         self.assertTrue(row["password"].startswith("scrypt$"))
         self.assertEqual(row["role_type"], "newbie")
         self.assertEqual(row["clan"], "Unaffiliated")
-        self.assertEqual(row["natural_release"], "Undeclared")
+        self.assertEqual(row["essence"], "Undeclared")
         self.assertEqual(row["strength"], 10)
         self.assertEqual(row["dexterity"], 10)
         self.assertEqual(row["agility"], 10)
@@ -73,11 +73,11 @@ class AccountLifecycleTests(unittest.TestCase):
             INSERT INTO players (username, password, x, y, is_admin, role_type)
             VALUES (?, ?, ?, ?, ?, ?)
             """,
-            ("ReturningUser", shinobi_mud.hash_password("password"), 42, 84, 1, "a"),
+            ("ReturningUser", veilborn_mud.hash_password("password"), 42, 84, 1, "a"),
         )
         self.connection.commit()
 
-        player = TestProtocol(shinobi_mud.cursor)
+        player = TestProtocol(veilborn_mud.cursor)
         player.handle_username("ReturningUser")
         player.handle_password("password")
 
@@ -99,7 +99,7 @@ class AccountLifecycleTests(unittest.TestCase):
         )
         self.connection.commit()
 
-        player = TestProtocol(shinobi_mud.cursor)
+        player = TestProtocol(veilborn_mud.cursor)
         player.handle_username("LegacyUser")
         player.handle_password("legacy password")
 
@@ -110,7 +110,7 @@ class AccountLifecycleTests(unittest.TestCase):
         self.assertTrue(stored_hash.startswith("scrypt$"))
 
     def test_invalid_username_is_rejected(self):
-        player = TestProtocol(shinobi_mud.cursor)
+        player = TestProtocol(veilborn_mud.cursor)
         player.handle_username("12")
 
         self.assertEqual(player.state, "GET_USERNAME")
@@ -119,25 +119,25 @@ class AccountLifecycleTests(unittest.TestCase):
 
     def test_duplicate_active_session_takes_over_existing_body(self):
         first = self.create_character()
-        duplicate = TestProtocol(shinobi_mud.cursor)
+        duplicate = TestProtocol(veilborn_mud.cursor)
 
         duplicate.handle_username(first.username)
         duplicate.handle_password("secret pass")
 
         self.assertEqual(duplicate.state, "COMMAND")
         self.assertEqual(first.state, "DISCONNECTED")
-        self.assertNotIn(first, shinobi_mud.players_in_rooms.get(first.location_key, []))
+        self.assertNotIn(first, veilborn_mud.players_in_rooms.get(first.location_key, []))
         self.assertIn("Another connection has taken over this character.", first.messages)
-        self.assertIn(duplicate, shinobi_mud.players_in_rooms[duplicate.location_key])
+        self.assertIn(duplicate, veilborn_mud.players_in_rooms[duplicate.location_key])
 
     def test_stat_allocation_rejects_invalid_values(self):
-        player = TestProtocol(shinobi_mud.cursor)
+        player = TestProtocol(veilborn_mud.cursor)
         player.handle_username("StatUser")
         player.register_password("password")
         player.confirm_password("password")
         player.choose_specialty("1")
         player.choose_clan("1")
-        player.choose_release("5")
+        player.choose_essence("5")
 
         player.allocate_stats("strength=-1 dexterity=2 agility=2 intelligence=2 wisdom=5")
         self.assertEqual(player.state, "ALLOCATE_STATS")
@@ -149,7 +149,7 @@ class AccountLifecycleTests(unittest.TestCase):
         self.assertEqual(player.state, "ALLOCATE_STATS")
 
     def test_password_input_is_redacted_in_logs(self):
-        player = TestProtocol(shinobi_mud.cursor)
+        player = TestProtocol(veilborn_mud.cursor)
         player.state = "REGISTER_PASSWORD"
 
         with self.assertLogs(level=logging.INFO) as captured:
@@ -170,13 +170,13 @@ class AccountLifecycleTests(unittest.TestCase):
                 password TEXT NOT NULL,
                 health INTEGER,
                 stamina INTEGER,
-                chakra INTEGER
+                wisp INTEGER
             )
             """
         )
         connection.execute(
             """
-            INSERT INTO players (username, password, health, stamina, chakra)
+            INSERT INTO players (username, password, health, stamina, wisp)
             VALUES (?, ?, ?, ?, ?)
             """,
             ("LegacyStats", "hash", 17, 13, 21),
@@ -190,9 +190,9 @@ class AccountLifecycleTests(unittest.TestCase):
         ).fetchone()
         self.assertEqual(player["max_health"], 17)
         self.assertEqual(player["max_stamina"], 13)
-        self.assertEqual(player["max_chakra"], 21)
+        self.assertEqual(player["max_wisp"], 21)
         self.assertEqual(player["clan"], "Unaffiliated")
-        self.assertEqual(player["natural_release"], "Undeclared")
+        self.assertEqual(player["essence"], "Undeclared")
         connection.close()
 
 
@@ -229,17 +229,17 @@ class PlayerAdminTests(unittest.TestCase):
     def setUp(self):
         self.connection = sqlite3.connect(":memory:")
         self.connection.row_factory = sqlite3.Row
-        shinobi_mud.conn = self.connection
-        shinobi_mud.cursor = self.connection.cursor()
-        shinobi_mud.ensure_tables_exist(self.connection)
+        veilborn_mud.conn = self.connection
+        veilborn_mud.cursor = self.connection.cursor()
+        veilborn_mud.ensure_tables_exist(self.connection)
         apply_migrations(self.connection)
-        shinobi_mud.players_in_rooms.clear()
+        veilborn_mud.players_in_rooms.clear()
         self.connection.execute(
             """
             INSERT INTO players (
-                username, password, is_admin, is_builder, role_type, clan, natural_release,
-                dojo_alignment, health, max_health, stamina, max_stamina,
-                chakra, max_chakra, nutrition, hydration, fatigue
+                username, password, is_admin, is_builder, role_type, clan, essence,
+                house_alignment, health, max_health, stamina, max_stamina,
+                wisp, max_wisp, nutrition, hydration, fatigue
             )
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
@@ -248,9 +248,9 @@ class PlayerAdminTests(unittest.TestCase):
                 "secret-hash",
                 0,
                 0,
-                "Ninjutsu",
-                "Leaf",
-                "Fire",
+                "Veilcraft",
+                "Moonveil",
+                "Unimbued",
                 "None",
                 10,
                 10,
@@ -266,12 +266,12 @@ class PlayerAdminTests(unittest.TestCase):
         self.connection.execute(
             """
             INSERT INTO players (
-                username, password, is_admin, is_builder, role_type, clan, natural_release,
+                username, password, is_admin, is_builder, role_type, clan, essence,
                 x, y, last_login_at
             )
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            ("BuilderTarget", "builder-secret", 0, 1, "Taijutsu", "Sand", "Wind", 501, 500, "2026-06-03 12:00:00"),
+            ("BuilderTarget", "builder-secret", 0, 1, "Bodycraft", "Ashwake", "Feline", 501, 500, "2026-06-03 12:00:00"),
         )
         self.connection.execute(
             """
@@ -282,10 +282,10 @@ class PlayerAdminTests(unittest.TestCase):
         )
         self.connection.execute(
             """
-            INSERT INTO jutsu_definitions (jutsu_key, name, description, usage_gain, is_available)
+            INSERT INTO expression_definitions (expression_key, name, description, usage_gain, is_available)
             VALUES (?, ?, ?, ?, ?)
             """,
-            ("substitution-technique", "Substitution Technique", "Body replacement.", 1, 1),
+            ("substitution-technique", "Substitution Expression", "Body replacement.", 1, 1),
         )
         target_id = self.connection.execute(
             "SELECT id FROM players WHERE username='Target'"
@@ -293,8 +293,8 @@ class PlayerAdminTests(unittest.TestCase):
         skill_id = self.connection.execute(
             "SELECT id FROM skill_definitions WHERE skill_key='throw'"
         ).fetchone()["id"]
-        jutsu_id = self.connection.execute(
-            "SELECT id FROM jutsu_definitions WHERE jutsu_key='substitution-technique'"
+        expression_id = self.connection.execute(
+            "SELECT id FROM expression_definitions WHERE expression_key='substitution-technique'"
         ).fetchone()["id"]
         self.connection.execute(
             """
@@ -305,10 +305,10 @@ class PlayerAdminTests(unittest.TestCase):
         )
         self.connection.execute(
             """
-            INSERT INTO character_jutsus (player_id, jutsu_definition_id, progress_percent, progress_points)
+            INSERT INTO character_expressions (player_id, expression_definition_id, progress_percent, progress_points)
             VALUES (?, ?, ?, ?)
             """,
-            (target_id, jutsu_id, 5, 50),
+            (target_id, expression_id, 5, 50),
         )
         self.connection.commit()
         self.admin = TestProtocol(self.connection.cursor())
@@ -316,7 +316,7 @@ class PlayerAdminTests(unittest.TestCase):
         self.admin.is_admin = True
 
     def tearDown(self):
-        shinobi_mud.players_in_rooms.clear()
+        veilborn_mud.players_in_rooms.clear()
         self.connection.close()
 
     def test_pstat_displays_player_state_without_password(self):
@@ -326,15 +326,15 @@ class PlayerAdminTests(unittest.TestCase):
         self.assertIn("Player Target (id ", rendered)
         self.assertIn("Admin: no  Builder: no", rendered)
         self.assertIn("Online: no", rendered)
-        self.assertIn("Specialty: Ninjutsu  Clan: Leaf  Release: Fire", rendered)
+        self.assertIn("Specialty: Veilcraft  Clan: Moonveil  Essence: Unimbued", rendered)
         self.assertIn("Created:", rendered)
         self.assertIn("Last Login:", rendered)
         self.assertIn("Body: nutrition=100 hydration=100 fatigue=0", rendered)
         self.assertIn("Stance: S3 - Balance", rendered)
         self.assertIn("Skills:", rendered)
         self.assertIn("Throw: Novice (250 pts, 16%, available)", rendered)
-        self.assertIn("Jutsus:", rendered)
-        self.assertIn("Substitution Technique: Unlearned (50 pts, 43%, available)", rendered)
+        self.assertIn("Expressions:", rendered)
+        self.assertIn("Substitution Expression: Unlearned (50 pts, 43%, available)", rendered)
         self.assertIn("Manage: pedit/pset <username> <field> <value>", rendered)
         self.assertNotIn("secret-hash", rendered)
 
@@ -370,12 +370,12 @@ class PlayerAdminTests(unittest.TestCase):
         admin_commands.pset(self.admin, "Missing", "health", "9")
         admin_commands.pset(self.admin, "Target", "password", "visible")
         admin_commands.pset(self.admin, "Target", "fatigue", "101")
-        admin_commands.pset(self.admin, "Target", "chakra", "11")
+        admin_commands.pset(self.admin, "Target", "wisp", "11")
 
         self.assertIn("Player not found: Missing", self.admin.messages)
         self.assertIn("Unable to set player: Player field must be", self.admin.messages[-3])
         self.assertEqual(self.admin.messages[-2], "Unable to set player: fatigue must be between 0 and 100.")
-        self.assertEqual(self.admin.messages[-1], "Unable to set player: chakra cannot exceed max_chakra (10).")
+        self.assertEqual(self.admin.messages[-1], "Unable to set player: wisp cannot exceed max_wisp (10).")
 
     def test_pset_refreshes_connected_admin_and_specialty_metadata(self):
         target = TestProtocol(self.connection.cursor())
@@ -384,16 +384,16 @@ class PlayerAdminTests(unittest.TestCase):
         target.y = 500
         target.is_admin = False
         target.is_builder = False
-        target.player_class = "Ninjutsu"
+        target.player_class = "Veilcraft"
         target.track_player()
 
         admin_commands.pset(self.admin, "Target", "admin", "on")
         admin_commands.pedit(self.admin, "Target", "builder", "on")
-        admin_commands.pset(self.admin, "Target", "specialty", "Taijutsu")
+        admin_commands.pset(self.admin, "Target", "specialty", "Bodycraft")
 
         self.assertTrue(target.is_admin)
         self.assertTrue(target.is_builder)
-        self.assertEqual(target.player_class, "Taijutsu")
+        self.assertEqual(target.player_class, "Bodycraft")
 
     def test_pedit_promotes_builder_without_admin_access(self):
         admin_commands.pedit(self.admin, "Target", "builder", "on")

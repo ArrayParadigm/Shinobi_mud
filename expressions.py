@@ -1,4 +1,4 @@
-"""Authored skill and jutsu definitions with usage-based character progress."""
+"""Authored skill and expression definitions with usage-based character progress."""
 
 
 MAX_PROGRESS_POINTS = 100000
@@ -36,7 +36,7 @@ def create_technique_tables(cursor):
             description TEXT NOT NULL,
             usage_gain INTEGER NOT NULL DEFAULT 1,
             is_available INTEGER NOT NULL DEFAULT 1,
-            chakra_cost INTEGER NOT NULL DEFAULT 0,
+            wisp_cost INTEGER NOT NULL DEFAULT 0,
             activation_seconds INTEGER NOT NULL DEFAULT 0,
             cooldown_seconds INTEGER NOT NULL DEFAULT 0,
             effect_key TEXT NOT NULL DEFAULT ''
@@ -45,9 +45,9 @@ def create_technique_tables(cursor):
     )
     cursor.execute(
         """
-        CREATE TABLE IF NOT EXISTS jutsu_definitions (
+        CREATE TABLE IF NOT EXISTS expression_definitions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            jutsu_key TEXT NOT NULL UNIQUE,
+            expression_key TEXT NOT NULL UNIQUE,
             name TEXT NOT NULL UNIQUE COLLATE NOCASE,
             description TEXT NOT NULL,
             usage_gain INTEGER NOT NULL DEFAULT 1,
@@ -70,38 +70,38 @@ def create_technique_tables(cursor):
     )
     cursor.execute(
         """
-        CREATE TABLE IF NOT EXISTS character_jutsus (
+        CREATE TABLE IF NOT EXISTS character_expressions (
             player_id INTEGER NOT NULL,
-            jutsu_definition_id INTEGER NOT NULL,
+            expression_definition_id INTEGER NOT NULL,
             progress_percent INTEGER NOT NULL DEFAULT 0,
             progress_points INTEGER NOT NULL DEFAULT 0,
-            PRIMARY KEY (player_id, jutsu_definition_id),
+            PRIMARY KEY (player_id, expression_definition_id),
             FOREIGN KEY (player_id) REFERENCES players(id),
-            FOREIGN KEY (jutsu_definition_id) REFERENCES jutsu_definitions(id)
+            FOREIGN KEY (expression_definition_id) REFERENCES expression_definitions(id)
         )
         """
     )
     cursor.execute(
         """
-        CREATE TABLE IF NOT EXISTS character_jutsu_states (
+        CREATE TABLE IF NOT EXISTS character_expression_states (
             player_id INTEGER NOT NULL,
-            jutsu_definition_id INTEGER NOT NULL,
+            expression_definition_id INTEGER NOT NULL,
             active_until TEXT,
             cooldown_until TEXT,
-            PRIMARY KEY (player_id, jutsu_definition_id),
+            PRIMARY KEY (player_id, expression_definition_id),
             FOREIGN KEY (player_id) REFERENCES players(id),
-            FOREIGN KEY (jutsu_definition_id) REFERENCES jutsu_definitions(id)
+            FOREIGN KEY (expression_definition_id) REFERENCES expression_definitions(id)
         )
         """
     )
     ensure_usage_progress_columns(cursor)
     ensure_catalog_availability_columns(cursor)
-    ensure_jutsu_execution_columns(cursor)
+    ensure_expression_execution_columns(cursor)
 
 
 def ensure_usage_progress_columns(cursor):
     """Upgrade the initial point-spend framework to usage progress."""
-    for table_name in ("skill_definitions", "jutsu_definitions"):
+    for table_name in ("skill_definitions", "expression_definitions"):
         columns = {
             column[1]
             for column in cursor.execute(f"PRAGMA table_info({table_name})")
@@ -111,7 +111,7 @@ def ensure_usage_progress_columns(cursor):
                 f"ALTER TABLE {table_name} ADD COLUMN usage_gain INTEGER NOT NULL DEFAULT 1"
             )
 
-    for table_name in ("character_skills", "character_jutsus"):
+    for table_name in ("character_skills", "character_expressions"):
         columns = {
             column[1]
             for column in cursor.execute(f"PRAGMA table_info({table_name})")
@@ -145,7 +145,7 @@ def ensure_usage_progress_columns(cursor):
 
 def ensure_catalog_availability_columns(cursor):
     """Mark catalog-only placeholders without making them trainable."""
-    for table_name in ("skill_definitions", "jutsu_definitions"):
+    for table_name in ("skill_definitions", "expression_definitions"):
         columns = {
             column[1]
             for column in cursor.execute(f"PRAGMA table_info({table_name})")
@@ -156,32 +156,32 @@ def ensure_catalog_availability_columns(cursor):
             )
 
 
-def ensure_jutsu_execution_columns(cursor):
+def ensure_expression_execution_columns(cursor):
     """Add authored execution metadata and persisted defensive state."""
     columns = {
         column[1]
-        for column in cursor.execute("PRAGMA table_info(jutsu_definitions)")
+        for column in cursor.execute("PRAGMA table_info(expression_definitions)")
     }
     for column_name, definition in (
-        ("chakra_cost", "INTEGER NOT NULL DEFAULT 0"),
+        ("wisp_cost", "INTEGER NOT NULL DEFAULT 0"),
         ("activation_seconds", "INTEGER NOT NULL DEFAULT 0"),
         ("cooldown_seconds", "INTEGER NOT NULL DEFAULT 0"),
         ("effect_key", "TEXT NOT NULL DEFAULT ''"),
     ):
         if column_name not in columns:
             cursor.execute(
-                f"ALTER TABLE jutsu_definitions ADD COLUMN {column_name} {definition}"
+                f"ALTER TABLE expression_definitions ADD COLUMN {column_name} {definition}"
             )
     cursor.execute(
         """
-        CREATE TABLE IF NOT EXISTS character_jutsu_states (
+        CREATE TABLE IF NOT EXISTS character_expression_states (
             player_id INTEGER NOT NULL,
-            jutsu_definition_id INTEGER NOT NULL,
+            expression_definition_id INTEGER NOT NULL,
             active_until TEXT,
             cooldown_until TEXT,
-            PRIMARY KEY (player_id, jutsu_definition_id),
+            PRIMARY KEY (player_id, expression_definition_id),
             FOREIGN KEY (player_id) REFERENCES players(id),
-            FOREIGN KEY (jutsu_definition_id) REFERENCES jutsu_definitions(id)
+            FOREIGN KEY (expression_definition_id) REFERENCES expression_definitions(id)
         )
         """
     )
@@ -212,22 +212,22 @@ def sync_skill_templates(cursor, templates):
         )
 
 
-def sync_jutsu_templates(cursor, templates):
-    """Import authored jutsu definitions separately from ordinary skills."""
+def sync_expression_templates(cursor, templates):
+    """Import authored expression definitions separately from ordinary skills."""
     for template in templates:
         cursor.execute(
             """
-            INSERT INTO jutsu_definitions (
-                jutsu_key, name, description, usage_gain, is_available,
-                chakra_cost, activation_seconds, cooldown_seconds, effect_key
+            INSERT INTO expression_definitions (
+                expression_key, name, description, usage_gain, is_available,
+                wisp_cost, activation_seconds, cooldown_seconds, effect_key
             )
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT(jutsu_key) DO UPDATE SET
+            ON CONFLICT(expression_key) DO UPDATE SET
                 name=excluded.name,
                 description=excluded.description,
                 usage_gain=excluded.usage_gain,
                 is_available=excluded.is_available,
-                chakra_cost=excluded.chakra_cost,
+                wisp_cost=excluded.wisp_cost,
                 activation_seconds=excluded.activation_seconds,
                 cooldown_seconds=excluded.cooldown_seconds,
                 effect_key=excluded.effect_key
@@ -238,7 +238,7 @@ def sync_jutsu_templates(cursor, templates):
                 template["description"],
                 int(template.get("usage_gain", 1)),
                 int(template.get("available", True)),
-                int(template.get("chakra_cost", 0)),
+                int(template.get("wisp_cost", 0)),
                 int(template.get("activation_seconds", 0)),
                 int(template.get("cooldown_seconds", 0)),
                 template.get("effect_key", ""),
@@ -258,14 +258,14 @@ def list_skills(cursor, username, include_unavailable=False):
     )
 
 
-def list_jutsus(cursor, username, include_unavailable=False):
-    """Return all authored jutsus and one character's progress."""
+def list_expressions(cursor, username, include_unavailable=False):
+    """Return all authored expressions and one character's progress."""
     return _list_progress(
         cursor,
         username,
-        definitions_table="jutsu_definitions",
-        definition_id="jutsu_definition_id",
-        progress_table="character_jutsus",
+        definitions_table="expression_definitions",
+        definition_id="expression_definition_id",
+        progress_table="character_expressions",
         include_unavailable=include_unavailable,
     )
 
@@ -275,9 +275,9 @@ def skill_detail(cursor, username, target):
     return _progress_detail(list_skills(cursor, username), target)
 
 
-def jutsu_detail(cursor, username, target):
-    """Return one jutsu's visible usage progress."""
-    return _progress_detail(list_jutsus(cursor, username), target)
+def expression_detail(cursor, username, target):
+    """Return one expression's visible usage progress."""
+    return _progress_detail(list_expressions(cursor, username), target)
 
 
 def record_skill_use(cursor, username, skill_key, commit=True):
@@ -294,16 +294,16 @@ def record_skill_use(cursor, username, skill_key, commit=True):
     )
 
 
-def record_jutsu_use(cursor, username, jutsu_key, commit=True):
-    """Increase one jutsu after valid gameplay use."""
+def record_expression_use(cursor, username, expression_key, commit=True):
+    """Increase one expression after valid gameplay use."""
     return _record_use(
         cursor,
         username,
-        jutsu_key,
-        definitions_table="jutsu_definitions",
-        key_column="jutsu_key",
-        definition_id="jutsu_definition_id",
-        progress_table="character_jutsus",
+        expression_key,
+        definitions_table="expression_definitions",
+        key_column="expression_key",
+        definition_id="expression_definition_id",
+        progress_table="character_expressions",
         commit=commit,
     )
 
@@ -320,25 +320,25 @@ def practice_skill(cursor, username, target):
     )
 
 
-def train_jutsu(cursor, username, target):
-    """Advance one available jutsu through deliberate training."""
+def train_expression(cursor, username, target):
+    """Advance one available expression through deliberate training."""
     return _practice(
         cursor,
         username,
         target,
-        definitions_table="jutsu_definitions",
-        definition_id="jutsu_definition_id",
-        progress_table="character_jutsus",
+        definitions_table="expression_definitions",
+        definition_id="expression_definition_id",
+        progress_table="character_expressions",
     )
 
 
-def activate_jutsu(cursor, username, target):
-    """Spend chakra and persist one authored jutsu activation window."""
+def activate_expression(cursor, username, target):
+    """Spend wisp and persist one authored expression activation window."""
     connection = cursor.connection
     try:
         cursor.execute("BEGIN IMMEDIATE")
         player = cursor.execute(
-            "SELECT id, chakra FROM players WHERE username=?",
+            "SELECT id, wisp FROM players WHERE username=?",
             (username,),
         ).fetchone()
         if not player:
@@ -347,9 +347,9 @@ def activate_jutsu(cursor, username, target):
         definition = _resolve_named(
             cursor.execute(
                 """
-                SELECT id, jutsu_key, name, chakra_cost, activation_seconds,
+                SELECT id, expression_key, name, wisp_cost, activation_seconds,
                        cooldown_seconds, effect_key
-                FROM jutsu_definitions
+                FROM expression_definitions
                 WHERE is_available=1
                 ORDER BY id
                 """
@@ -367,8 +367,8 @@ def activate_jutsu(cursor, username, target):
             SELECT active_until, cooldown_until,
                    active_until > CURRENT_TIMESTAMP AS active,
                    cooldown_until > CURRENT_TIMESTAMP AS cooling_down
-            FROM character_jutsu_states
-            WHERE player_id=? AND jutsu_definition_id=?
+            FROM character_expression_states
+            WHERE player_id=? AND expression_definition_id=?
             """,
             (player["id"], definition["id"]),
         ).fetchone()
@@ -378,24 +378,24 @@ def activate_jutsu(cursor, username, target):
         if state and state["cooling_down"]:
             connection.rollback()
             return {"status": "cooldown", "name": definition["name"]}
-        if player["chakra"] < definition["chakra_cost"]:
+        if player["wisp"] < definition["wisp_cost"]:
             connection.rollback()
-            return {"status": "insufficient_chakra", "name": definition["name"]}
+            return {"status": "insufficient_wisp", "name": definition["name"]}
         cursor.execute(
-            "UPDATE players SET chakra=chakra-? WHERE id=?",
-            (definition["chakra_cost"], player["id"]),
+            "UPDATE players SET wisp=wisp-? WHERE id=?",
+            (definition["wisp_cost"], player["id"]),
         )
         cursor.execute(
             """
-            INSERT INTO character_jutsu_states (
-                player_id, jutsu_definition_id, active_until, cooldown_until
+            INSERT INTO character_expression_states (
+                player_id, expression_definition_id, active_until, cooldown_until
             )
             VALUES (
                 ?, ?,
                 datetime('now', '+' || ? || ' seconds'),
                 datetime('now', '+' || ? || ' seconds')
             )
-            ON CONFLICT(player_id, jutsu_definition_id) DO UPDATE SET
+            ON CONFLICT(player_id, expression_definition_id) DO UPDATE SET
                 active_until=excluded.active_until,
                 cooldown_until=excluded.cooldown_until
             """,
@@ -413,7 +413,7 @@ def activate_jutsu(cursor, username, target):
     return {
         "status": "activated",
         "name": definition["name"],
-        "chakra": player["chakra"] - definition["chakra_cost"],
+        "wisp": player["wisp"] - definition["wisp_cost"],
         "active_seconds": definition["activation_seconds"],
         "cooldown_seconds": definition["cooldown_seconds"],
     }
@@ -423,12 +423,12 @@ def consume_substitution(cursor, username):
     """Consume an active Substitution defense and record successful use."""
     state = cursor.execute(
         """
-        SELECT states.player_id, states.jutsu_definition_id
-        FROM character_jutsu_states AS states
+        SELECT states.player_id, states.expression_definition_id
+        FROM character_expression_states AS states
         JOIN players ON players.id=states.player_id
-        JOIN jutsu_definitions ON jutsu_definitions.id=states.jutsu_definition_id
+        JOIN expression_definitions ON expression_definitions.id=states.expression_definition_id
         WHERE players.username=?
-          AND jutsu_definitions.effect_key='substitution'
+          AND expression_definitions.effect_key='substitution'
           AND states.active_until > CURRENT_TIMESTAMP
         """,
         (username,),
@@ -437,13 +437,13 @@ def consume_substitution(cursor, username):
         return None
     cursor.execute(
         """
-        UPDATE character_jutsu_states
+        UPDATE character_expression_states
         SET active_until=NULL
-        WHERE player_id=? AND jutsu_definition_id=?
+        WHERE player_id=? AND expression_definition_id=?
         """,
-        (state["player_id"], state["jutsu_definition_id"]),
+        (state["player_id"], state["expression_definition_id"]),
     )
-    return record_jutsu_use(
+    return record_expression_use(
         cursor,
         username,
         "substitution-technique",
@@ -451,11 +451,11 @@ def consume_substitution(cursor, username):
     )
 
 
-def tick_jutsu_states(connection):
+def tick_expression_states(connection):
     """Clear expired activation windows while retaining active cooldowns."""
     cursor = connection.execute(
         """
-        UPDATE character_jutsu_states
+        UPDATE character_expression_states
         SET active_until=NULL
         WHERE active_until IS NOT NULL
           AND active_until <= CURRENT_TIMESTAMP
@@ -463,7 +463,7 @@ def tick_jutsu_states(connection):
     )
     connection.execute(
         """
-        DELETE FROM character_jutsu_states
+        DELETE FROM character_expression_states
         WHERE active_until IS NULL
           AND cooldown_until <= CURRENT_TIMESTAMP
         """

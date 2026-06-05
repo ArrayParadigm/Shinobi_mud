@@ -1,4 +1,4 @@
-# Shinobi MUD Historical Roadmap
+# Veilborn MUD Historical Roadmap
 
 This file holds completed TODO and sprint history moved out of the active roadmap. Current work lives in [TODO.md](TODO.md). Detailed implementation notes live in [CHANGELOG.md](CHANGELOG.md).
 
@@ -9,9 +9,9 @@ This file holds completed TODO and sprint history moved out of the active roadma
 - [x] Persistent inventories, equipment, authored NPCs, melee combat, and combat reliability.
 - [x] Character foundation, ANSI presentation, runtime database ownership, and body resources.
 - [x] Food and drink consumption with recovery consequences.
-- [x] Usage-based skill and jutsu framework with discoverable placeholder catalogs.
+- [x] Usage-based skill and expression framework with discoverable placeholder catalogs.
 - [x] First real skill action: `Throw`.
-- [x] First real jutsu action: `Substitution Technique`.
+- [x] First real expression action: `Substitution Expression`.
 - [x] Coordinate-overlay builder and compact training playground.
 - [x] Builder-editable help prose and categorized command discovery.
 - [x] Sprint 18 builder editing suite.
@@ -26,23 +26,23 @@ This file holds completed TODO and sprint history moved out of the active roadma
 - [x] Sprint 25 practice and training progression: hidden point thresholds, milestone messaging, and expanded `prac`/`train`.
 - [x] Sprint 29 presentation and navigation upgrade: diagonal movement, larger maps, population markers, nearby divider, and command/argument coloring.
 
-## Sprint 16: Substitution Technique
+## Sprint 16: Substitution Expression
 
-Implemented one defensive jutsu without widening into a general ability engine prematurely.
+Implemented one defensive expression without widening into a general ability engine prematurely.
 
-- [x] Define authored jutsu execution metadata: chakra cost, activation window, cooldown, and effect key.
-- [x] Add a player command for activating `Substitution Technique`.
-- [x] Consume chakra transactionally and reject activation when chakra is insufficient.
+- [x] Define authored expression execution metadata: wisp cost, activation window, cooldown, and effect key.
+- [x] Add a player command for activating `Substitution Expression`.
+- [x] Consume wisp transactionally and reject activation when wisp is insufficient.
 - [x] Persist active defensive state and cooldown expiry.
 - [x] Resolve the next eligible hostile NPC strike through Substitution instead of applying damage.
-- [x] Record successful Substitution resolution through the jutsu-progression helper.
+- [x] Record successful Substitution resolution through the expression-progression helper.
 - [x] Integrate expiry and cooldown handling with the existing world scheduler where needed.
-- [x] Add tests for activation, insufficient chakra, defensive resolution, expiry, cooldowns, reconnect persistence, and rollback.
+- [x] Add tests for activation, insufficient wisp, defensive resolution, expiry, cooldowns, reconnect persistence, and rollback.
 - [x] Run an isolated TCP smoke pass without disturbing the preserved database or an active server process.
 
 ### Done When
 
-A player can spend chakra to prepare Substitution Technique, avoid one eligible hostile NPC strike during its active window, gain jutsu proficiency when the defense resolves, and respect a persisted cooldown.
+A player can spend wisp to prepare Substitution Expression, avoid one eligible hostile NPC strike during its active window, gain expression proficiency when the defense resolves, and respect a persisted cooldown.
 
 ## Sprint 17: Builder and Training Playground
 
@@ -51,7 +51,7 @@ Made authored content expansion practical without editing Python.
 - [x] Replace placeholder `dig` with coordinate-aware overlay editing.
 - [x] Add room-description editing for authored zones.
 - [x] Add a compact admin workflow for authored NPC templates and spawns.
-- [x] Build a training area that exercises melee, recovery, Throw, and Substitution Technique.
+- [x] Build a training area that exercises melee, recovery, Throw, and Substitution Expression.
 - [x] Add reload and persistence tests for edited content.
 
 ### Done When
@@ -78,7 +78,7 @@ An admin can create, inspect, and revise a small zone with rooms, NPCs, and item
 
 ## Sprint 20: Fluid Pulse Combat Foundation
 
-Replaced immediate melee turns with a slower engagement loop that leaves room for skills and jutsus to carry combat.
+Replaced immediate melee turns with a slower engagement loop that leaves room for skills and expressions to carry combat.
 
 - [x] Persist player-to-NPC engagements and resolve due auto attacks through a dedicated scheduler.
 - [x] Keep basic auto attacks up close while preserving engagement across movement.
@@ -89,7 +89,7 @@ Replaced immediate melee turns with a slower engagement loop that leaves room fo
 
 ### Done When
 
-Players can engage a hostile NPC, reposition without ending combat, inspect range, switch authored stances, and receive slow scheduler-driven basic attacks while future skills and jutsus have a transactional modifier queue to build on.
+Players can engage a hostile NPC, reposition without ending combat, inspect range, switch authored stances, and receive slow scheduler-driven basic attacks while future skills and expressions have a transactional modifier queue to build on.
 
 ## Sprint 21: Builder Daily Workflow
 
@@ -125,7 +125,7 @@ New and existing characters have readable identity, description, and score outpu
 
 ## Sprint 24: Body, Stats, and Room Flags
 
-- [x] Apply v1 stat effects to recovery, chakra support, fatigue tolerance, and existing combat calculations.
+- [x] Apply v1 stat effects to recovery, wisp support, fatigue tolerance, and existing combat calculations.
 - [x] Implement room-flag behavior for `indoor`, `outdoor`, `vacuum`, `darkness`, `brightness`, `safe`, `no-combat`, and `recovery-friendly`.
 - [x] Apply minimap/survey behavior for darkness, brightness, and indoor spaces.
 - [x] Apply vacuum fatigue and health pressure through the existing body system.
@@ -136,8 +136,8 @@ Room flags have visible, testable player consequences.
 
 ## Sprint 25: Practice and Training Progression
 
-- [x] Rework `prac <skill>` and `train <jutsu>` into progression actions.
-- [x] Convert skill/jutsu progress to hidden point thresholds while preserving tier/percent display.
+- [x] Rework `prac <skill>` and `train <expression>` into progression actions.
+- [x] Convert skill/expression progress to hidden point thresholds while preserving tier/percent display.
 - [x] Use thresholds from `Untrained` through capped `Grandmaster`.
 - [x] Add milestone messages at 10% improvements and tier changes.
 
@@ -162,7 +162,7 @@ Players can navigate and scan populated rooms more easily without opening builde
 
 - [x] Add login/disconnect announcements MUD wide for all players.
 - [x] Add room flags and their function: indoor, outdoor, vacuum, darkness, brightness, safe/no-combat, and recovery-friendly.
-- [x] Reestablish attributes and resource definitions for health, stamina, chakra, fatigue, and stat display.
+- [x] Reestablish attributes and resource definitions for health, stamina, wisp, fatigue, and stat display.
 - [x] Disconnect/reconnect handling, including taking back over an already connected character.
 - [x] Organize `score` as vertical resources and horizontal stats.
 - [x] Rework stat display and v1 stat effects: Condition, Strength, Intellect, Dexterity, and Agility.

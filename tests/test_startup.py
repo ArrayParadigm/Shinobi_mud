@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-import shinobi_mud
+import veilborn_mud
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -30,18 +30,18 @@ class FailingReactor(FakeReactor):
 
 class StartupSmokeTests(unittest.TestCase):
     def setUp(self):
-        self.original_config = shinobi_mud.ACTIVE_CONFIG.copy()
-        self.original_overlays = shinobi_mud.WORLD_OVERLAYS.copy()
+        self.original_config = veilborn_mud.ACTIVE_CONFIG.copy()
+        self.original_overlays = veilborn_mud.WORLD_OVERLAYS.copy()
 
     def tearDown(self):
-        if shinobi_mud.conn:
-            shinobi_mud.conn.close()
-            shinobi_mud.conn = None
-            shinobi_mud.cursor = None
-        shinobi_mud.ACTIVE_CONFIG.clear()
-        shinobi_mud.ACTIVE_CONFIG.update(self.original_config)
-        shinobi_mud.WORLD_OVERLAYS.clear()
-        shinobi_mud.WORLD_OVERLAYS.update(self.original_overlays)
+        if veilborn_mud.conn:
+            veilborn_mud.conn.close()
+            veilborn_mud.conn = None
+            veilborn_mud.cursor = None
+        veilborn_mud.ACTIVE_CONFIG.clear()
+        veilborn_mud.ACTIVE_CONFIG.update(self.original_config)
+        veilborn_mud.WORLD_OVERLAYS.clear()
+        veilborn_mud.WORLD_OVERLAYS.update(self.original_overlays)
 
     def test_run_server_initializes_and_uses_configured_port(self):
         with tempfile.TemporaryDirectory() as temporary_directory:
@@ -61,7 +61,7 @@ class StartupSmokeTests(unittest.TestCase):
             )
             fake_reactor = FakeReactor()
 
-            config = shinobi_mud.run_server(str(config_path), fake_reactor)
+            config = veilborn_mud.run_server(str(config_path), fake_reactor)
 
             self.assertEqual(config["server_port"], 4567)
             self.assertEqual(fake_reactor.listened[0][0], 4567)
@@ -86,10 +86,10 @@ class StartupSmokeTests(unittest.TestCase):
                     "npc_templates",
                     "npc_instances",
                     "skill_definitions",
-                    "jutsu_definitions",
+                    "expression_definitions",
                     "character_skills",
-                    "character_jutsus",
-                    "character_jutsu_states",
+                    "character_expressions",
+                    "character_expression_states",
                     "stance_definitions",
                     "character_stances",
                     "combat_engagements",
@@ -98,23 +98,23 @@ class StartupSmokeTests(unittest.TestCase):
                 }
                 <= tables
             )
-            self.assertGreaterEqual(len(shinobi_mud.WORLD_OVERLAYS), 30)
-            self.assertEqual(shinobi_mud.WORLD_OVERLAYS[(500, 500)]["vnum"], 3000)
-            self.assertEqual(shinobi_mud.WORLD_OVERLAYS[(1, 1)]["vnum"], 1000)
-            shinobi_mud.conn.close()
-            shinobi_mud.conn = None
-            shinobi_mud.cursor = None
+            self.assertGreaterEqual(len(veilborn_mud.WORLD_OVERLAYS), 30)
+            self.assertEqual(veilborn_mud.WORLD_OVERLAYS[(500, 500)]["vnum"], 3000)
+            self.assertEqual(veilborn_mud.WORLD_OVERLAYS[(1, 1)]["vnum"], 1000)
+            veilborn_mud.conn.close()
+            veilborn_mud.conn = None
+            veilborn_mud.cursor = None
 
     def test_validation_rejects_invalid_port(self):
-        shinobi_mud.conn = sqlite3.connect(":memory:")
-        shinobi_mud.conn.row_factory = sqlite3.Row
-        shinobi_mud.cursor = shinobi_mud.conn.cursor()
-        shinobi_mud.ensure_tables_exist(shinobi_mud.conn)
-        shinobi_mud.apply_migrations(shinobi_mud.conn)
-        shinobi_mud.COMMAND_REGISTRY.clear()
-        shinobi_mud.load_commands()
+        veilborn_mud.conn = sqlite3.connect(":memory:")
+        veilborn_mud.conn.row_factory = sqlite3.Row
+        veilborn_mud.cursor = veilborn_mud.conn.cursor()
+        veilborn_mud.ensure_tables_exist(veilborn_mud.conn)
+        veilborn_mud.apply_migrations(veilborn_mud.conn)
+        veilborn_mud.COMMAND_REGISTRY.clear()
+        veilborn_mud.load_commands()
         with self.assertRaises(RuntimeError):
-            shinobi_mud.validate_server_state(
+            veilborn_mud.validate_server_state(
                 {
                     "server_port": "not-a-port",
                     "zone_directory": str(PROJECT_ROOT / "zones"),
@@ -122,15 +122,15 @@ class StartupSmokeTests(unittest.TestCase):
             )
 
     def test_validation_rejects_non_boolean_color_default(self):
-        shinobi_mud.conn = sqlite3.connect(":memory:")
-        shinobi_mud.conn.row_factory = sqlite3.Row
-        shinobi_mud.cursor = shinobi_mud.conn.cursor()
-        shinobi_mud.ensure_tables_exist(shinobi_mud.conn)
-        shinobi_mud.apply_migrations(shinobi_mud.conn)
-        shinobi_mud.COMMAND_REGISTRY.clear()
-        shinobi_mud.load_commands()
+        veilborn_mud.conn = sqlite3.connect(":memory:")
+        veilborn_mud.conn.row_factory = sqlite3.Row
+        veilborn_mud.cursor = veilborn_mud.conn.cursor()
+        veilborn_mud.ensure_tables_exist(veilborn_mud.conn)
+        veilborn_mud.apply_migrations(veilborn_mud.conn)
+        veilborn_mud.COMMAND_REGISTRY.clear()
+        veilborn_mud.load_commands()
         with self.assertRaises(RuntimeError):
-            shinobi_mud.validate_server_state(
+            veilborn_mud.validate_server_state(
                 {
                     "default_color_enabled": "yes",
                     "zone_directory": str(PROJECT_ROOT / "zones"),
@@ -141,13 +141,13 @@ class StartupSmokeTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary_directory:
             log_path = Path(temporary_directory) / "logs" / "smoke.log"
 
-            shinobi_mud.configure_logging(str(log_path))
+            veilborn_mud.configure_logging(str(log_path))
             logging.info("logging smoke test")
 
             self.assertTrue(log_path.exists())
-            shinobi_mud.configure_logging()
+            veilborn_mud.configure_logging()
 
-        self.assertEqual(Path(shinobi_mud.DEFAULT_LOG_FILE).parts[0], "logs")
+        self.assertEqual(Path(veilborn_mud.DEFAULT_LOG_FILE).parts[0], "logs")
 
     def test_run_server_logs_unexpected_reactor_failure(self):
         with tempfile.TemporaryDirectory() as temporary_directory:
@@ -169,10 +169,10 @@ class StartupSmokeTests(unittest.TestCase):
 
             try:
                 with self.assertRaisesRegex(RuntimeError, "reactor smoke failure"):
-                    shinobi_mud.run_server(str(config_path), FailingReactor())
+                    veilborn_mud.run_server(str(config_path), FailingReactor())
             finally:
-                shinobi_mud.conn.close()
-                shinobi_mud.configure_logging()
+                veilborn_mud.conn.close()
+                veilborn_mud.configure_logging()
 
             self.assertIn("Unexpected server failure.", log_path.read_text())
 

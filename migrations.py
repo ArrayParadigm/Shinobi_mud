@@ -7,10 +7,10 @@ from character_state import create_character_state_tables
 from items import create_item_tables, ensure_item_seed_tracking
 from npcs import create_npc_tables
 from socials import create_social_tables
-from techniques import (
+from expressions import (
     create_technique_tables,
     ensure_catalog_availability_columns,
-    ensure_jutsu_execution_columns,
+    ensure_expression_execution_columns,
     ensure_usage_progress_columns,
 )
 
@@ -26,18 +26,18 @@ PLAYER_COLUMNS = (
     "role_type",
     "health",
     "stamina",
-    "chakra",
+    "wisp",
     "strength",
     "dexterity",
     "agility",
     "intelligence",
     "wisdom",
-    "dojo_alignment",
+    "house_alignment",
     "max_health",
     "max_stamina",
-    "max_chakra",
+    "max_wisp",
     "clan",
-    "natural_release",
+    "essence",
     "nutrition",
     "hydration",
     "fatigue",
@@ -62,23 +62,23 @@ def create_players_table(cursor, table_name="players"):
             role_type TEXT DEFAULT 'newbie',
             health INTEGER DEFAULT 10,
             stamina INTEGER DEFAULT 10,
-            chakra INTEGER DEFAULT 10,
+            wisp INTEGER DEFAULT 10,
             strength INTEGER DEFAULT 10,
             dexterity INTEGER DEFAULT 10,
             agility INTEGER DEFAULT 10,
             intelligence INTEGER DEFAULT 10,
             wisdom INTEGER DEFAULT 10,
-            dojo_alignment TEXT DEFAULT 'None',
+            house_alignment TEXT DEFAULT 'None',
             max_health INTEGER DEFAULT 10,
             max_stamina INTEGER DEFAULT 10,
-            max_chakra INTEGER DEFAULT 10,
+            max_wisp INTEGER DEFAULT 10,
             clan TEXT DEFAULT 'Unaffiliated',
-            natural_release TEXT DEFAULT 'Undeclared',
+            essence TEXT DEFAULT 'Undeclared',
             nutrition INTEGER NOT NULL DEFAULT 100,
             hydration INTEGER NOT NULL DEFAULT 100,
             fatigue INTEGER NOT NULL DEFAULT 0,
             recovery_state TEXT NOT NULL DEFAULT 'ready',
-            description TEXT NOT NULL DEFAULT 'An undescribed shinobi stands here.',
+            description TEXT NOT NULL DEFAULT 'An undescribed veilborn stands here.',
             created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
             last_login_at TEXT
         )
@@ -131,23 +131,23 @@ def ensure_player_foundation_columns(cursor):
     for column_name, definition in (
         ("max_health", "INTEGER DEFAULT 10"),
         ("max_stamina", "INTEGER DEFAULT 10"),
-        ("max_chakra", "INTEGER DEFAULT 10"),
+        ("max_wisp", "INTEGER DEFAULT 10"),
         ("clan", "TEXT DEFAULT 'Unaffiliated'"),
-        ("natural_release", "TEXT DEFAULT 'Undeclared'"),
+        ("essence", "TEXT DEFAULT 'Undeclared'"),
     ):
         if column_name not in columns:
             cursor.execute(f"ALTER TABLE players ADD COLUMN {column_name} {definition}")
     cursor.execute("UPDATE players SET max_health=health WHERE max_health IS NULL OR max_health < health")
     cursor.execute("UPDATE players SET max_stamina=stamina WHERE max_stamina IS NULL OR max_stamina < stamina")
-    cursor.execute("UPDATE players SET max_chakra=chakra WHERE max_chakra IS NULL OR max_chakra < chakra")
+    cursor.execute("UPDATE players SET max_wisp=wisp WHERE max_wisp IS NULL OR max_wisp < wisp")
     if "role_type" in columns:
         cursor.execute(
             "UPDATE players SET role_type='newbie' "
             "WHERE role_type IS NULL OR role_type=0 OR role_type='0'"
         )
-        cursor.execute("UPDATE players SET role_type='Ninjutsu' WHERE role_type='a'")
-        cursor.execute("UPDATE players SET role_type='Genjutsu' WHERE role_type='b'")
-        cursor.execute("UPDATE players SET role_type='Taijutsu' WHERE role_type='c'")
+        cursor.execute("UPDATE players SET role_type='Veilcraft' WHERE role_type='a'")
+        cursor.execute("UPDATE players SET role_type='Glamour' WHERE role_type='b'")
+        cursor.execute("UPDATE players SET role_type='Bodycraft' WHERE role_type='c'")
 
 
 def ensure_builder_access_column(cursor):
@@ -195,7 +195,7 @@ def migration_008_consumable_items(cursor):
     create_item_tables(cursor)
 
 
-def migration_009_skill_and_jutsu_framework(cursor):
+def migration_009_skill_and_expression_framework(cursor):
     """Add authored technique definitions and character progression storage."""
     create_technique_tables(cursor)
 
@@ -218,9 +218,9 @@ def migration_012_throwable_items(cursor):
 
 
 def migration_013_substitution_technique(cursor):
-    """Add authored jutsu execution metadata and persisted activation state."""
+    """Add authored expression execution metadata and persisted activation state."""
     create_technique_tables(cursor)
-    ensure_jutsu_execution_columns(cursor)
+    ensure_expression_execution_columns(cursor)
 
 
 def migration_014_pulse_combat_engagements(cursor):
@@ -244,7 +244,7 @@ def ensure_character_identity_columns(cursor):
     if "description" not in columns:
         cursor.execute(
             "ALTER TABLE players ADD COLUMN description "
-            "TEXT NOT NULL DEFAULT 'An undescribed shinobi stands here.'"
+            "TEXT NOT NULL DEFAULT 'An undescribed veilborn stands here.'"
         )
 
 
@@ -288,7 +288,7 @@ def create_builder_tables(cursor):
 def ensure_technique_point_columns(cursor):
     """Add hidden point progress while preserving visible percentage columns."""
     create_technique_tables(cursor)
-    for table_name in ("character_skills", "character_jutsus"):
+    for table_name in ("character_skills", "character_expressions"):
         columns = {
             column[1]
             for column in cursor.execute(f"PRAGMA table_info({table_name})")
@@ -316,7 +316,7 @@ def migration_016_character_identity_and_builder_safety(cursor):
 
 
 def migration_017_technique_progress_points(cursor):
-    """Add hidden point-based skill and jutsu progress."""
+    """Add hidden point-based skill and expression progress."""
     ensure_technique_point_columns(cursor)
 
 
@@ -372,7 +372,7 @@ MIGRATIONS = (
     (6, migration_006_combat_reliability),
     (7, migration_007_body_foundation),
     (8, migration_008_consumable_items),
-    (9, migration_009_skill_and_jutsu_framework),
+    (9, migration_009_skill_and_expression_framework),
     (10, migration_010_usage_based_techniques),
     (11, migration_011_technique_catalog_placeholders),
     (12, migration_012_throwable_items),

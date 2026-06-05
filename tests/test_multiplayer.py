@@ -3,7 +3,7 @@ import sqlite3
 import unittest
 
 import general_commands
-import shinobi_mud
+import veilborn_mud
 import social_commands
 from locations import move_player
 from migrations import apply_migrations
@@ -14,12 +14,12 @@ class MultiplayerTests(unittest.TestCase):
     def setUp(self):
         self.connection = sqlite3.connect(":memory:")
         self.connection.row_factory = sqlite3.Row
-        shinobi_mud.conn = self.connection
-        shinobi_mud.cursor = self.connection.cursor()
-        shinobi_mud.ensure_tables_exist(self.connection)
+        veilborn_mud.conn = self.connection
+        veilborn_mud.cursor = self.connection.cursor()
+        veilborn_mud.ensure_tables_exist(self.connection)
         apply_migrations(self.connection)
-        shinobi_mud.players_in_rooms.clear()
-        shinobi_mud.WORLD_OVERLAYS.clear()
+        veilborn_mud.players_in_rooms.clear()
+        veilborn_mud.WORLD_OVERLAYS.clear()
         self.world_map = [list("..."), list("..."), list("...")]
 
         self.array = self.create_player("Array", 1, 1)
@@ -29,8 +29,8 @@ class MultiplayerTests(unittest.TestCase):
             player.messages.clear()
 
     def tearDown(self):
-        shinobi_mud.players_in_rooms.clear()
-        shinobi_mud.WORLD_OVERLAYS.clear()
+        veilborn_mud.players_in_rooms.clear()
+        veilborn_mud.WORLD_OVERLAYS.clear()
         self.connection.close()
 
     def create_player(self, username, x, y):
@@ -42,7 +42,7 @@ class MultiplayerTests(unittest.TestCase):
             (username, "hash", x, y),
         )
         self.connection.commit()
-        player = TestProtocol(shinobi_mud.cursor)
+        player = TestProtocol(veilborn_mud.cursor)
         player.username = username
         player.x = x
         player.y = y
@@ -51,9 +51,9 @@ class MultiplayerTests(unittest.TestCase):
         return player
 
     def test_say_emote_and_think_are_local(self):
-        social_commands.handle_say(self.array, "hello", ["hello"], shinobi_mud.players_in_rooms)
-        social_commands.handle_emote(self.array, "waves", ["waves"], shinobi_mud.players_in_rooms)
-        social_commands.handle_think(self.array, "", [], shinobi_mud.players_in_rooms)
+        social_commands.handle_say(self.array, "hello", ["hello"], veilborn_mud.players_in_rooms)
+        social_commands.handle_emote(self.array, "waves", ["waves"], veilborn_mud.players_in_rooms)
+        social_commands.handle_think(self.array, "", [], veilborn_mud.players_in_rooms)
 
         self.assertIn('Array says, "hello"', self.array.messages)
         self.assertIn('Array says, "hello"', self.eve.messages)
@@ -62,7 +62,7 @@ class MultiplayerTests(unittest.TestCase):
         self.assertEqual(self.distant.messages, [])
 
     def test_ooc_is_global_and_delivered_once(self):
-        social_commands.handle_ooc(self.array, "server test", ["server", "test"], shinobi_mud.players_in_rooms)
+        social_commands.handle_ooc(self.array, "server test", ["server", "test"], veilborn_mud.players_in_rooms)
 
         for player in (self.array, self.eve, self.distant):
             self.assertEqual(player.messages, ["[OOC] Array: server test"])
@@ -72,7 +72,7 @@ class MultiplayerTests(unittest.TestCase):
             self.array,
             "Distant quiet words",
             ["Distant", "quiet", "words"],
-            shinobi_mud.players_in_rooms,
+            veilborn_mud.players_in_rooms,
         )
 
         self.assertEqual(self.array.messages, ["[Whisper] to Distant: quiet words"])
@@ -87,7 +87,7 @@ class MultiplayerTests(unittest.TestCase):
             self.array,
             "training begins",
             ["training", "begins"],
-            shinobi_mud.players_in_rooms,
+            veilborn_mud.players_in_rooms,
         )
 
         self.assertEqual(self.array.messages, ['Array shouts, "training begins"'])
@@ -100,13 +100,13 @@ class MultiplayerTests(unittest.TestCase):
             self.array,
             "Distant \x1b[31mquiet\x1b[0m",
             ["Distant", "\x1b[31mquiet\x1b[0m"],
-            shinobi_mud.players_in_rooms,
+            veilborn_mud.players_in_rooms,
         )
         social_commands.handle_shout(
             self.array,
             "\x1b[31mtraining\x1b[0m",
             ["\x1b[31mtraining\x1b[0m"],
-            shinobi_mud.players_in_rooms,
+            veilborn_mud.players_in_rooms,
         )
 
         self.assertEqual(self.array.messages[0], "[Whisper] to Distant: quiet")
@@ -119,7 +119,7 @@ class MultiplayerTests(unittest.TestCase):
                 self.array,
                 "private-ish words",
                 ["private-ish", "words"],
-                shinobi_mud.players_in_rooms,
+                veilborn_mud.players_in_rooms,
             )
 
         logs = "\n".join(captured.output)
@@ -132,11 +132,11 @@ class MultiplayerTests(unittest.TestCase):
         self.assertIn("Newcomer has arrived.", self.array.messages)
         newcomer.connectionLost("test disconnect")
 
-        self.assertNotIn(newcomer, shinobi_mud.players_in_rooms[(1, 1)])
+        self.assertNotIn(newcomer, veilborn_mud.players_in_rooms[(1, 1)])
         self.assertIn("Newcomer has left.", self.array.messages)
 
     def test_movement_announces_departure_and_arrival(self):
-        moved = move_player(self.array, "east", self.world_map, shinobi_mud.players_in_rooms)
+        moved = move_player(self.array, "east", self.world_map, veilborn_mud.players_in_rooms)
 
         self.assertTrue(moved)
         self.assertIn("Array leaves east.", self.eve.messages)
@@ -144,7 +144,7 @@ class MultiplayerTests(unittest.TestCase):
 
         arrival_observer = self.create_player("Observer", 1, 1)
         arrival_observer.messages.clear()
-        move_player(arrival_observer, "east", self.world_map, shinobi_mud.players_in_rooms)
+        move_player(arrival_observer, "east", self.world_map, veilborn_mud.players_in_rooms)
         self.assertIn("Observer arrives.", self.array.messages)
 
     def test_movement_lists_players_already_at_destination(self):
@@ -166,12 +166,12 @@ class MultiplayerTests(unittest.TestCase):
         self.assertIn("Array arrives.", waiting_player.messages)
 
     def test_room_display_lists_players_already_present(self):
-        original_map = shinobi_mud.WORLD_MAP
-        shinobi_mud.WORLD_MAP = self.world_map
+        original_map = veilborn_mud.WORLD_MAP
+        veilborn_mud.WORLD_MAP = self.world_map
         try:
-            shinobi_mud.NinjaMUDProtocol.display_room(self.array)
+            veilborn_mud.VeilbornMUDProtocol.display_room(self.array)
         finally:
-            shinobi_mud.WORLD_MAP = original_map
+            veilborn_mud.WORLD_MAP = original_map
 
         self.assertIn("Also here: Eve", self.array.messages)
         self.assertIn("-- Nearby --", self.array.messages)
@@ -200,13 +200,13 @@ class MultiplayerTests(unittest.TestCase):
         self.assertNotIn("Array leaves east.", self.eve.messages)
 
     def test_who_lists_each_online_player(self):
-        general_commands.handle_who(self.array, shinobi_mud.players_in_rooms)
+        general_commands.handle_who(self.array, veilborn_mud.players_in_rooms)
 
         self.assertEqual(self.array.messages[0], "Players online: 3")
         self.assertEqual(self.array.messages[1:], ["  Array", "  Distant", "  Eve"])
 
     def test_score_displays_character_sheet(self):
-        shinobi_mud.WORLD_OVERLAYS[(1, 1)] = {
+        veilborn_mud.WORLD_OVERLAYS[(1, 1)] = {
             "zone_name": "Test Town",
             "vnum": 3000,
             "room": {},
@@ -217,12 +217,12 @@ class MultiplayerTests(unittest.TestCase):
         self.assertEqual(self.array.messages[0], "Score for Array")
         self.assertIn("Health: 10/10", self.array.messages)
         self.assertIn("Stamina: 10/10", self.array.messages)
-        self.assertIn("Chakra: 10/10", self.array.messages)
+        self.assertIn("Wisp: 10/10", self.array.messages)
         self.assertIn("Fatigue: fresh", self.array.messages)
         self.assertIn("Strength: 10  Intellect: 10  Dexterity: 10  Agility: 10  Condition: 10", self.array.messages)
-        self.assertIn("Description: An undescribed shinobi stands here.", self.array.messages)
+        self.assertIn("Description: An undescribed veilborn stands here.", self.array.messages)
         self.assertIn(
-                "Specialty: newbie  Clan: Unaffiliated  Release: Undeclared",
+                "Specialty: newbie  Clan: Unaffiliated  Essence: Undeclared",
             self.array.messages,
         )
         self.assertIn("Location: (1, 1)", self.array.messages)
@@ -230,7 +230,7 @@ class MultiplayerTests(unittest.TestCase):
         self.assertIn("Area: Test Town  VNUM: 3000", self.array.messages)
 
     def test_prompt_displays_resources_and_overlay_location(self):
-        shinobi_mud.WORLD_OVERLAYS[(1, 1)] = {
+        veilborn_mud.WORLD_OVERLAYS[(1, 1)] = {
             "zone_name": "Test Town",
             "vnum": 3000,
             "room": {},
@@ -244,19 +244,19 @@ class MultiplayerTests(unittest.TestCase):
         )
 
     def test_nearby_player_listing_shows_distance_but_not_roommates(self):
-        shinobi_mud.NEARBY_PLAYER_RADIUS = 20
+        veilborn_mud.NEARBY_PLAYER_RADIUS = 20
 
         self.array.list_nearby_players()
 
         self.assertEqual(self.array.messages, ["Nearby: Distant (2, 2; 1 away)"])
 
     def test_nearby_player_listing_can_be_disabled(self):
-        original_setting = shinobi_mud.SHOW_NEARBY_PLAYERS
-        shinobi_mud.SHOW_NEARBY_PLAYERS = False
+        original_setting = veilborn_mud.SHOW_NEARBY_PLAYERS
+        veilborn_mud.SHOW_NEARBY_PLAYERS = False
         try:
             self.array.list_nearby_players()
         finally:
-            shinobi_mud.SHOW_NEARBY_PLAYERS = original_setting
+            veilborn_mud.SHOW_NEARBY_PLAYERS = original_setting
 
         self.assertEqual(self.array.messages, [])
 
@@ -268,7 +268,7 @@ class MultiplayerTests(unittest.TestCase):
             self.assertEqual(self.array.messages, ["Location: (1, 1)", "Terrain: ."])
 
             self.array.messages.clear()
-            shinobi_mud.WORLD_OVERLAYS[(1, 1)] = {
+            veilborn_mud.WORLD_OVERLAYS[(1, 1)] = {
                 "zone_name": "Test Town",
                 "vnum": 3000,
                 "room": {},

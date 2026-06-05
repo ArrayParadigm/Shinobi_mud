@@ -1,29 +1,29 @@
-# Shinobi_mud
+# Veilborn_mud
 
-**Shinobi_mud** is a text-based Multi-User Dungeon (MUD) game inspired by the Naruto universe. The current private-alpha foundation supports accounts, multiplayer exploration, chat, and authored zones over a persistent wilderness grid.
+**Veilborn_mud** is a text-based Multi-User Dungeon (MUD) game built around original Veilborn fantasy, survival, and roleplay systems. The current private-alpha foundation supports accounts, multiplayer exploration, chat, and authored zones over a persistent wilderness grid.
 
-The active implementation queue lives in [TODO.md](TODO.md). Older documents under `Content/` are design references for the larger vision.
+The active implementation queue lives in [TODO.md](TODO.md). Older documents under `docs/design/` are design references for the larger vision.
 
 ## Features
 
 - **Command System:** Separate modules for general, admin, and social commands.
 - **Dynamic Zones:** Explore various areas and interact with the environment.
 - **Multiplayer Support:** Engage with other players in real time.
-- **Roleplay Elements:** Embrace your inner shinobi with unique abilities and narrative-driven gameplay.
+- **Roleplay Elements:** Embrace your inner veilborn with unique abilities and narrative-driven gameplay.
 
 ## Getting Started
 
 ### Prerequisites
 
 - **Python 3.8+**
-- Linux, macOS, or Windows with terminal support for Python scripts.
+- Linux, macOS, or Felineows with terminal support for Python scripts.
 
 ### Installation
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/ArrayParadigm/Shinobi_mud.git
-   cd Shinobi_mud
+   git clone https://github.com/ArrayParadigm/Veilborn_mud.git
+   cd Veilborn_mud
    ```
 2. Create and activate a virtual environment:
 
@@ -33,7 +33,7 @@ The active implementation queue lives in [TODO.md](TODO.md). Older documents und
    source .venv/bin/activate
    ```
 
-   Windows PowerShell:
+   Felineows PowerShell:
    ```bash
    python -m venv .venv
    .venv\Scripts\activate
@@ -44,12 +44,12 @@ The active implementation queue lives in [TODO.md](TODO.md). Older documents und
    ```
 4. Start the server:
    ```bash
-   python shinobi_mud.py
+   python veilborn_mud.py
    ```
 
 ### Disposable Development Database
 
-The SQLite database is local runtime state and is intentionally not committed to Git. Starting the server creates the configured `shinobi_mud.db` database if it does not exist.
+The SQLite database is local runtime state and is intentionally not committed to Git. Starting the server creates the configured `veilborn_mud.db` database if it does not exist.
 
 To start again with an empty development database:
 
@@ -89,7 +89,7 @@ Restart the MUD or reconnect that character after promotion.
 
 ### Creating a Character
 
-New characters enter the game immediately after username and password setup. Specialty, clan, release, and descriptive character work are intentionally left blank/default for later systems. Core attributes start at `10` for now.
+New characters enter the game immediately after username and password setup. Specialty, clan, essence, and descriptive character work are intentionally left blank/default for later systems. Core attributes start at `10` for now.
 
 If the same character logs in again while already connected, the new session takes over the body and the old session is disconnected from active play.
 
@@ -110,7 +110,7 @@ For a clean local test cycle:
 ```bash
 python reset_dev_db.py
 python -m unittest discover -s tests -v
-python shinobi_mud.py
+python veilborn_mud.py
 ```
 
 The server reads its TCP port from `config.json`.
@@ -143,8 +143,8 @@ The authored `aexpanse` overlay is anchored at `(1, 1)` with two rooms and a see
 - `features [field value]`: view or update structured appearance fields: hair, eyes, height, build, complexion, and marks.
 - `injuries`: view persistent injuries and any movement or speech penalties they cause.
 - `pregnancy`: view private pregnancy status for your character. Hidden cycle and reproductive-role values are admin-only.
-- `body`: display nutrition, hydration, fatigue, and short-rest chakra recovery.
-- `rest`: recover stamina and chakra while reducing fatigue.
+- `body`: display nutrition, hydration, fatigue, and short-rest wisp recovery.
+- `rest`: recover stamina and wisp while reducing fatigue.
 - `inventory`: list persistent carried and equipped items. `inv` remains available as an alias.
 - `get <item>`: pick up an item at your grid location.
 - `drop <item>`: drop a carried item at your grid location.
@@ -154,10 +154,10 @@ The authored `aexpanse` overlay is anchored at `(1, 1)` with two rooms and a see
 - `eat <item>`: consume a carried food item to restore nutrition.
 - `drink <item>`: consume a carried beverage to restore hydration.
 - `prac [skill]`: list ordinary skills or practice one skill for point-based progression.
-- `train [jutsu]`: list jutsus or train one jutsu for point-based progression.
+- `train [expression]`: list expressions or train one expression for point-based progression.
 - `skill [all|skill]`: list available skills, inspect one, or show the full skill catalog.
-- `jutsu [all|jutsu]`: list available jutsus, inspect one, or show the full jutsu catalog.
-- `usejutsu <jutsu>`: activate an implemented jutsu.
+- `expression [all|expression]`: list available expressions, inspect one, or show the full expression catalog.
+- `useexpression <expression>`: activate an implemented expression.
 - `talk <character>`: speak with an NPC at your grid location.
 - `consider <character>`: inspect a visible character's combat details.
 - `attack <character>`: engage a hostile NPC at your grid location for round combat.
@@ -175,8 +175,8 @@ The authored `aexpanse` overlay is anchored at `(1, 1)` with two rooms and a see
 - `wave`, `smile`, `nod`, `bow`, `laugh`, `highfive`, `poke`, and many other direct social commands perform catalog-backed emotes.
 - `hug`, `pat`, `cuddle`, `nuzzle`, and intimate social commands are consent-gated. Adult categories require opt-in before they appear in default social discovery or resolve.
 - `holdhands`, `carry`, `support`, `guide`, `drag`, and `escort` create consent-gated movement/support states. These can move disabled, restrained, knocked-out, or injured targets when state and consent rules allow it.
-- `tie`, `restrain`, `gag`, `blindfold`, `bindwrists`, and `bindankles` create opt-in restrictive states until `release` or `resist`.
-- `release <character|all>` and `resist`: end active social holds or restraints. Consent can always be withdrawn or resisted.
+- `tie`, `restrain`, `gag`, `blindfold`, `bindwrists`, and `bindankles` create opt-in restrictive states until `free` or `resist`.
+- `free <character|all>` and `resist`: end active social holds or restraints. Consent can always be withdrawn or resisted.
 - `ooc <message>`: speak on the global out-of-character channel.
 - `suggest <message>`: append a timestamped player suggestion to `suggestions.md`.
 - `bug <message>`: append a timestamped bug report to `bugs.md`.
@@ -193,7 +193,7 @@ NPC targets for `talk`, `consider`, `attack`, and `throw` accept name prefixes a
 
 Socials now have authored catalog records instead of only free-form `emote` text. Normal socials are visible by default, while adult intimate and BDSM categories require explicit opt-in through `consent` before they appear in `socials` or can be used. Targeted socials that touch, pull, restrain, or otherwise affect another character check the target's consent before they resolve.
 
-Mechanical social states are intentionally revocable. Movement/support socials can lead, carry, guide, drag, escort, or support a consenting character through ordinary movement. Restrictive states such as restraint, gagging, and blindfolding only resolve after explicit consent, and the target can always use `resist` or revoke consent. `release` clears states controlled by the acting character.
+Mechanical social states are intentionally revocable. Movement/support socials can lead, carry, guide, drag, escort, or support a consenting character through ordinary movement. Restrictive states such as restraint, gagging, and blindfolding only resolve after explicit consent, and the target can always use `resist` or revoke consent. `free` clears states controlled by the acting character.
 
 Pregnancy-capable adult socials are separate from ordinary character state. Pregnancy can only roll from a consented, adult, pregnancy-risk social when hidden reproductive-role state is biologically compatible; early pregnancy and cycle data are not shown in public look output.
 
@@ -216,10 +216,10 @@ Keep executable command syntax, aliases, permissions, and validation rules in Py
 Admin access tools:
 
 - `players`: list every registered account with online status, access flags, identity summary, saved location, and last-login timestamp.
-- `finger <username>`: inspect a player's persistent identity, appearance, admin/builder access, online state, created and last-login timestamps, resources, attributes, body state, biology/pregnancy admin state, injuries, stance, saved location, skills, and jutsus without exposing password data.
+- `finger <username>`: inspect a player's persistent identity, appearance, admin/builder access, online state, created and last-login timestamps, resources, attributes, body state, biology/pregnancy admin state, injuries, stance, saved location, skills, and expressions without exposing password data.
 - `pstat <username>`: compatibility alias for the detailed `finger` inspection.
 - `pedit <username> builder on|off`: grant or remove builder access without granting full admin access.
-- `pset <username> <field> <value>`: set a validated player field such as `admin`, `builder`, `specialty`, `clan`, `release`, `dojo`, description, resources, attributes, body resources, appearance fields, reproductive role, cycle/pregnancy admin fields, or `injury add|clear <key|all>`.
+- `pset <username> <field> <value>`: set a validated player field such as `admin`, `builder`, `specialty`, `clan`, `essence`, `house`, description, resources, attributes, body resources, appearance fields, reproductive role, cycle/pregnancy admin fields, or `injury add|clear <key|all>`.
 - `treatinjury <username> <injury|all>`: clear one persistent injury or all persistent injuries through the admin/healer path.
 - `copyover`: report that soft restarts are intentionally disabled for now.
 
@@ -243,7 +243,7 @@ Builder overlay tools:
 - `redit <title|desc|flag|exit|link|unlink> <value>` and `rstat [vnum]`: edit and inspect room titles, descriptions, flags, explicit exits, reciprocal links, and unlinking.
 - `rdelete <vnum>`: delete an authored room only after exits, incoming links, and authored spawns are cleared.
 - `createnpc <npc_key> <name>`: create a basic static authored NPC template in the current zone.
-- `medit <npc_key> <field> <value>` and `mstat <npc_key>`: edit and inspect NPC prose, behavior, PC-like resources and stats, combat bonuses, techniques, jutsus, respawn timing, loot table, room emote, movement policy, leash radius, and aggression policy.
+- `medit <npc_key> <field> <value>` and `mstat <npc_key>`: edit and inspect NPC prose, behavior, PC-like resources and stats, combat bonuses, techniques, expressions, respawn timing, loot table, room emote, movement policy, leash radius, and aggression policy.
 - `spawnnpc <npc_key>`: persist and import an authored NPC spawn in the current room.
 - `iedit create <item_key> <name>`, `iedit <item_key> <field> <value>`, and `istat <item_key>`: create, edit, and inspect authored item templates including type, slot, flags, value, weight, stack limit, container capacity, use text, damage, throw damage, nutrition, and hydration.
 - `spawnitem <item_key>`: persist and import a finite authored item seed in the current room.
@@ -255,9 +255,9 @@ Builder overlay tools:
 - `hedit <command> <summary|detail|category|publish|unpublish> [text]`: edit and publish command help.
 For a fresh zone, start with `buildzone`, use `zstat`, `rlist`, `mlist`, `ilist`, `bfind`, and `contentcheck` to inspect it, use `dig` to expand its coordinate layout, use `redit` and `rstat` to refine rooms, then create templates with `createnpc` or `iedit` and place finite instances with `spawnnpc` or `spawnitem`. Use clone commands for variations, `spawnlist` plus despawn commands for authored seeds, `zpublish` before treating a zone as ready, and `bundo` to revert the most recent successful builder mutation. JSON remains the authored source of truth, while successful edits synchronize live SQLite template metadata immediately.
 
-`pedit` and `pset` deliberately exclude usernames, passwords, and saved coordinates. Those need separate audited workflows; ordinary player movement and `goto` remain the safe ways to change location. The older `setrole`, `setstat`, and `setdojo` commands remain available as compatibility wrappers.
+`pedit` and `pset` deliberately exclude usernames, passwords, and saved coordinates. Those need separate audited workflows; ordinary player movement and `goto` remain the safe ways to change location. The older `setrole`, `setstat`, and `sethouse` commands remain available as compatibility wrappers.
 
-The player prompt reports current and maximum health, stamina, chakra, and location after commands. Map output includes a legend for you, other players, NPCs, and authored areas. Nearby-character listings are controlled by `show_nearby_players` and `nearby_player_radius` in `config.json`.
+The player prompt reports current and maximum health, stamina, wisp, and location after commands. Map output includes a legend for you, other players, NPCs, and authored areas. Nearby-character listings are controlled by `show_nearby_players` and `nearby_player_radius` in `config.json`.
 
 ANSI terminal colors are enabled for new connections by default. Set `default_color_enabled` in `config.json` to change the server default, or use `color off` for clients that do not render ANSI colors cleanly.
 
@@ -265,11 +265,11 @@ Room items, character inventories, equipped slots, and NPC instances persist in 
 
 Eve's Haven authors a Haven Map, Travel Ration, and Water Flask at its entrance, a Practice Kunai in its garden, a Crystal Token in its library, a Haven Guide NPC at the entrance, and a hostile Practice Construct in the garden. `reloadcontent` lets an admin apply JSON template edits and create newly-authored spawns without restarting the server.
 
-Eve's Haven is also the compact training loop. Pick up food and water at the entrance, move north into the garden for the Practice Kunai and Practice Construct, then exercise melee, `throw`, `usejutsu substitution`, `body`, and `rest`.
+Eve's Haven is also the compact training loop. Pick up food and water at the entrance, move north into the garden for the Practice Kunai and Practice Construct, then exercise melee, `throw`, `useexpression substitution`, `body`, and `rest`.
 
 The combat loop is engagement-driven and round-based. `attack <character>` starts or retargets combat without dealing immediate damage. Basic auto attacks resolve on action rounds derived from Dexterity and Agility: `1 + 4 * average(dexterity, agility) / 100`, capped from `1` to `5` attacks per second. Engagement remains active when a player moves away, so repositioning creates space instead of acting as a separate flee command. Defeated NPCs disappear until their authored respawn delay elapses. A defeated player recovers to maximum health at the same grid coordinate.
 
-NPCs now use the same core resource/stat shape as player characters: health, stamina, chakra, Strength, Dexterity, Agility, Intelligence, and Wisdom. Builder-created NPCs default those values to `10`. Legacy NPC `damage`, `accuracy`, and `evasion` fields remain as explicit combat bonuses, while authored `techniques` let NPCs spend stamina on the same combat techniques players can use.
+NPCs now use the same core resource/stat shape as player characters: health, stamina, wisp, Strength, Dexterity, Agility, Intelligence, and Wisdom. Builder-created NPCs default those values to `10`. Legacy NPC `damage`, `accuracy`, and `evasion` fields remain as explicit combat bonuses, while authored `techniques` let NPCs spend stamina on the same combat techniques players can use.
 
 `stance` adds the first authored combat profiles. The current placeholders keep neutral timing, so stance choice only changes combat tradeoffs:
 
@@ -279,7 +279,7 @@ NPCs now use the same core resource/stat shape as player characters: health, sta
 - `S4 - Evasion`: `+2` evasion, `-1` accuracy, `-1` damage.
 - `S5 - Damage Reduction`: `+2` incoming damage reduction, `-1` accuracy, `-1` damage.
 
-Accuracy and evasion are opposing values. An S1 attacker facing an S2 defender has an easier hit check because the attacker contributes `+2` accuracy while the defender contributes `-1` evasion. NPC combat uses NPC Dexterity and Agility with optional authored accuracy/evasion bonuses. Player-versus-player engagement can reuse the opposed calculation when it is introduced. The persisted combat queue can still apply one-shot range, accuracy, damage, and status modifiers from future skills and jutsus.
+Accuracy and evasion are opposing values. An S1 attacker facing an S2 defender has an easier hit check because the attacker contributes `+2` accuracy while the defender contributes `-1` evasion. NPC combat uses NPC Dexterity and Agility with optional authored accuracy/evasion bonuses. Player-versus-player engagement can reuse the opposed calculation when it is introduced. The persisted combat queue can still apply one-shot range, accuracy, damage, and status modifiers from future skills and expressions.
 
 `technique` adds stamina-based fighting techniques that queue one round modifier. Use `technique` to list available moves, `technique <name>` to queue one, or the direct command name for the first set. Queueing a new technique replaces the previous queued technique. Stamina is spent when queued, and out-of-range rounds keep the technique pending until an eligible round resolves.
 
@@ -288,15 +288,15 @@ Accuracy and evasion are opposing values. An S1 attacker facing an S2 defender h
 - `feint`: costs `3` stamina, adds `+4` accuracy, and adds `+1` damage to the next round attack.
 - `recover`: costs `0` stamina, skips your outgoing round attack, and restores up to `4` stamina on the next round.
 
-Characters also have abstract body resources: nutrition, hydration, and fatigue. Ordinary movement and hostile combat increase fatigue. `rest` reduces fatigue, consumes a small amount of nutrition and hydration, restores stamina, and restores chakra based on intellect and current body condition. Condition improves short-rest recovery, and recovery-friendly rooms add a room bonus. Rest is blocked at zero nutrition or hydration. `eat` and `drink` consume finite authored supplies to restore body resources.
+Characters also have abstract body resources: nutrition, hydration, and fatigue. Ordinary movement and hostile combat increase fatigue. `rest` reduces fatigue, consumes a small amount of nutrition and hydration, restores stamina, and restores wisp based on intellect and current body condition. Condition improves short-rest recovery, and recovery-friendly rooms add a room bonus. Rest is blocked at zero nutrition or hydration. `eat` and `drink` consume finite authored supplies to restore body resources.
 
 Room flags have player-visible effects. `darkness` hides survey and nearby maps, `brightness` washes the minimap, `indoor` limits map visibility, `safe` and `no-combat` block player combat commands, `vacuum` adds fatigue and can pressure health at extreme fatigue, and `recovery-friendly` improves rest.
 
-Skills and jutsus have separate authored definitions and hidden point progress. `prac <skill>` and `train <jutsu>` add practice points and report visible tier progress without raw percentages, with milestone messages at meaningful improvements and tier changes. `skill` and `jutsu` list available records, and `skill all` plus `jutsu all` expose the wider authored catalog with future records marked `[unimplemented]`. Visible tiers are `Untrained`, `Unlearned`, `Novice`, `Adept`, `Trained`, `Master`, and capped `Grandmaster`.
+Skills and expressions have separate authored definitions and hidden point progress. `prac <skill>` and `train <expression>` add practice points and report visible tier progress without raw percentages, with milestone messages at meaningful improvements and tier changes. `skill` and `expression` list available records, and `skill all` plus `expression all` expose the wider authored catalog with future records marked `[unimplemented]`. Visible tiers are `Untrained`, `Unlearned`, `Novice`, `Adept`, `Trained`, `Master`, and capped `Grandmaster`.
 
 `throw <item> at <character>` is the first real skill action. A valid throw accepts a carried authored item with ranged damage, targets a hostile NPC in the current room or one cardinal step away, adds `2` fatigue, lands the item at the target location, and raises `Throw` proficiency even when the attack misses. The Practice Kunai deals `3` thrown damage.
 
-`usejutsu substitution` prepares Substitution Technique for `30` seconds at a cost of `3` chakra. The next eligible hostile NPC strike during that window is avoided, successful resolution raises Substitution proficiency, and the technique then remains on a persisted `60` second cooldown.
+`useexpression substitution` prepares Substitution Expression for `30` seconds at a cost of `3` wisp. The next eligible hostile NPC strike during that window is avoided, successful resolution raises Substitution proficiency, and the technique then remains on a persisted `60` second cooldown.
 
 ### Early Linux Testing
 

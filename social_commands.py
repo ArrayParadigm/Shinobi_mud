@@ -1,15 +1,21 @@
 import logging
+from consent import (
+    CONSENT_ALLOW,
+    CONSENT_DENY,
+    consent_summary,
+    has_consent,
+    revoke_consent,
+    set_consent,
+)
 from character_state import (
-    maybe_apply_pregnancy,
     movement_block as injury_movement_block,
     speech_block as injury_speech_block,
 )
 from command_system import CommandSpec
 from locations import coordinate_key, online_players
+from pregnancy import maybe_apply_pregnancy
 from presentation import emote_message, ooc_message, say_message, shout_message, whisper_message
 from socials import (
-    CONSENT_ALLOW,
-    CONSENT_DENY,
     DEFAULT_SOCIALS,
     STATE_BLINDFOLDED,
     STATE_GAGGED,
@@ -18,14 +24,10 @@ from socials import (
     can_see_social,
     clear_social_state,
     clear_social_states,
-    consent_summary,
     create_social_state,
     format_social_message,
-    has_consent,
     list_socials,
     normalize_key,
-    revoke_consent,
-    set_consent,
     social_template,
     speech_block as social_speech_block,
 )
@@ -226,22 +228,22 @@ def handle_catalog_social(player, raw_args, split_args, players_in_rooms, social
                 carrier.sendLine(b"You feel that this encounter may have lasting consequences.")
 
 
-def handle_release(player, raw_args, split_args, players_in_rooms):
-    """Release active social states controlled by the player."""
+def handle_free(player, raw_args, split_args, players_in_rooms):
+    """Free active social states controlled by the player."""
     if not split_args:
-        player.sendLine(b"Usage: release <character|all>")
+        player.sendLine(b"Usage: free <character|all>")
         return
     target_name = split_args[0]
     if normalize_key(target_name) == "all":
         rows = active_social_states(player.cursor, player.username)
-        released = sorted({row["target"] for row in rows if row["actor"] == player.username})
+        freed = sorted({row["target"] for row in rows if row["actor"] == player.username})
         clear_social_states(player.cursor, player.username)
         player.cursor.connection.commit()
-        player.sendLine(b"Released all social states you controlled.")
-        for target in released:
+        player.sendLine(b"Freed all social states you controlled.")
+        for target in freed:
             online_target = _online_player(players_in_rooms, target)
             if online_target:
-                online_target.sendLine(f"{player.username} releases you.".encode("utf-8"))
+                online_target.sendLine(f"{player.username} frees you.".encode("utf-8"))
         return
 
     target = _online_player(players_in_rooms, target_name)
@@ -250,8 +252,8 @@ def handle_release(player, raw_args, split_args, players_in_rooms):
         return
     clear_social_states(player.cursor, player.username, target.username)
     player.cursor.connection.commit()
-    player.sendLine(f"You release {target.username}.".encode("utf-8"))
-    target.sendLine(f"{player.username} releases you.".encode("utf-8"))
+    player.sendLine(f"You free {target.username}.".encode("utf-8"))
+    target.sendLine(f"{player.username} frees you.".encode("utf-8"))
 
 
 def handle_resist(player, raw_args, split_args, players_in_rooms):
@@ -268,9 +270,9 @@ def handle_resist(player, raw_args, split_args, players_in_rooms):
         clear_social_state(player.cursor, row["state_type"], row["actor"], player.username)
         actor = _online_player(players_in_rooms, row["actor"])
         if actor:
-            actor.sendLine(f"{player.username} resists free from your restraint.".encode("utf-8"))
+            actor.sendLine(f"{player.username} breaks free from your restraint.".encode("utf-8"))
     player.cursor.connection.commit()
-    player.sendLine(b"You resist free from the restraint.")
+    player.sendLine(b"You break free from the restraint.")
 
 
 def handle_whisper(player, raw_args, split_args, players_in_rooms):
@@ -381,10 +383,9 @@ COMMANDS = {
     "shout": CommandSpec("shout", lambda player, rooms, raw, args: handle_shout(player, raw, args, rooms), "shout <message>", "Speak to characters within one grid cell.", min_args=1),
     "socials": CommandSpec("socials", lambda player, rooms, raw, args: handle_socials(player, raw, args, rooms), "socials [category|all]", "List catalog-backed social actions.", max_args=1),
     "consent": CommandSpec("consent", lambda player, rooms, raw, args: handle_consent(player, raw, args, rooms), "consent [allow|deny <category> [character] | revoke <character>]", "Manage social consent settings.", max_args=3),
-    "release": CommandSpec("release", lambda player, rooms, raw, args: handle_release(player, raw, args, rooms), "release <character|all>", "Release social holds or restraints you control.", min_args=1, max_args=1),
+    "free": CommandSpec("free", lambda player, rooms, raw, args: handle_free(player, raw, args, rooms), "free <character|all>", "Free social holds or restraints you control.", min_args=1, max_args=1),
     "resist": CommandSpec("resist", lambda player, rooms, raw, args: handle_resist(player, raw, args, rooms), "resist", "Break an active restrictive social state on yourself.", max_args=0),
 }
 
 for social_name in sorted({template["key"] for template in DEFAULT_SOCIALS}):
     COMMANDS[social_name] = _social_command(social_name)
-

@@ -28,7 +28,7 @@ def body_state(cursor, username):
     """Return one character's abstract body-resource state."""
     return cursor.execute(
         """
-        SELECT health, max_health, stamina, max_stamina, chakra, max_chakra,
+        SELECT health, max_health, stamina, max_stamina, wisp, max_wisp,
                nutrition, hydration, fatigue, recovery_state, wisdom, strength,
                intelligence, dexterity, agility
         FROM players
@@ -38,8 +38,8 @@ def body_state(cursor, username):
     ).fetchone()
 
 
-def chakra_recovery_amount(state):
-    """Calculate chakra restored by one deliberate rest command."""
+def wisp_recovery_amount(state):
+    """Calculate wisp restored by one deliberate rest command."""
     return max(
         1,
         1
@@ -78,9 +78,9 @@ def rest_character(cursor, username, recovery_bonus=0):
 
     condition_bonus = state["wisdom"] // 10
     stamina_gain = max(1, 3 + condition_bonus + recovery_bonus - state["fatigue"] // 40)
-    chakra_gain = chakra_recovery_amount(state) + recovery_bonus
+    wisp_gain = wisp_recovery_amount(state) + recovery_bonus
     stamina = min(state["max_stamina"], state["stamina"] + stamina_gain)
-    chakra = min(state["max_chakra"], state["chakra"] + chakra_gain)
+    wisp = min(state["max_wisp"], state["wisp"] + wisp_gain)
     nutrition = max(MIN_BODY_RESOURCE, state["nutrition"] - 1)
     hydration = max(MIN_BODY_RESOURCE, state["hydration"] - 1)
     fatigue = max(MIN_BODY_RESOURCE, state["fatigue"] - 10)
@@ -89,20 +89,20 @@ def rest_character(cursor, username, recovery_bonus=0):
     cursor.execute(
         """
         UPDATE players
-        SET stamina=?, chakra=?, nutrition=?, hydration=?, fatigue=?, recovery_state=?
+        SET stamina=?, wisp=?, nutrition=?, hydration=?, fatigue=?, recovery_state=?
         WHERE username=?
         """,
-        (stamina, chakra, nutrition, hydration, fatigue, recovery_state, username),
+        (stamina, wisp, nutrition, hydration, fatigue, recovery_state, username),
     )
     cursor.connection.commit()
     return {
         "status": "rested",
         "stamina_restored": stamina - state["stamina"],
-        "chakra_restored": chakra - state["chakra"],
+        "wisp_restored": wisp - state["wisp"],
         "stamina": stamina,
         "max_stamina": state["max_stamina"],
-        "chakra": chakra,
-        "max_chakra": state["max_chakra"],
+        "wisp": wisp,
+        "max_wisp": state["max_wisp"],
         "nutrition": nutrition,
         "hydration": hydration,
         "fatigue": fatigue,

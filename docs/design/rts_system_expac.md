@@ -15,11 +15,11 @@ Once a player reaches **leader status** within their faction or order, they gain
 To unlock the RTS system, a player must:
 - Achieve the **strongest warrior** or **most powerful wizard** status in their faction.
 - Fulfill faction-specific requirements:
-  - **Ninja Leaders**: Prove dominance by defeating rivals or completing high-level espionage missions.
+  - **Veilborn Leaders**: Prove dominance by defeating rivals or completing high-level espionage missions.
   - **Samurai Lords**: Earn the loyalty of their peers through honor and battle.
   - **Wizard Archmages**: Conquer magical towers and accumulate vast knowledge.
   - **Vampire Lords/Werewolf Alphas**: Assert dominance through duels or clan events.
-- Once the leadership is established, they gain control over their faction’s territory.
+- Once the leadership is established, they gain control over their factionï¿½s territory.
 
 ---
 
@@ -32,9 +32,9 @@ Leaders manage resources, including:
    - Laymen: Civilians who generate income and perform labor.
    - Warriors: Recruits trained to defend and expand territory.
 3. **Resources**:
-   - Materials like wood, stone, metal, or chakra-infused components for magical upgrades.
-4. **Chakra/Essence** (if thematic):
-   - A special resource used for magical or chakra-based upgrades (e.g., enhancing defenses or creating barriers).
+   - Materials like wood, stone, metal, or wisp-infused components for magical upgrades.
+4. **Wisp/Essence** (if thematic):
+   - A special resource used for magical or wisp-based upgrades (e.g., enhancing defenses or creating barriers).
 
 **Example Mechanics**:
 - **Tax Rates**: Adjust tax rates to generate more income at the cost of population happiness.
@@ -50,7 +50,7 @@ Territories consist of various **regions** that can be conquered, developed, and
      - **Training Grounds**: Improve recruit quality and training speed.
      - **Walls/Defenses**: Protect against enemy invasions.
      - **Markets**: Increase income and trade opportunities.
-     - **Special Structures**: Unique to each faction (e.g., Ninja Spy Networks, Samurai Dojos, Mage Towers).
+     - **Special Structures**: Unique to each faction (e.g., Veilborn Spy Networks, Samurai Houses, Mage Towers).
 2. **Expanding Territory**:
    - Leaders can send troops or allies to conquer neutral or enemy territories.
    - Territories provide benefits:
@@ -58,7 +58,7 @@ Territories consist of various **regions** that can be conquered, developed, and
      - Strategic locations for defense or offense.
 3. **Territory Defense**:
    - Defend territories from rival factions or NPC enemies.
-   - Build defenses, train militia, and use special abilities (e.g., ninjutsu traps, magical barriers).
+   - Build defenses, train militia, and use special abilities (e.g., veilcraft traps, magical barriers).
 
 ---
 
@@ -69,18 +69,18 @@ Leaders are responsible for recruiting and training faction members:
    - Recruits: Trainable units who become warriors, spies, or defenders.
 2. **Training Options**:
    - Train recruits in different disciplines:
-     - Ninjas: Focus on speed, stealth, and assassination.
+     - Veilborns: Focus on speed, stealth, and assassination.
      - Samurai: Specialize in melee combat and defense.
      - Wizards: Master ranged destruction and magical utility.
-   - Training requires resources (currency, food, chakra).
+   - Training requires resources (currency, food, wisp).
 3. **Special Units**:
    - Leaders can unlock **elite units** based on their faction:
-     - Ninja Assassins, Samurai Generals, Archmages, Vampire Thralls, Werewolf Berserkers.
+     - Veilborn Assassins, Samurai Generals, Archmages, Vampire Thralls, Werewolf Berserkers.
 
 ---
 
 ### 5. Expansion and RTS Combat
-**Expansion**: Leaders can plan large-scale campaigns to expand their faction’s influence.
+**Expansion**: Leaders can plan large-scale campaigns to expand their factionï¿½s influence.
 1. **World Map View**:
    - The leader sees a tactical map of territories, showing:
      - Controlled regions.
@@ -95,10 +95,10 @@ Leaders are responsible for recruiting and training faction members:
   - **Troop Types**:
     - Frontline: Melee warriors.
     - Ranged: Archers or spellcasters.
-    - Specialists: Units with unique abilities (e.g., siege units, chakra-users).
+    - Specialists: Units with unique abilities (e.g., siege units, wisp-users).
   - **Strategic Abilities**:
     - Leaders can influence battles with faction-specific powers:
-      - Ninjas: Set traps, ambushes, or call reinforcements.
+      - Veilborns: Set traps, ambushes, or call reinforcements.
       - Samurai: Boost morale or execute devastating charges.
       - Wizards: Cast large-scale AOE spells or summon minions.
 
@@ -118,7 +118,7 @@ Leaders are responsible for recruiting and training faction members:
 ### Phase 2: Samurai Expansion
 - **Castle Management**:
   - Samurai leaders can build and upgrade castles with moats, walls, and defensive structures.
-  - Unique structures include Samurai Dojos, Archery Ranges, and Stables.
+  - Unique structures include Samurai Houses, Archery Ranges, and Stables.
 - **Territorial Honor**:
   - Samurai gain bonuses for defending territory and penalized for cowardice or abandoning posts.
 

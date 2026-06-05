@@ -1,4 +1,4 @@
-# Shinobi MUD Foundation Checklist
+# Veilborn MUD Foundation Checklist
 
 ## Goal
 

@@ -12,7 +12,7 @@ Use this for a small private test server. Keep port `4000` limited to trusted te
 3. Review `config.json`, especially `server_port`.
 4. Start the server manually for the first test:
    ```bash
-   .venv/bin/python shinobi_mud.py
+   .venv/bin/python veilborn_mud.py
    ```
 5. Confirm the newest file under `logs/` records startup.
 6. Connect from a trusted client and test login, movement, chat, disconnect, and reconnect.
@@ -20,17 +20,17 @@ Use this for a small private test server. Keep port `4000` limited to trusted te
 
 ## Optional systemd Service
 
-Create `/etc/systemd/system/shinobi-mud.service`, replacing `/opt/shinobi-mud` with the repository path:
+Create `/etc/systemd/system/veilborn-mud.service`, replacing `/opt/veilborn-mud` with the repository path:
 
 ```ini
 [Unit]
-Description=Shinobi MUD private alpha
+Description=Veilborn MUD private alpha
 After=network.target
 
 [Service]
 Type=simple
-WorkingDirectory=/opt/shinobi-mud
-ExecStart=/opt/shinobi-mud/.venv/bin/python shinobi_mud.py
+WorkingDirectory=/opt/veilborn-mud
+ExecStart=/opt/veilborn-mud/.venv/bin/python veilborn_mud.py
 Restart=on-failure
 RestartSec=3
 
@@ -42,8 +42,8 @@ Then enable and inspect it:
 
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable --now shinobi-mud
-sudo systemctl status shinobi-mud
+sudo systemctl enable --now veilborn-mud
+sudo systemctl status veilborn-mud
 ```
 
 Runtime details continue to land in the repository's `logs/` directory.

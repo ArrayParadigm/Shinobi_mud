@@ -15,15 +15,15 @@ from content import sync_authored_content
 from locations import broadcast_at, coordinate_key, is_within_bounds, nearby_players, online_players, players_at, track_player, untrack_player
 from migrations import apply_migrations, create_players_table
 from npcs import npc_locations, tick_npcs
-from techniques import tick_jutsu_states
+from expressions import tick_expression_states
 import presentation
 from presentation import prompt
 from twisted.internet import task
 
 DEBUG_MODE = True  # True allows for debugging options; False disables them
 DEFAULT_CONFIG_FILE = "config.json"
-DEFAULT_DB_FILE = "shinobi_mud.db"
-DEFAULT_MOTD = "Welcome to Ninja MUD!"
+DEFAULT_DB_FILE = "veilborn_mud.db"
+DEFAULT_MOTD = "Welcome to Veilborn MUD!"
 DEFAULT_PORT = 4000
 DATABASE_BUSY_TIMEOUT_SECONDS = 1
 DEFAULT_NEARBY_PLAYER_RADIUS = 20
@@ -33,8 +33,8 @@ DEFAULT_LOG_FILE = os.path.join(
     f"mud_{datetime.now():%Y%m%d_%H%M%S}_{os.getpid()}.log",
 )
 
-# Command modules import shinobi_mud. Reuse this module when launched as a script.
-sys.modules.setdefault("shinobi_mud", sys.modules[__name__])
+# Command modules import veilborn_mud. Reuse this module when launched as a script.
+sys.modules.setdefault("veilborn_mud", sys.modules[__name__])
 
 def configure_logging(log_file=DEFAULT_LOG_FILE):
     """Replace root logging handlers so repeated initialization stays clean."""
@@ -88,33 +88,39 @@ BASE_ATTRIBUTE_SCORE = 10
 ATTRIBUTE_ALLOCATION_POINTS = 10
 ATTRIBUTE_NAMES = ("strength", "dexterity", "agility", "intelligence", "wisdom")
 SPECIALTIES = {
-    "1": "Ninjutsu",
-    "2": "Genjutsu",
-    "3": "Taijutsu",
-    "a": "Ninjutsu",
-    "b": "Genjutsu",
-    "c": "Taijutsu",
+    "1": "Veilcraft",
+    "2": "Glamour",
+    "3": "Bodycraft",
+    "a": "Veilcraft",
+    "b": "Glamour",
+    "c": "Bodycraft",
 }
 CLANS = {
     "1": "Unaffiliated",
-    "2": "Leaf",
-    "3": "Sand",
-    "4": "Mist",
+    "2": "Moonveil",
+    "3": "Ashwake",
+    "4": "Mirelight",
 }
-NATURAL_RELEASES = {
-    "1": "Fire",
-    "2": "Water",
-    "3": "Earth",
-    "4": "Lightning",
-    "5": "Wind",
+ESSENCES = {
+    "1": "Unimbued",
+    "2": "Canine",
+    "3": "Serpent",
+    "4": "Ursine",
+    "5": "Feline",
 }
 
 # List of explicitly approved command modules
 COMMAND_MODULES = [
-    "general_commands",
-    "admin_commands",
-    "social_commands",
-    # Add new command modules here
+    "commands.movement",
+    "commands.inventory",
+    "commands.vitality",
+    "commands.progression",
+    "commands.combat_actions",
+    "commands.help_feedback",
+    "commands.social_actions",
+    "commands.builder_tools",
+    "commands.player_admin",
+    "commands.world_admin",
 ]
            
 def load_utilities(module_name="utils"):
@@ -127,7 +133,7 @@ def load_utilities(module_name="utils"):
     except ImportError as e:
         logging.error(f"Failed to load utilities from {module_name}: {e}")
     # At the end of load_utilities
-    logging.debug(f"UTILITIES after loading in shinobi_mud: {list(UTILITIES.keys())}")
+    logging.debug(f"UTILITIES after loading in veilborn_mud: {list(UTILITIES.keys())}")
 
 #TODO: load_utilities call moved here due to timing issues from initialization. It's the intent to fix this later on when I'm further along.
 load_utilities()
@@ -328,7 +334,7 @@ def get_state_handlers():
         "CONFIRM_PASSWORD": "confirm_password",
         "CHOOSE_SPECIALTY": "choose_specialty",
         "CHOOSE_CLAN": "choose_clan",
-        "CHOOSE_RELEASE": "choose_release",
+        "CHOOSE_ESSENCE": "choose_essence",
         "ALLOCATE_STATS": "allocate_stats",
         "COMMAND": "handle_command",
     }
@@ -361,7 +367,7 @@ def active_session_for(username, exclude=None):
     return None
 
 
-class NinjaMUDProtocol(basic.LineReceiver):
+class VeilbornMUDProtocol(basic.LineReceiver):
     delimiter = b"\n"
 
     def __init__(self, cursor=None, connection=None, owns_connection=False):
@@ -390,7 +396,7 @@ class NinjaMUDProtocol(basic.LineReceiver):
         if MOTD:
             self.sendLine(MOTD.encode('utf-8'))  # Send MOTD to the player
         else:
-            self.sendLine(b"Welcome to Ninja MUD!")  # Fallback if no MOTD is set
+            self.sendLine(b"Welcome to Veilborn MUD!")  # Fallback if no MOTD is set
 
         # Send the MOTD when the player connects
         self.sendLine(b"Please enter your username:")
@@ -618,7 +624,7 @@ class NinjaMUDProtocol(basic.LineReceiver):
         try:
             self.cursor.execute(
                 """
-                SELECT health, max_health, stamina, max_stamina, chakra, max_chakra
+                SELECT health, max_health, stamina, max_stamina, wisp, max_wisp
                 FROM players
                 WHERE username=?
                 """,
@@ -639,8 +645,8 @@ class NinjaMUDProtocol(basic.LineReceiver):
                     stats["max_health"],
                     stats["stamina"],
                     stats["max_stamina"],
-                    stats["chakra"],
-                    stats["max_chakra"],
+                    stats["wisp"],
+                    stats["max_wisp"],
                     location,
                     enabled=self.color_enabled,
                 ).encode("utf-8")
@@ -682,16 +688,16 @@ class NinjaMUDProtocol(basic.LineReceiver):
             )
             self.cursor.connection.commit()
             self.sendLine(f"Specialty selected: {specialty}.".encode("utf-8"))
-            self.sendLine(b"Choose a clan: 1) Unaffiliated  2) Leaf  3) Sand  4) Mist")
+            self.sendLine(b"Choose a clan: 1) Unaffiliated  2) Moonveil  3) Ashwake  4) Mirelight")
             self.state = "CHOOSE_CLAN"
         else:
-            self.sendLine(b"Choose a specialty: 1) Ninjutsu  2) Genjutsu  3) Taijutsu")
+            self.sendLine(b"Choose a specialty: 1) Veilcraft  2) Glamour  3) Bodycraft")
 
     def choose_clan(self, choice):
         """Persist the initial clan selection without attaching bonuses yet."""
         clan = CLANS.get(choice.strip().lower())
         if not clan:
-            self.sendLine(b"Choose a clan: 1) Unaffiliated  2) Leaf  3) Sand  4) Mist")
+            self.sendLine(b"Choose a clan: 1) Unaffiliated  2) Moonveil  3) Ashwake  4) Mirelight")
             return
         self.character_creation_data["clan"] = clan
         self.cursor.execute(
@@ -700,22 +706,22 @@ class NinjaMUDProtocol(basic.LineReceiver):
         )
         self.cursor.connection.commit()
         self.sendLine(f"Clan selected: {clan}.".encode("utf-8"))
-        self.sendLine(b"Choose a natural release: 1) Fire  2) Water  3) Earth  4) Lightning  5) Wind")
-        self.state = "CHOOSE_RELEASE"
+        self.sendLine(b"Choose an essence: 1) Unimbued  2) Canine  3) Serpent  4) Ursine  5) Feline")
+        self.state = "CHOOSE_ESSENCE"
 
-    def choose_release(self, choice):
-        """Persist the character's initial chakra nature."""
-        natural_release = NATURAL_RELEASES.get(choice.strip().lower())
-        if not natural_release:
-            self.sendLine(b"Choose a natural release: 1) Fire  2) Water  3) Earth  4) Lightning  5) Wind")
+    def choose_essence(self, choice):
+        """Persist the character's initial essence."""
+        essence = ESSENCES.get(choice.strip().lower())
+        if not essence:
+            self.sendLine(b"Choose an essence: 1) Unimbued  2) Canine  3) Serpent  4) Ursine  5) Feline")
             return
-        self.character_creation_data["natural_release"] = natural_release
+        self.character_creation_data["essence"] = essence
         self.cursor.execute(
-            "UPDATE players SET natural_release=? WHERE username=?",
-            (natural_release, self.username),
+            "UPDATE players SET essence=? WHERE username=?",
+            (essence, self.username),
         )
         self.cursor.connection.commit()
-        self.sendLine(f"Natural release selected: {natural_release}.".encode("utf-8"))
+        self.sendLine(f"Essence selected: {essence}.".encode("utf-8"))
         self.sendLine(
             (
                 "Distribute 10 bonus points in one line. "
@@ -776,12 +782,12 @@ class NinjaMUDProtocol(basic.LineReceiver):
                 ).encode("utf-8")
             )
 
-class NinjaMUDFactory(protocol.Factory):
+class VeilbornMUDFactory(protocol.Factory):
     def __init__(self, db_file):
         self.db_file = db_file
 
     def buildProtocol(self, addr):
-        return NinjaMUDProtocol(
+        return VeilbornMUDProtocol(
             connection=connect_database(self.db_file),
             owns_connection=True,
         )
@@ -803,7 +809,7 @@ def load_config(config_file=DEFAULT_CONFIG_FILE):
 
 def initialize_server(config_file=DEFAULT_CONFIG_FILE):
     """Initializes all systems required for the MUD server."""
-    logging.info("Initializing Ninja MUD Server...")
+    logging.info("Initializing Veilborn MUD Server...")
 
     # 1. Load Configuration
     config = load_config(config_file)
@@ -872,7 +878,7 @@ def initialize_server(config_file=DEFAULT_CONFIG_FILE):
         config.get("nearby_player_radius", DEFAULT_NEARBY_PLAYER_RADIUS)
     )
 
-    logging.info("Ninja MUD Server initialized successfully.")
+    logging.info("Veilborn MUD Server initialized successfully.")
     return config
 
 def validate_server_state(config):
@@ -949,9 +955,9 @@ def validate_server_state(config):
         "npc_templates",
         "npc_instances",
         "skill_definitions",
-        "jutsu_definitions",
+        "expression_definitions",
         "character_skills",
-        "character_jutsus",
+        "character_expressions",
         "stance_definitions",
         "character_stances",
         "combat_engagements",
@@ -979,8 +985,8 @@ def run_server(config_file=DEFAULT_CONFIG_FILE, reactor_instance=reactor):
     try:
         config = initialize_server(config_file)
         port = int(config.get("server_port", DEFAULT_PORT))
-        reactor_instance.listenTCP(port, NinjaMUDFactory(config.get("db_file", DEFAULT_DB_FILE)))
-        logging.info("Ninja MUD Server running on port %s.", port)
+        reactor_instance.listenTCP(port, VeilbornMUDFactory(config.get("db_file", DEFAULT_DB_FILE)))
+        logging.info("Veilborn MUD Server running on port %s.", port)
         if hasattr(reactor_instance, "callLater"):
             start_world_tick(reactor_instance)
             start_combat_tick(reactor_instance)
@@ -996,9 +1002,9 @@ def run_world_tick():
     if conn is None:
         raise RuntimeError("Database connection is not initialized.")
     updated_npcs = tick_npcs(conn)
-    updated_jutsu_states = tick_jutsu_states(conn)
+    updated_expression_states = tick_expression_states(conn)
     logging.debug("World tick updated %s NPC instances.", updated_npcs)
-    logging.debug("World tick expired %s jutsu states.", updated_jutsu_states)
+    logging.debug("World tick expired %s expression states.", updated_expression_states)
     return updated_npcs
 
 
@@ -1109,8 +1115,8 @@ def _combat_event_messages(event):
     if event["substitution"]:
         messages.append(
             (
-                f"You evade {npc_name} through Substitution Technique. Jutsu: {event['substitution']['proficiency']} ({event['substitution']['progress_percent']}%).",
-                f"{username} evades {npc_name} through Substitution Technique.",
+                f"You evade {npc_name} through Substitution Expression. Expression: {event['substitution']['proficiency']} ({event['substitution']['progress_percent']}%).",
+                f"{username} evades {npc_name} through Substitution Expression.",
             )
         )
     elif event.get("npc_skip_attack"):

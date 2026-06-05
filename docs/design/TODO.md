@@ -1,39 +1,39 @@
-# TODO: Shinobi MUD Development Roadmap
+# TODO: Veilborn MUD Development Roadmap
 
 ## Overview
-This document outlines the key tasks and features required for the development of Shinobi MUD, incorporating existing mechanics from the grid-based combat system, RTS expansion, and long-term vision. Tasks are categorized and prioritized for efficient development.
+This document outlines the key tasks and features required for the development of Veilborn MUD, incorporating existing mechanics from the grid-based combat system, RTS expansion, and long-term vision. Tasks are categorized and prioritized for efficient development.
 
 ---
 
 ## Core Development Phases
 
-### **Phase 1: Core Ninja Gameplay**
-**Objective**: Establish the foundation of Shinobi MUD with grid-based combat, clan mechanics, and chakra-driven abilities.
+### **Phase 1: Core Veilborn Gameplay**
+**Objective**: Establish the foundation of Veilborn MUD with grid-based combat, clan mechanics, and wisp-driven abilities.
 
 #### **Key Features**:
 1. **Character Creation**:
    - Implement clan selection during character creation, with each clan granting:
-     - Natural chakra releases (e.g., Fire, Water, Earth, Lightning, Wind).
-     - Unique passive abilities and signature jutsus.
-   - Allow for initial stat allocation (e.g., Dexterity, Chakra Control).
+     - Natural wisp frees (e.g., Unimbued, Water, Earth, Lightning, Feline).
+     - Unique passive abilities and signature expressions.
+   - Allow for initial stat allocation (e.g., Dexterity, Wisp Control).
 
 2. **Combat System**:
    - Finalize the **grid-based combat system**:
      - Movement mechanics (e.g., speed-based distance).
      - Stance-based modifiers (Offensive, Defensive, Balanced).
-     - Proficiency-based jutsu execution (Dex + CIS + LJ + HSP).
-   - Implement **rock-paper-scissors elemental interactions** for jutsus:
-     - Fire > Wind, Wind > Lightning, etc.
+     - Proficiency-based expression execution (Dex + CIS + LJ + HSP).
+   - Implement **rock-paper-scissors elemental interactions** for expressions:
+     - Unimbued > Feline, Feline > Lightning, etc.
    - Add timers and cooldowns for special abilities.
 
 3. **Training and Progression**:
    - Add grindy and non-grindy training systems:
      - Manual repetition for grindy players.
      - Quest-based or milestone progression for non-grindy players.
-   - Allow stat customization through training (e.g., chakra control improves CIS).
+   - Allow stat customization through training (e.g., wisp control improves CIS).
 
 4. **Core World Design**:
-   - Design the initial ninja continent with key territories:
+   - Design the initial veilborn continent with key territories:
      - Villages, training grounds, neutral zones, and enemy bases.
    - Implement terrain effects (e.g., high ground, cover mechanics).
 
@@ -48,7 +48,7 @@ This document outlines the key tasks and features required for the development o
 
 #### **Key Features**:
 1. **Samurai Mechanics**:
-   - Introduce **Kenjutsu styles**:
+   - Introduce **Bladecraft styles**:
      - Focus on melee combat with powerful sword techniques.
      - Add samurai-specific stances (e.g., Bushido Honor for defense, Ronin Fury for attack speed).
    - Implement abilities like:
@@ -58,7 +58,7 @@ This document outlines the key tasks and features required for the development o
 
 2. **Territory Control**:
    - Add a new region with conquerable samurai castles and villages.
-   - Enable faction-based conflicts between ninjas and samurai.
+   - Enable faction-based conflicts between veilborns and samurai.
 
 3. **Worldbuilding**:
    - Expand the map to include the samurai continent with unique terrain and cultural elements.
@@ -71,7 +71,7 @@ This document outlines the key tasks and features required for the development o
 #### **Key Features**:
 1. **Magic System**:
    - Add spellcasting mechanics:
-     - Fire, Frost, Arcane, Necromancy, and Holy magic affinities.
+     - Unimbued, Frost, Arcane, Necromancy, and Holy magic affinities.
      - Spell interactions based on terrain and weather (e.g., Frost stronger in snow).
    - Add mana management mechanics (e.g., spell cooldowns, regeneration).
 
@@ -92,15 +92,15 @@ This document outlines the key tasks and features required for the development o
    - Introduce resource management:
      - Income (via taxes, trade).
      - Materials (wood, stone, metal).
-     - Special resources (chakra crystals, magical essence).
+     - Special resources (wisp crystals, magical essence).
    - Add buildable structures:
      - Headquarters, training grounds, defenses.
-     - Faction-specific buildings (e.g., Ninja Spy Networks, Samurai Dojos).
+     - Faction-specific buildings (e.g., Veilborn Spy Networks, Samurai Houses).
 
 2. **Troop Recruitment and Training**:
    - Allow leaders to recruit and train warriors:
-     - Ninja specialists, samurai generals, mage troops.
-   - Introduce troop upgrades based on leader’s resources and faction abilities.
+     - Veilborn specialists, samurai generals, mage troops.
+   - Introduce troop upgrades based on leaderï¿½s resources and faction abilities.
 
 3. **Faction Rivalries**:
    - Add inter-faction diplomacy:
@@ -130,10 +130,10 @@ This document outlines the key tasks and features required for the development o
 ## Immediate TODO List
 
 ### **High Priority**:
-1. Finalize the **grid-based combat system** and test movement, stances, and jutsu timers.
-2. Implement clan selection during character creation with basic chakra affinities.
-3. Add core ninja abilities and elemental interactions.
-4. Build the ninja continent with at least 3 villages, training grounds, and neutral zones.
+1. Finalize the **grid-based combat system** and test movement, stances, and expression timers.
+2. Implement clan selection during character creation with basic wisp affinities.
+3. Add core veilborn abilities and elemental interactions.
+4. Build the veilborn continent with at least 3 villages, training grounds, and neutral zones.
 5. Develop basic NPC AI for training and combat scenarios.
 
 ### **Medium Priority**:
@@ -150,11 +150,11 @@ This document outlines the key tasks and features required for the development o
 
 ## Summary
 
-This roadmap provides a structured approach to developing Shinobi MUD, focusing on:
-1. **Core ninja gameplay** and grid-based combat mechanics.
+This roadmap provides a structured approach to developing Veilborn MUD, focusing on:
+1. **Core veilborn gameplay** and grid-based combat mechanics.
 2. **Phased expansions** to introduce new classes, continents, and gameplay layers.
 3. **RTS leadership systems** for endgame strategy and progression.
 4. **Supernatural themes** for future expansions.
 
-By following this roadmap, Shinobi MUD will evolve into a rich, immersive world with diverse gameplay for all players.
+By following this roadmap, Veilborn MUD will evolve into a rich, immersive world with diverse gameplay for all players.
 

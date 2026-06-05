@@ -37,12 +37,12 @@
         "eat",
         "drink"
     ],
-    "Skills and Jutsus": [
+    "Skills and Expressions": [
         "prac",
         "train",
         "skill",
-        "jutsu",
-        "usejutsu"
+        "expression",
+        "useexpression"
     ],
     "Techniques": [
         "technique",
@@ -68,7 +68,7 @@
         "ooc",
         "socials",
         "consent",
-        "release",
+        "free",
         "resist",
         "wave",
         "smile",
@@ -207,7 +207,7 @@
         "pedit",
         "setrole",
         "setstat",
-        "setdojo",
+        "sethouse",
         "treatinjury"
     ]
 }

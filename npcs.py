@@ -5,7 +5,7 @@ import re
 
 from body import add_fatigue
 from items import inventory_items, resolve_item
-from techniques import consume_substitution, record_skill_use
+from expressions import consume_substitution, record_skill_use
 
 
 BASE_HIT_CHANCE = 50
@@ -22,7 +22,7 @@ NPC_STAT_COLUMNS = (
 NPC_RESOURCE_COLUMNS = (
     "max_health",
     "max_stamina",
-    "max_chakra",
+    "max_wisp",
 )
 NPC_DEFAULT_STAT = 10
 NPC_DEFAULT_RESOURCE = 10
@@ -41,7 +41,7 @@ def create_npc_tables(cursor):
             behavior TEXT NOT NULL DEFAULT 'static',
             max_health INTEGER NOT NULL DEFAULT 10,
             max_stamina INTEGER NOT NULL DEFAULT 10,
-            max_chakra INTEGER NOT NULL DEFAULT 10,
+            max_wisp INTEGER NOT NULL DEFAULT 10,
             strength INTEGER NOT NULL DEFAULT 10,
             dexterity INTEGER NOT NULL DEFAULT 10,
             agility INTEGER NOT NULL DEFAULT 10,
@@ -57,7 +57,7 @@ def create_npc_tables(cursor):
             leash_radius INTEGER NOT NULL DEFAULT 0,
             aggression_policy TEXT NOT NULL DEFAULT 'passive',
             combat_techniques TEXT NOT NULL DEFAULT '',
-            jutsus TEXT NOT NULL DEFAULT ''
+            expressions TEXT NOT NULL DEFAULT ''
         )
         """
     )
@@ -74,7 +74,7 @@ def create_npc_tables(cursor):
             last_tick_at TEXT,
             health INTEGER NOT NULL DEFAULT 10,
             stamina INTEGER NOT NULL DEFAULT 10,
-            chakra INTEGER NOT NULL DEFAULT 10,
+            wisp INTEGER NOT NULL DEFAULT 10,
             defeated_at TEXT,
             FOREIGN KEY (npc_template_id) REFERENCES npc_templates(id)
         )
@@ -93,7 +93,7 @@ def ensure_npc_combat_columns(cursor):
     for column_name, definition in (
         ("max_health", "INTEGER NOT NULL DEFAULT 10"),
         ("max_stamina", "INTEGER NOT NULL DEFAULT 10"),
-        ("max_chakra", "INTEGER NOT NULL DEFAULT 10"),
+        ("max_wisp", "INTEGER NOT NULL DEFAULT 10"),
         ("strength", "INTEGER NOT NULL DEFAULT 10"),
         ("dexterity", "INTEGER NOT NULL DEFAULT 10"),
         ("agility", "INTEGER NOT NULL DEFAULT 10"),
@@ -109,13 +109,13 @@ def ensure_npc_combat_columns(cursor):
         ("leash_radius", "INTEGER NOT NULL DEFAULT 0"),
         ("aggression_policy", "TEXT NOT NULL DEFAULT 'passive'"),
         ("combat_techniques", "TEXT NOT NULL DEFAULT ''"),
-        ("jutsus", "TEXT NOT NULL DEFAULT ''"),
+        ("expressions", "TEXT NOT NULL DEFAULT ''"),
     ):
         if column_name not in template_columns:
             cursor.execute(f"ALTER TABLE npc_templates ADD COLUMN {column_name} {definition}")
     cursor.execute("UPDATE npc_templates SET max_health=10 WHERE max_health IS NULL OR max_health < 1")
     cursor.execute("UPDATE npc_templates SET max_stamina=10 WHERE max_stamina IS NULL OR max_stamina < 1")
-    cursor.execute("UPDATE npc_templates SET max_chakra=10 WHERE max_chakra IS NULL OR max_chakra < 1")
+    cursor.execute("UPDATE npc_templates SET max_wisp=10 WHERE max_wisp IS NULL OR max_wisp < 1")
     for column_name in NPC_STAT_COLUMNS:
         cursor.execute(
             f"UPDATE npc_templates SET {column_name}=10 WHERE {column_name} IS NULL OR {column_name} < 0"
@@ -128,7 +128,7 @@ def ensure_npc_combat_columns(cursor):
     for column_name, definition in (
         ("health", "INTEGER NOT NULL DEFAULT 10"),
         ("stamina", "INTEGER NOT NULL DEFAULT 10"),
-        ("chakra", "INTEGER NOT NULL DEFAULT 10"),
+        ("wisp", "INTEGER NOT NULL DEFAULT 10"),
         ("defeated_at", "TEXT"),
     ):
         if column_name not in instance_columns:
@@ -147,12 +147,12 @@ def ensure_npc_combat_columns(cursor):
     cursor.execute(
         """
         UPDATE npc_instances
-        SET chakra=(
-                SELECT max_chakra
+        SET wisp=(
+                SELECT max_wisp
                 FROM npc_templates
                 WHERE npc_templates.id=npc_instances.npc_template_id
             )
-        WHERE chakra IS NULL OR chakra < 0
+        WHERE wisp IS NULL OR wisp < 0
         """
     )
 
@@ -210,13 +210,13 @@ def consider_npc(cursor, x, y, npc_name):
         SELECT npc_templates.name, npc_templates.description,
                npc_templates.behavior, npc_instances.health,
                npc_templates.max_health, npc_instances.stamina,
-               npc_templates.max_stamina, npc_instances.chakra,
-               npc_templates.max_chakra, npc_templates.strength,
+               npc_templates.max_stamina, npc_instances.wisp,
+               npc_templates.max_wisp, npc_templates.strength,
                npc_templates.dexterity, npc_templates.agility,
                npc_templates.intelligence, npc_templates.wisdom,
                npc_templates.attack_damage, npc_templates.accuracy,
                npc_templates.evasion, npc_templates.combat_techniques,
-               npc_templates.jutsus
+               npc_templates.expressions
         FROM npc_instances
         JOIN npc_templates ON npc_templates.id = npc_instances.npc_template_id
         WHERE npc_instances.x=? AND npc_instances.y=?
@@ -489,8 +489,8 @@ def tick_npcs(connection):
                 FROM npc_templates
                 WHERE npc_templates.id=npc_instances.npc_template_id
             ),
-            chakra=(
-                SELECT max_chakra
+            wisp=(
+                SELECT max_wisp
                 FROM npc_templates
                 WHERE npc_templates.id=npc_instances.npc_template_id
             ),

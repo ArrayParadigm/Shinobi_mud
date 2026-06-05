@@ -3,8 +3,8 @@ import unittest
 
 import admin_commands
 import general_commands
-import shinobi_mud
-from body import add_fatigue, body_state, chakra_recovery_amount, rest_character
+import veilborn_mud
+from body import add_fatigue, body_state, wisp_recovery_amount, rest_character
 from migrations import apply_migrations, migration_007_body_foundation
 from tests.test_accounts import TestProtocol
 
@@ -13,14 +13,14 @@ class BodyFoundationTests(unittest.TestCase):
     def setUp(self):
         self.connection = sqlite3.connect(":memory:")
         self.connection.row_factory = sqlite3.Row
-        shinobi_mud.conn = self.connection
-        shinobi_mud.cursor = self.connection.cursor()
-        shinobi_mud.ensure_tables_exist(self.connection)
+        veilborn_mud.conn = self.connection
+        veilborn_mud.cursor = self.connection.cursor()
+        veilborn_mud.ensure_tables_exist(self.connection)
         apply_migrations(self.connection)
         self.connection.execute(
             """
             INSERT INTO players (
-                username, password, stamina, max_stamina, chakra, max_chakra,
+                username, password, stamina, max_stamina, wisp, max_wisp,
                 nutrition, hydration, fatigue, wisdom
             )
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -28,7 +28,7 @@ class BodyFoundationTests(unittest.TestCase):
             ("RestingUser", "hash", 2, 10, 1, 10, 80, 60, 30, 10),
         )
         self.connection.commit()
-        self.player = TestProtocol(shinobi_mud.cursor)
+        self.player = TestProtocol(veilborn_mud.cursor)
         self.player.username = "RestingUser"
 
     def tearDown(self):
@@ -43,7 +43,7 @@ class BodyFoundationTests(unittest.TestCase):
                 "Body",
                 "Nutrition: 80/100  Hydration: 60/100  Fatigue: 30/100",
                 "Recovery: ready",
-                "Short-rest chakra recovery: 4",
+                "Short-rest wisp recovery: 4",
             ],
         )
 
@@ -51,12 +51,12 @@ class BodyFoundationTests(unittest.TestCase):
         result = rest_character(self.player.cursor, "RestingUser")
 
         self.assertEqual(result["stamina_restored"], 4)
-        self.assertEqual(result["chakra_restored"], 4)
+        self.assertEqual(result["wisp_restored"], 4)
         self.assertEqual(result["fatigue"], 20)
         self.assertEqual(result["nutrition"], 79)
         self.assertEqual(result["hydration"], 59)
         saved = body_state(self.player.cursor, "RestingUser")
-        self.assertEqual((saved["stamina"], saved["chakra"]), (6, 5))
+        self.assertEqual((saved["stamina"], saved["wisp"]), (6, 5))
 
     def test_description_score_and_admin_player_stats_use_identity_fields(self):
         general_commands.handle_description(self.player, "A quiet academy student.")
@@ -82,7 +82,7 @@ class BodyFoundationTests(unittest.TestCase):
         self.connection.execute(
             """
             UPDATE players
-            SET stamina=9, chakra=9, nutrition=10, hydration=10, fatigue=80
+            SET stamina=9, wisp=9, nutrition=10, hydration=10, fatigue=80
             WHERE username=?
             """,
             ("RestingUser",),
@@ -90,11 +90,11 @@ class BodyFoundationTests(unittest.TestCase):
         self.connection.commit()
         state = body_state(self.player.cursor, "RestingUser")
 
-        self.assertEqual(chakra_recovery_amount(state), 1)
+        self.assertEqual(wisp_recovery_amount(state), 1)
         result = rest_character(self.player.cursor, "RestingUser")
 
         self.assertEqual(result["stamina"], 10)
-        self.assertEqual(result["chakra"], 10)
+        self.assertEqual(result["wisp"], 10)
         self.assertEqual(result["fatigue"], 70)
         self.assertEqual(result["recovery_state"], "strained")
 

@@ -1,4 +1,21 @@
-# Shinobi MUD Active Roadmap
+# Veilborn MUD Active Roadmap
+
+## Veilborn Refactor Checklist
+
+The project is now using Veilborn terminology as the active canon. Keep this checklist until the last structural cleanup items are complete.
+
+- [x] Standardize canon spelling to `Veilborn`.
+- [x] Rename active project identity to `Veilborn_mud`, including entrypoint, config DB name, run script, protocol class, tests, help, and docs.
+- [x] Replace active terminology: Wisp for the supernatural resource, House for faction alignment, Essence for imbuement type, and Expression for supernatural abilities.
+- [x] Remove old player-facing command names and keep `technique` for mundane combat techniques.
+- [x] Archive the old local dev database under `.local/archive/` and make fresh runtime state use `veilborn_mud.db`.
+- [x] Add essence framework files for Canine, Serpent, Ursine, Feline, and Unimbued.
+- [x] Add lineage, pregnancy, consent, central schema, and essence-type documentation entrypoints.
+- [x] Split command registration into domain modules for movement, inventory, vitality, progression, combat, socials, builder tools, player admin, world admin, and help/feedback.
+- [ ] Continue extracting implementation bodies out of oversized backing files after the refactor so `admin_commands.py`, `general_commands.py`, and `socials.py` become thin compatibility surfaces or are removed.
+- [ ] Improve detailed admin/builder help for every field, flag, and command workflow.
+- [ ] Add structured logging for essence changes, lineage/pregnancy events, and progression.
+- [ ] Add centralized balance config for resource costs, recovery, essence bonuses, and progression gains.
 
 ## Current Checkpoint
 
@@ -7,7 +24,7 @@ The private-alpha gameplay loop is covered by `206` automated tests. The current
 - Coordinate-first wilderness movement with optional VNUM-backed overlays.
 - Persistent accounts, items, inventories, equipment, NPC instances, combat state, body resources, descriptions, and point-based technique progress.
 - Builder promotion plus builder tools for zone inventory, search, validation, publish, linking/unlinking, guarded deletion, cloning, rich template editing, spawn inspection/removal, undo, audit, and help publishing.
-- Character-facing score/body/description/features, visible room-flag behavior, consent-backed social actions, persistent injuries, opt-in pregnancy state, Dex/Agi round combat, NPC stat sheets, stances, combat techniques, Throw, and Substitution Technique.
+- Character-facing score/body/description/features, visible room-flag behavior, consent-backed social actions, persistent injuries, opt-in pregnancy state, Dex/Agi round combat, NPC stat sheets, stances, combat techniques, Throw, and Substitution Expression.
 - Editable command help and command categories with unpublished `(i)` markers.
 
 Completed roadmap history now lives in [TODO-Historical.md](TODO-Historical.md). Detailed implementation notes remain in [CHANGELOG.md](CHANGELOG.md).
@@ -31,7 +48,7 @@ Only keep one sprint active at a time. Reassess the order after each committed s
 Clear these before starting the next broad sprint.
 
 - [x] Restore the `world.map` startup dependency so imports, tests, and local startup work again.
-- [x] Hide backend percentages from active `prac <skill>` and `train <jutsu>` action output while keeping stored progress data intact.
+- [x] Hide backend percentages from active `prac <skill>` and `train <expression>` action output while keeping stored progress data intact.
 - [x] Verify `rest` output stays player-facing and does not expose hidden backend percentages.
 - [x] Re-run the full regression suite and a light manual smoke path.
 - [x] Start Sprint 26 after the baseline is green.
@@ -81,7 +98,7 @@ Use the richer template and spawn tooling to make Eve's Haven feel like a small 
 - [ ] Add richer NPC templates using dialogue, room emotes, aggression policy, leash radius, and loot metadata.
 - [ ] Use spawn groups for repeated supplies and practice targets once Sprint 29 is complete.
 - [ ] Add a player-facing progress command or lightweight objective display only if the content loop needs it; do not build a full quest engine yet.
-- [ ] Expand authored help or room prose so new players can discover `prac`, `train`, `throw`, `body`, `rest`, and `usejutsu substitution` naturally.
+- [ ] Expand authored help or room prose so new players can discover `prac`, `train`, `throw`, `body`, `rest`, and `useexpression substitution` naturally.
 - [ ] Add regression tests for the starter route, key authored content, and no duplicate reloads.
 - [ ] Update README with a concrete "first 15 minutes" path.
 
@@ -93,7 +110,7 @@ Use the richer template and spawn tooling to make Eve's Haven feel like a small 
 
 #### Done When
 
-A new private-alpha player can follow an in-world starter loop for movement, supplies, NPC interaction, practice, jutsu training, combat, and recovery without needing an external command list.
+A new private-alpha player can follow an in-world starter loop for movement, supplies, NPC interaction, practice, expression training, combat, and recovery without needing an external command list.
 
 ### Sprint 31: Social Identity and Relationship Color Foundation
 
@@ -121,7 +138,7 @@ Player names have consistent neutral presentation everywhere, color-disabled cli
 
 Move from local confidence to a controlled private network test without opening the server recklessly.
 
-- [ ] Create a repo script or documented command for packaging runtime files to `D:\shared\Shinobi` or another configured transfer folder.
+- [ ] Create a repo script or documented command for packaging runtime files to `D:\shared\Veilborn` or another configured transfer folder.
 - [ ] Add a preflight checklist for config, DB migration level, world map, zones, logs, firewall/VPN choice, and backup/archive paths.
 - [ ] Add a private Linux smoke procedure that runs startup, login, movement, starter loop, builder promotion, builder validation, and shutdown/reconnect checks.
 - [ ] Add log review guidance for runtime errors, failed auth, duplicate sessions, combat tick errors, and content sync errors.
@@ -142,17 +159,17 @@ The game has a repeatable private Linux test path with clear preflight, transfer
 
 ## Backlog
 
-### Skills and Jutsus
+### Skills and Expressions
 
-- [ ] Add a broader skill list with basic, advanced, ninjutsu, genjutsu, taijutsu, and kenjutsu placeholders.
-- [ ] Expand the jutsu placeholder catalog to mirror skill discovery.
+- [ ] Add a broader skill list with basic, advanced, veilcraft, glamour, bodycraft, and bladecraft placeholders.
+- [ ] Expand the expression placeholder catalog to mirror skill discovery.
 - [ ] Add `workout` or equivalent attribute-training loops after the practice/training model has soaked.
-- [ ] Add more real skill and jutsu actions that consume stamina/chakra and raise fatigue.
+- [ ] Add more real skill and expression actions that consume stamina/wisp and raise fatigue.
 
 ### World and Operations
 
 - [ ] Add dimensions with independent grid sizes for planets, continents, and planes. Support dimension-aware `goto`, including `prime`.
-- [ ] Create a batch script to copy runtime files to `D:\shared\Shinobi` for Linux-server transfer.
+- [ ] Create a batch script to copy runtime files to `D:\shared\Veilborn` for Linux-server transfer.
 - [ ] Add encrypted transport before open-internet password testing.
 - [ ] Create a broader live-management admin surface after builder tools mature.
 - [ ] Optimize database queries only when profiling identifies a real bottleneck.

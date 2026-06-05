@@ -10,7 +10,7 @@ def main():
     with open("config.json", "r", encoding="utf-8") as config_file:
         config = json.load(config_file)
 
-    connection = sqlite3.connect(config.get("db_file", "shinobi_mud.db"))
+    connection = sqlite3.connect(config.get("db_file", "veilborn_mud.db"))
     connection.row_factory = sqlite3.Row
     cursor = connection.cursor()
     create_players_table(cursor)

@@ -1,7 +1,7 @@
-# Shinobi_MUD Project Plan
+# Veilborn_MUD Project Plan
 
 ## **Refined Vision Statement**
-**"Shinobi_MUD is a hybrid sandbox MUD designed to provide an immersive experience of exploration, skill-based combat, and player-driven storytelling, with dynamic zones and a balance of automated and manual interactions. Players will train, fight, and shape the world around them while engaging in roleplay quests, PVP battles, and community-building activities. The game combines traditional MUD mechanics with innovative systems for dynamic battlefields, RTS elements, and a persistent, evolving world."**
+**"Veilborn_MUD is a hybrid sandbox MUD designed to provide an immersive experience of exploration, skill-based combat, and player-driven storytelling, with dynamic zones and a balance of automated and manual interactions. Players will train, fight, and shape the world around them while engaging in roleplay quests, PVP battles, and community-building activities. The game combines traditional MUD mechanics with innovative systems for dynamic battlefields, RTS elements, and a persistent, evolving world."**
 
 ---
 
@@ -15,7 +15,7 @@
 ### **2. Player Mechanics**
 - **Skill-Based Progression**: Use-based skill growth (e.g., combat, crafting, stealth).
 - **Freedom in Building**: Areas where players can construct or expand infrastructure.
-- **Core Attributes**: Health, stamina, chakra, honor, mana, and class-specific stats.
+- **Core Attributes**: Health, stamina, wisp, honor, mana, and class-specific stats.
 
 ### **3. Combat System**
 - **Skill-Based Combat with RTS Influence**:
@@ -44,13 +44,13 @@
 - Implement basic room definitions: descriptions, exits, and placeholders for items/NPCs.
 
 #### **2. Player Basics**
-- Create a character system with health, stamina, and chakra.
+- Create a character system with health, stamina, and wisp.
 - Implement basic movement between rooms and zones.
 - Add commands for viewing stats, room descriptions, and map visibility.
 
 #### **3. Combat Prototype**
 - Implement automated combat (hitrolls, damrolls).
-- Add a simple command for active abilities (e.g., `/fireball` reduces stamina/chakra).
+- Add a simple command for active abilities (e.g., `/fireball` reduces stamina/wisp).
 - Include a basic PVP mode for testing.
 
 #### **4. Admin and Debug Tools**

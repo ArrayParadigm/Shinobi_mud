@@ -6,7 +6,7 @@ import os
 from combat import create_combat_tables, sync_combat_technique_templates, sync_stance_templates
 from items import create_item_tables
 from npcs import create_npc_tables
-from techniques import create_technique_tables, sync_jutsu_templates, sync_skill_templates
+from expressions import create_technique_tables, sync_expression_templates, sync_skill_templates
 
 
 def _words(value, default=None):
@@ -53,7 +53,7 @@ def sync_authored_content(connection, zones_directory, overlays):
         _sync_item_templates(cursor, zone_data.get("item_templates", []))
         _sync_npc_templates(cursor, zone_data.get("npc_templates", []))
         sync_skill_templates(cursor, zone_data.get("skill_templates", []))
-        sync_jutsu_templates(cursor, zone_data.get("jutsu_templates", []))
+        sync_expression_templates(cursor, zone_data.get("expression_templates", []))
         sync_stance_templates(cursor, zone_data.get("stance_templates", []))
         sync_combat_technique_templates(cursor, zone_data.get("combat_technique_templates", []))
         created["item_spawns"] += _sync_item_spawns(
@@ -128,11 +128,11 @@ def _sync_npc_templates(cursor, templates):
             """
             INSERT INTO npc_templates (
                 npc_key, name, description, dialogue, behavior,
-                max_health, max_stamina, max_chakra, strength, dexterity,
+                max_health, max_stamina, max_wisp, strength, dexterity,
                 agility, intelligence, wisdom, attack_damage, accuracy,
                 evasion, respawn_seconds, loot_table, room_emote,
                 movement_policy, leash_radius, aggression_policy,
-                combat_techniques, jutsus
+                combat_techniques, expressions
             )
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(npc_key) DO UPDATE SET
@@ -142,7 +142,7 @@ def _sync_npc_templates(cursor, templates):
                 behavior=excluded.behavior,
                 max_health=excluded.max_health,
                 max_stamina=excluded.max_stamina,
-                max_chakra=excluded.max_chakra,
+                max_wisp=excluded.max_wisp,
                 strength=excluded.strength,
                 dexterity=excluded.dexterity,
                 agility=excluded.agility,
@@ -158,7 +158,7 @@ def _sync_npc_templates(cursor, templates):
                 leash_radius=excluded.leash_radius,
                 aggression_policy=excluded.aggression_policy,
                 combat_techniques=excluded.combat_techniques,
-                jutsus=excluded.jutsus
+                expressions=excluded.expressions
             """,
             (
                 template["key"],
@@ -168,7 +168,7 @@ def _sync_npc_templates(cursor, templates):
                 template.get("behavior", "static"),
                 int(template.get("max_health", 10)),
                 int(template.get("max_stamina", 10)),
-                int(template.get("max_chakra", 10)),
+                int(template.get("max_wisp", 10)),
                 int(template.get("strength", int(template.get("attack_damage", 5)) * 2 if "attack_damage" in template else 10)),
                 int(template.get("dexterity", template.get("accuracy", 5))),
                 int(template.get("agility", template.get("evasion", 5))),
@@ -184,7 +184,7 @@ def _sync_npc_templates(cursor, templates):
                 int(template.get("leash_radius", 0)),
                 template.get("aggression_policy", "passive"),
                 " ".join(_words(template.get("combat_techniques", []))),
-                " ".join(_words(template.get("jutsus", []))),
+                " ".join(_words(template.get("expressions", []))),
             ),
         )
 
@@ -229,13 +229,13 @@ def _sync_npc_spawns(cursor, content_key, spawns, coordinates_by_vnum):
             continue
         x, y = _spawn_coordinates(spawn, coordinates_by_vnum)
         npc_template = cursor.execute(
-            "SELECT id, max_health, max_stamina, max_chakra FROM npc_templates WHERE npc_key=?",
+            "SELECT id, max_health, max_stamina, max_wisp FROM npc_templates WHERE npc_key=?",
             (spawn["npc"],),
         ).fetchone()
         cursor.execute(
             """
             INSERT INTO npc_instances (
-                npc_template_id, x, y, home_x, home_y, seed_key, health, stamina, chakra
+                npc_template_id, x, y, home_x, home_y, seed_key, health, stamina, wisp
             )
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
@@ -248,7 +248,7 @@ def _sync_npc_spawns(cursor, content_key, spawns, coordinates_by_vnum):
                 seed_key,
                 npc_template["max_health"],
                 npc_template["max_stamina"],
-                npc_template["max_chakra"],
+                npc_template["max_wisp"],
             ),
         )
         _record_seed(cursor, seed_key, "npc")

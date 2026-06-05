@@ -1,1 +1,1 @@
-"""Automated tests for Shinobi MUD."""
+"""Automated tests for Veilborn MUD."""

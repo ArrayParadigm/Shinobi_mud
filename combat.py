@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 
 from body import add_fatigue
 from npcs import _equipped_damage_bonus, _resolve_named_npc, hit_chance
-from techniques import consume_substitution
+from expressions import consume_substitution
 
 
 BASE_AUTO_ATTACK_SECONDS = 1
@@ -605,17 +605,17 @@ def _combat_row(cursor, player_id):
                players.username, players.x AS player_x, players.y AS player_y,
                players.health AS player_health, players.max_health,
                players.stamina AS player_stamina, players.max_stamina AS player_max_stamina,
-               players.chakra AS player_chakra, players.max_chakra AS player_max_chakra,
+               players.wisp AS player_wisp, players.max_wisp AS player_max_wisp,
                players.strength, players.dexterity, players.agility,
                players.intelligence, players.wisdom,
                npc_instances.x AS npc_x, npc_instances.y AS npc_y,
                npc_instances.health AS npc_health,
                npc_instances.stamina AS npc_stamina,
-               npc_instances.chakra AS npc_chakra,
+               npc_instances.wisp AS npc_wisp,
                npc_templates.name AS npc_name, npc_templates.behavior,
                npc_templates.max_health AS npc_max_health,
                npc_templates.max_stamina AS npc_max_stamina,
-               npc_templates.max_chakra AS npc_max_chakra,
+               npc_templates.max_wisp AS npc_max_wisp,
                npc_templates.strength AS npc_strength,
                npc_templates.dexterity AS npc_dexterity,
                npc_templates.agility AS npc_agility,
@@ -623,7 +623,7 @@ def _combat_row(cursor, player_id):
                npc_templates.wisdom AS npc_wisdom,
                npc_templates.attack_damage, npc_templates.accuracy,
                npc_templates.evasion, npc_templates.combat_techniques,
-               npc_templates.jutsus,
+               npc_templates.expressions,
                COALESCE(stance_definitions.name, ?) AS stance_name,
                COALESCE(stance_definitions.accuracy_bonus, 0) AS stance_accuracy,
                COALESCE(stance_definitions.evasion_bonus, 0) AS stance_evasion,

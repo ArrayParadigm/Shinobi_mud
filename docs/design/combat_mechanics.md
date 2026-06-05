@@ -2,11 +2,11 @@
 
 ## Summary
 
-Shinobi MUD combat is built around automatic baseline fighting plus player-selected combat choices. The current implementation uses round combat: a player engages a hostile NPC, the server resolves due action rounds, and any queued stance or technique modifiers are applied during that round.
+Veilborn MUD combat is built around automatic baseline fighting plus player-selected combat choices. The current implementation uses round combat: a player engages a hostile NPC, the server resolves due action rounds, and any queued stance or technique modifiers are applied during that round.
 
 Dexterity and Agility determine how many combat rounds a character receives per second. A normal auto attack consumes one round, and active combat choices such as techniques consume that round instead of resolving outside the main action rhythm.
 
-This file explains the live system and marks the remaining follow-up work for skills and jutsus.
+This file explains the live system and marks the remaining follow-up work for skills and expressions.
 
 ## Current Combat Loop
 
@@ -24,7 +24,7 @@ Current round resolution includes:
 - NPC technique use when the NPC has authored `combat_techniques` and enough stamina.
 - Incoming damage reduction from stance reduction and queued reduction.
 - Fatigue gain when a valid in-range round resolves.
-- Substitution jutsu consumption when it prevents a hostile hit.
+- Substitution expression consumption when it prevents a hostile hit.
 - Engagement cleanup when an NPC is defeated, the target disappears, the player disconnects, or the player is defeated.
 
 Player defeat currently restores the player to full health at the same grid coordinate and clears the engagement. NPC defeat marks the NPC defeated and clears the engagement.
@@ -39,9 +39,9 @@ Agility improves evasion against incoming attacks and contributes to combat spee
 
 Stamina powers physical combat techniques. Technique stamina is spent when the technique is queued, not when the pulse resolves.
 
-Chakra powers jutsus. Current jutsus keep their own activation and state behavior; future combat work should bring jutsu timing into the shared combat-round economy.
+Wisp powers expressions. Current expressions keep their own activation and state behavior; future combat work should bring expression timing into the shared combat-round economy.
 
-NPCs have the same core sheet shape as players: health, stamina, chakra, Strength, Dexterity, Agility, Intelligence, and Wisdom. Builder-created NPCs default those values to 10.
+NPCs have the same core sheet shape as players: health, stamina, wisp, Strength, Dexterity, Agility, Intelligence, and Wisdom. Builder-created NPCs default those values to 10.
 
 ## Stances
 
@@ -63,7 +63,7 @@ The current placeholder stance set is S1 through S5:
 - S4 favors evasion.
 - S5 favors damage reduction.
 
-Stances remain persistent posture modifiers. They may adjust round cadence, accuracy, damage, defense, or resource pressure, but they should not replace techniques, skills, or jutsus as active round-consuming choices.
+Stances remain persistent posture modifiers. They may adjust round cadence, accuracy, damage, defense, or resource pressure, but they should not replace techniques, skills, or expressions as active round-consuming choices.
 
 ## Techniques
 
@@ -87,15 +87,15 @@ Current first-pass techniques:
 
 A technique consumes the character's action for one combat round unless authored otherwise. For example, a kick technique takes the place of the normal auto attack for that round, applying its own accuracy, damage, movement, or defense rules.
 
-## Skills and Jutsus
+## Skills and Expressions
 
-Skills and jutsus should eventually use the same round economy as techniques.
+Skills and expressions should eventually use the same round economy as techniques.
 
 Combat skills are active martial actions. They should be treated as round-based augments or replacements for a normal auto attack. A punch, kick, weapon form, grapple, or dodge skill can consume the next available round and apply its authored effects.
 
-Jutsus are chakra-based actions. Some jutsus should resolve in one round. Stronger or more complex jutsus may require multiple rounds to prepare before they resolve. Multi-round jutsus should occupy the character's combat action during their preparation time so they cannot freely stack with normal attacks.
+Expressions are wisp-based actions. Some expressions should resolve in one round. Stronger or more complex expressions may require multiple rounds to prepare before they resolve. Multi-round expressions should occupy the character's combat action during their preparation time so they cannot freely stack with normal attacks.
 
-The long-term rule is simple: if the player is doing something meaningful in combat, it should use combat rounds. Auto-attacks fill empty rounds, while techniques, skills, and jutsus replace or augment those rounds.
+The long-term rule is simple: if the player is doing something meaningful in combat, it should use combat rounds. Auto-attacks fill empty rounds, while techniques, skills, and expressions replace or augment those rounds.
 
 ## Round Speed
 
@@ -125,7 +125,7 @@ Examples:
 | 75 | 75 | 75 | 4.0 | 0.25s |
 | 100 | 100 | 100 | 5.0 | 0.20s |
 
-Under this system, "round" means one available action slot. A character at 1 attack per second receives one action slot per second. A character at 5 attacks per second receives five action slots per second. Empty slots perform normal auto attacks. Queued techniques, active combat skills, or jutsus consume one or more slots according to their authored action cost.
+Under this system, "round" means one available action slot. A character at 1 attack per second receives one action slot per second. A character at 5 attacks per second receives five action slots per second. Empty slots perform normal auto attacks. Queued techniques, active combat skills, or expressions consume one or more slots according to their authored action cost.
 
 ## Implementation Notes
 
@@ -141,4 +141,4 @@ Future implementation should preserve the useful parts of the current system:
 - Resource costs paid when an action is committed.
 - Queued actions remaining pending when range prevents resolution.
 
-The main future change is routing combat skills and jutsus through the same action-slot system so combat stays automatic, readable, and fair.
+The main future change is routing combat skills and expressions through the same action-slot system so combat stays automatic, readable, and fair.

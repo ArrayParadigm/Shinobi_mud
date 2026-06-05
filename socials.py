@@ -422,7 +422,7 @@ def movement_block(cursor, username):
         (STATE_RESTRAINED, STATE_GAGGED, STATE_BLINDFOLDED, username),
     ).fetchone()
     if rows and rows["state_type"] == STATE_RESTRAINED:
-        return f"You are restrained by {rows['actor']}. Use resist or ask them to release you."
+        return f"You are restrained by {rows['actor']}. Use resist or ask them to free you."
     return ""
 
 

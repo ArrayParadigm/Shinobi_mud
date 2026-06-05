@@ -1,23 +1,23 @@
-# Long-Term Vision for Shinobi MUD
+# Long-Term Vision for Veilborn MUD
 
-## Phase 1: Ninja Core Gameplay (Initial Launch)
+## Phase 1: Veilborn Core Gameplay (Initial Launch)
 ### Features:
-1. **Clans and Natural Releases**:
+1. **Clans and Natural Essences**:
    - Players select a clan during character creation, providing unique abilities, affinities, and weaknesses.
-   - Natural chakra releases (e.g., Fire, Water, Earth, Lightning, Wind) are central to combat and strategy.
+   - Natural wisp frees (e.g., Unimbued, Water, Earth, Lightning, Feline) are central to combat and strategy.
    - Each clan grants:
-     - **Proclivities**: Passive bonuses (e.g., higher chakra control, faster hand signs).
-     - **Unique Jutsu**: Signature techniques that define playstyles.
+     - **Proclivities**: Passive bonuses (e.g., higher wisp control, faster hand signs).
+     - **Unique Expression**: Signature techniques that define playstyles.
    - Stance-based combat affects hitroll, damroll, and evasion.
 2. **Training and Progression**:
    - Both **grindy** (manual repetition of actions) and **non-grindy** (quest-based or milestone-based) training paths.
-   - Customizable stat growth through physical, mental, and chakra training.
+   - Customizable stat growth through physical, mental, and wisp training.
 3. **Grid-Based Combat**:
    - Players move in real-time across grid-based battlefields, emphasizing positioning.
    - Ranged and melee specialists thrive based on distance control and timing.
 4. **Dynamic Combat Styles**:
-   - Stances (Offensive, Defensive, Balanced) and styles interact with natural releases (rock-paper-scissors mechanic).
-   - Counterplay emphasized (e.g., Fire > Wind but weak to Water).
+   - Stances (Offensive, Defensive, Balanced) and styles interact with essences (rock-paper-scissors mechanic).
+   - Counterplay emphasized (e.g., Unimbued > Feline but weak to Water).
 
 ---
 
@@ -25,12 +25,12 @@
 ### Features:
 1. **New Continent: Samurai Domain**:
    - Introduces Samurai and Ronin factions with:
-     - **Kenjutsu Styles**: Special swordplay techniques that focus on precision and counters.
+     - **Bladecraft Styles**: Special swordplay techniques that focus on precision and counters.
      - **Bushido Stances**: Moral alignment affects bonuses (e.g., honorable samurai gain defense; rogue ronin gain attack speed).
    - Samurai focus on melee combat with some mid-range abilities (e.g., shockwave slashes, spiritual attacks).
-2. **Samurai vs Ninja Dynamic**:
-   - Samurai have slower, powerful attacks compared to ninjas' fast, evasive combat.
-   - Samurai counter ninja tactics using discipline and defense-based abilities.
+2. **Samurai vs Veilborn Dynamic**:
+   - Samurai have slower, powerful attacks compared to veilborns' fast, evasive combat.
+   - Samurai counter veilborn tactics using discipline and defense-based abilities.
 3. **New Weapons**:
    - Introduces bows, longbows, and throwable explosives (smoke bombs, flash bangs).
 
@@ -45,11 +45,11 @@
      - **Utility Spells**: Teleportation, illusions, and healing.
    - Anti-Magic warriors disrupt casting (e.g., silence zones, mana absorption).
 2. **Magic Affinities**:
-   - Similar to chakra releases but more varied:
-     - **Fire**, **Frost**, **Arcane**, **Necromancy**, and **Holy**.
+   - Similar to wisp frees but more varied:
+     - **Unimbued**, **Frost**, **Arcane**, **Necromancy**, and **Holy**.
    - Spellcasting requires mana management and cooldowns.
 3. **Interactive Grid Effects**:
-   - Terrain affects spell performance (e.g., Fire spells stronger in deserts, Frost spells stronger in snow).
+   - Terrain affects spell performance (e.g., Unimbued spells stronger in deserts, Frost spells stronger in snow).
 
 ---
 
@@ -92,7 +92,7 @@
 1. **Cross-Continent Travel**:
    - Players can sail between continents or use specialized transport (e.g., teleportation scrolls).
 2. **Faction Wars**:
-   - Introduce inter-faction conflicts (e.g., Ninja vs Samurai, Angels vs Demons) with large-scale battles.
+   - Introduce inter-faction conflicts (e.g., Veilborn vs Samurai, Angels vs Demons) with large-scale battles.
 3. **Dynamic World Events**:
    - Seasonal events or crises that encourage teamwork and global conflict.
    - Examples: Demon invasions, planar rifts, or vampire infestations.
@@ -104,10 +104,10 @@
 
 ## Summary
 This roadmap introduces **progressive expansions** to deepen gameplay, provide diverse content, and encourage player retention:
-1. **Phase 1**: Core Ninja gameplay with clan diversity and chakra-based combat.
+1. **Phase 1**: Core Veilborn gameplay with clan diversity and wisp-based combat.
 2. **Phase 2**: Samurai and ranged mechanics in a new continent.
 3. **Phase 3**: Wizards and anti-magic classes with complex spell systems.
 4. **Phase 4**: Planar battles between Angels, Demons, and mortals.
 5. **Phase 5**: Vampires, Werewolves, and supernatural dynamics.
 
-Each expansion builds upon the previous mechanics, adding **rich new layers** to exploration, combat, and strategy while maintaining the **ninja fantasy** at the heart of the game.
+Each expansion builds upon the previous mechanics, adding **rich new layers** to exploration, combat, and strategy while maintaining the **veilborn fantasy** at the heart of the game.

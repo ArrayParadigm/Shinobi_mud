@@ -19,8 +19,8 @@ from character_state import (
     set_feature,
     set_reproductive_field,
 )
-from techniques import list_jutsus, list_skills, proficiency_label
-from shinobi_mud import ACTIVE_CONFIG, UTILITIES, WORLD_MAP, WORLD_OVERLAYS, players_in_rooms, COMMAND_REGISTRY
+from expressions import list_expressions, list_skills, proficiency_label
+from veilborn_mud import ACTIVE_CONFIG, UTILITIES, WORLD_MAP, WORLD_OVERLAYS, players_in_rooms, COMMAND_REGISTRY
 
 logging.info("admin_commands imported")
 
@@ -753,7 +753,7 @@ def mstat(protocol, npc_key):
     protocol.sendLine(
         (
             f"  Resources: health={template.get('max_health', 10)} "
-            f"stamina={template.get('max_stamina', 10)} chakra={template.get('max_chakra', 10)}"
+            f"stamina={template.get('max_stamina', 10)} wisp={template.get('max_wisp', 10)}"
         ).encode("utf-8")
     )
     protocol.sendLine(
@@ -773,7 +773,7 @@ def mstat(protocol, npc_key):
     protocol.sendLine(
         (
             f"  Actions: techniques={', '.join(template.get('combat_techniques', [])) or 'None'} "
-            f"jutsus={', '.join(template.get('jutsus', [])) or 'None'}"
+            f"expressions={', '.join(template.get('expressions', [])) or 'None'}"
         ).encode("utf-8")
     )
 
@@ -785,8 +785,8 @@ def medit(protocol, npc_key, field, value):
         "maxhealth": "max_health",
         "stamina": "max_stamina",
         "maxstamina": "max_stamina",
-        "chakra": "max_chakra",
-        "maxchakra": "max_chakra",
+        "wisp": "max_wisp",
+        "maxwisp": "max_wisp",
         "strength": "strength",
         "str": "strength",
         "dexterity": "dexterity",
@@ -836,15 +836,15 @@ def medit(protocol, npc_key, field, value):
             template["room_emote"] = _required_text(value, "NPC room emote")
         elif field == "techniques":
             template["combat_techniques"] = _parse_csv_words(value, None, "NPC combat techniques")
-        elif field == "jutsus":
-            template["jutsus"] = _parse_csv_words(value, None, "NPC jutsus")
+        elif field == "expressions":
+            template["expressions"] = _parse_csv_words(value, None, "NPC expressions")
         elif field in integer_fields:
             numeric_value = int(value)
             if numeric_value < 0:
                 raise ValueError("NPC numeric fields cannot be negative.")
             template[integer_fields[field]] = numeric_value
         else:
-            raise ValueError("NPC field must be name, desc, dialogue, behavior, movement, aggression, loot, emote, health, stamina, chakra, strength, dexterity, agility, intelligence, wisdom, damage, accuracy, evasion, techniques, jutsus, respawn, or leash.")
+            raise ValueError("NPC field must be name, desc, dialogue, behavior, movement, aggression, loot, emote, health, stamina, wisp, strength, dexterity, agility, intelligence, wisdom, damage, accuracy, evasion, techniques, expressions, respawn, or leash.")
         _sync_zone_edit(protocol, zone_path, zone_data, original_zone_data)
     except (OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
         protocol.sendLine(f"Unable to edit NPC template: {exc}".encode("utf-8"))
@@ -871,7 +871,7 @@ def createnpc(protocol, npc_key, npc_name):
                 "behavior": "static",
                 "max_health": 10,
                 "max_stamina": 10,
-                "max_chakra": 10,
+                "max_wisp": 10,
                 "strength": 10,
                 "dexterity": 10,
                 "agility": 10,
@@ -882,7 +882,7 @@ def createnpc(protocol, npc_key, npc_name):
                 "aggression_policy": "passive",
                 "loot_table": [],
                 "combat_techniques": [],
-                "jutsus": [],
+                "expressions": [],
                 "room_emote": "",
             }
         )
@@ -1230,7 +1230,7 @@ def _contentcheck_errors(zones):
             for field in (
                 "max_health",
                 "max_stamina",
-                "max_chakra",
+                "max_wisp",
                 "strength",
                 "dexterity",
                 "agility",
@@ -1536,9 +1536,9 @@ PLAYER_RESOURCE_FIELDS = {
     "stamina": ("stamina", None),
     "max_stamina": ("max_stamina", None),
     "maxstamina": ("max_stamina", None),
-    "chakra": ("chakra", None),
-    "max_chakra": ("max_chakra", None),
-    "maxchakra": ("max_chakra", None),
+    "wisp": ("wisp", None),
+    "max_wisp": ("max_wisp", None),
+    "maxwisp": ("max_wisp", None),
 }
 PLAYER_ATTRIBUTE_FIELDS = {
     field: (field, None)
@@ -1556,9 +1556,9 @@ PLAYER_BODY_FIELDS = {
 PLAYER_TEXT_FIELDS = {
     "role": "role_type",
     "specialty": "role_type",
-    "dojo": "dojo_alignment",
+    "house": "house_alignment",
     "clan": "clan",
-    "release": "natural_release",
+    "essence": "essence",
     "description": "description",
 }
 PLAYER_FEATURE_FIELDS = {field: field for field in FEATURE_FIELDS}
@@ -1588,9 +1588,9 @@ def _online_player(username):
 def _player_row(protocol, username):
     return protocol.cursor.execute(
         """
-        SELECT id, username, is_admin, role_type, clan, natural_release, dojo_alignment,
+        SELECT id, username, is_admin, role_type, clan, essence, house_alignment,
                is_builder,
-               health, max_health, stamina, max_stamina, chakra, max_chakra,
+               health, max_health, stamina, max_stamina, wisp, max_wisp,
                strength, dexterity, agility, intelligence, wisdom,
                nutrition, hydration, fatigue, recovery_state, description,
                hair, eyes, height, build, complexion, marks,
@@ -1629,7 +1629,7 @@ def players(protocol):
     """List every registered player account with access and login status."""
     rows = protocol.cursor.execute(
         """
-        SELECT username, is_admin, is_builder, role_type, clan, natural_release,
+        SELECT username, is_admin, is_builder, role_type, clan, essence,
                x, y, created_at, last_login_at
         FROM players
         ORDER BY username COLLATE NOCASE
@@ -1656,7 +1656,7 @@ def players(protocol):
         protocol.sendLine(
             (
                 f"  {row['username']} [{status}; {', '.join(access)}] "
-                f"specialty={row['role_type']} clan={row['clan']} release={row['natural_release']} "
+                f"specialty={row['role_type']} clan={row['clan']} essence={row['essence']} "
                 f"loc=({row['x']}, {row['y']}) last_login={_format_timestamp(row['last_login_at'])}"
             ).encode("utf-8")
         )
@@ -1677,10 +1677,10 @@ def finger(protocol, username):
             f"Builder: {'yes' if player['is_builder'] else 'no'}  "
             f"Online: {'yes' if online else 'no'}  "
             f"Specialty: {player['role_type']}  Clan: {player['clan']}  "
-            f"Release: {player['natural_release']}"
+            f"Essence: {player['essence']}"
         ).encode("utf-8")
     )
-    protocol.sendLine(f"  Dojo: {player['dojo_alignment']}".encode("utf-8"))
+    protocol.sendLine(f"  House: {player['house_alignment']}".encode("utf-8"))
     protocol.sendLine(
         (
             f"  Created: {_format_timestamp(player['created_at'])}  "
@@ -1698,7 +1698,7 @@ def finger(protocol, username):
         (
             f"  Health: {player['health']}/{player['max_health']}  "
             f"Stamina: {player['stamina']}/{player['max_stamina']}  "
-            f"Chakra: {player['chakra']}/{player['max_chakra']}"
+            f"Wisp: {player['wisp']}/{player['max_wisp']}"
         ).encode("utf-8")
     )
     protocol.sendLine(
@@ -1724,7 +1724,7 @@ def finger(protocol, username):
         protocol.sendLine(f"  Stance: {stance['stance_name']}".encode("utf-8"))
     protocol.sendLine(f"  Location: ({player['x']}, {player['y']})".encode("utf-8"))
     _send_progress_section(protocol, "Skills", list_skills(protocol.cursor, player["username"], include_unavailable=True))
-    _send_progress_section(protocol, "Jutsus", list_jutsus(protocol.cursor, player["username"], include_unavailable=True))
+    _send_progress_section(protocol, "Expressions", list_expressions(protocol.cursor, player["username"], include_unavailable=True))
     protocol.sendLine(b"  Manage: pedit/pset <username> <field> <value>")
 
 
@@ -1820,9 +1820,9 @@ def pset(protocol, username, field, value):
             }
             if requested_field not in numeric_fields:
                 raise ValueError(
-                    "Player field must be admin, specialty, dojo, clan, release, "
+                    "Player field must be admin, specialty, house, clan, essence, "
                     "builder, "
-                    "health, max_health, stamina, max_stamina, chakra, max_chakra, "
+                    "health, max_health, stamina, max_stamina, wisp, max_wisp, "
                     "strength, intellect, dexterity, agility, condition, nutrition, hydration, fatigue, "
                     "description, appearance fields, reproductive fields, or injury."
                 )
@@ -1831,7 +1831,7 @@ def pset(protocol, username, field, value):
             resource_maximum = {
                 "health": "max_health",
                 "stamina": "max_stamina",
-                "chakra": "max_chakra",
+                "wisp": "max_wisp",
             }.get(column)
             if resource_maximum and parsed_value > player[resource_maximum]:
                 raise ValueError(f"{column} cannot exceed {resource_maximum} ({player[resource_maximum]}).")
@@ -1850,9 +1850,9 @@ def pset(protocol, username, field, value):
                 "UPDATE players SET stamina=MIN(stamina, max_stamina) WHERE username=? COLLATE NOCASE",
                 (player["username"],),
             )
-        elif column == "max_chakra":
+        elif column == "max_wisp":
             protocol.cursor.execute(
-                "UPDATE players SET chakra=MIN(chakra, max_chakra) WHERE username=? COLLATE NOCASE",
+                "UPDATE players SET wisp=MIN(wisp, max_wisp) WHERE username=? COLLATE NOCASE",
                 (player["username"],),
             )
         protocol.cursor.connection.commit()
@@ -1906,9 +1906,9 @@ def setstat(protocol, username, stat, value):
     pset(protocol, username, stat, value)
 
 
-def setdojo(protocol, username, dojo):
-    """Backward-compatible wrapper for pset dojo."""
-    pset(protocol, username, "dojo", dojo)
+def sethouse(protocol, username, house):
+    """Backward-compatible wrapper for pset house."""
+    pset(protocol, username, "house", house)
 
 # Command registry
 COMMANDS = {
@@ -1950,13 +1950,12 @@ COMMANDS = {
     "shutdown": CommandSpec("shutdown", lambda protocol, rooms, raw, args: shutdown(protocol), "shutdown", "Stop the server.", permission="admin", max_args=0),
     "copyover": CommandSpec("copyover", lambda protocol, rooms, raw, args: copyover(protocol), "copyover", "Report the disabled soft-restart status.", permission="admin", max_args=0),
     "players": CommandSpec("players", lambda protocol, rooms, raw, args: players(protocol), "players", "List every registered player account.", permission="admin", max_args=0),
-    "finger": CommandSpec("finger", lambda protocol, rooms, raw, args: finger(protocol, args[0]), "finger <username>", "Inspect detailed player account, stats, skills, and jutsus.", permission="admin", min_args=1, max_args=1),
+    "finger": CommandSpec("finger", lambda protocol, rooms, raw, args: finger(protocol, args[0]), "finger <username>", "Inspect detailed player account, stats, skills, and expressions.", permission="admin", min_args=1, max_args=1),
     "pstat": CommandSpec("pstat", lambda protocol, rooms, raw, args: pstat(protocol, args[0]), "pstat <username>", "Inspect persistent player state.", permission="admin", min_args=1, max_args=1),
     "pset": CommandSpec("pset", lambda protocol, rooms, raw, args: pset(protocol, args[0], args[1], " ".join(args[2:])), "pset <username> <field> <value>", "Set a validated persistent player field.", permission="admin", min_args=3),
     "pedit": CommandSpec("pedit", lambda protocol, rooms, raw, args: pedit(protocol, args[0], args[1], " ".join(args[2:])), "pedit <username> <field> <value>", "Edit access and validated persistent player fields.", permission="admin", min_args=3),
     "treatinjury": CommandSpec("treatinjury", lambda protocol, rooms, raw, args: treatinjury(protocol, args[0], args[1]), "treatinjury <username> <injury|all>", "Clear one persistent injury or all injuries.", permission="admin", min_args=2, max_args=2),
     "setrole": CommandSpec("setrole", lambda protocol, rooms, raw, args: setrole(protocol, *args), "setrole <username> <role_type>", "Set a character role.", permission="admin", min_args=2, max_args=2),
     "setstat": CommandSpec("setstat", lambda protocol, rooms, raw, args: setstat(protocol, *args), "setstat <username> <stat> <value>", "Set a character stat.", permission="admin", min_args=3, max_args=3),
-    "setdojo": CommandSpec("setdojo", lambda protocol, rooms, raw, args: setdojo(protocol, *args), "setdojo <username> <dojo>", "Set a character dojo alignment.", permission="admin", min_args=2, max_args=2),
+    "sethouse": CommandSpec("sethouse", lambda protocol, rooms, raw, args: sethouse(protocol, *args), "sethouse <username> <house>", "Set a character house alignment.", permission="admin", min_args=2, max_args=2),
 }
-

@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 
 import general_commands
-import shinobi_mud
+import veilborn_mud
 from content import sync_authored_content
 from migrations import apply_migrations
 
@@ -15,24 +15,24 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 class RuntimeOwnershipTests(unittest.TestCase):
     def setUp(self):
-        shinobi_mud.players_in_rooms.clear()
+        veilborn_mud.players_in_rooms.clear()
 
     def tearDown(self):
-        shinobi_mud.players_in_rooms.clear()
-        if shinobi_mud.conn:
-            shinobi_mud.conn.close()
-            shinobi_mud.conn = None
-            shinobi_mud.cursor = None
+        veilborn_mud.players_in_rooms.clear()
+        if veilborn_mud.conn:
+            veilborn_mud.conn.close()
+            veilborn_mud.conn = None
+            veilborn_mud.cursor = None
 
     def initialize_database(self, database_path):
-        connection = shinobi_mud.connect_database(str(database_path))
-        shinobi_mud.ensure_tables_exist(connection)
+        connection = veilborn_mud.connect_database(str(database_path))
+        veilborn_mud.ensure_tables_exist(connection)
         apply_migrations(connection)
-        shinobi_mud.UTILITIES["preload_zones_with_anchors"](
-            shinobi_mud.WORLD_OVERLAYS,
+        veilborn_mud.UTILITIES["preload_zones_with_anchors"](
+            veilborn_mud.WORLD_OVERLAYS,
             str(PROJECT_ROOT / "zones"),
         )
-        sync_authored_content(connection, str(PROJECT_ROOT / "zones"), shinobi_mud.WORLD_OVERLAYS)
+        sync_authored_content(connection, str(PROJECT_ROOT / "zones"), veilborn_mud.WORLD_OVERLAYS)
         return connection
 
     def write_config(self, config_path, database_path):
@@ -52,7 +52,7 @@ class RuntimeOwnershipTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary_directory:
             database_path = Path(temporary_directory) / "runtime.db"
             maintenance_connection = self.initialize_database(database_path)
-            factory = shinobi_mud.NinjaMUDFactory(str(database_path))
+            factory = veilborn_mud.VeilbornMUDFactory(str(database_path))
 
             first = factory.buildProtocol(None)
             second = factory.buildProtocol(None)
@@ -75,8 +75,8 @@ class RuntimeOwnershipTests(unittest.TestCase):
             database_path = Path(temporary_directory) / "runtime.db"
             maintenance_connection = self.initialize_database(database_path)
             observer = type("Observer", (), {"messages": [], "sendLine": lambda self, message: self.messages.append(message.decode("utf-8"))})()
-            shinobi_mud.players_in_rooms[(500, 500)] = [observer]
-            player = shinobi_mud.NinjaMUDFactory(str(database_path)).buildProtocol(None)
+            veilborn_mud.players_in_rooms[(500, 500)] = [observer]
+            player = veilborn_mud.VeilbornMUDFactory(str(database_path)).buildProtocol(None)
             player.username = "NotLoggedIn"
 
             player.connectionLost("test disconnect")
@@ -89,7 +89,7 @@ class RuntimeOwnershipTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary_directory:
             database_path = Path(temporary_directory) / "runtime.db"
             maintenance_connection = self.initialize_database(database_path)
-            player = shinobi_mud.NinjaMUDFactory(str(database_path)).buildProtocol(None)
+            player = veilborn_mud.VeilbornMUDFactory(str(database_path)).buildProtocol(None)
             player.messages = []
             player.sendLine = lambda message: player.messages.append(message.decode("utf-8"))
             player.username = "SessionUser"
@@ -113,35 +113,35 @@ class RuntimeOwnershipTests(unittest.TestCase):
             self.write_config(first_config, temp / "first.db")
             self.write_config(second_config, temp / "second.db")
 
-            shinobi_mud.initialize_server(str(first_config))
-            first_connection = shinobi_mud.conn
-            session = shinobi_mud.NinjaMUDFactory(str(temp / "first.db")).buildProtocol(None)
-            shinobi_mud.initialize_server(str(second_config))
+            veilborn_mud.initialize_server(str(first_config))
+            first_connection = veilborn_mud.conn
+            session = veilborn_mud.VeilbornMUDFactory(str(temp / "first.db")).buildProtocol(None)
+            veilborn_mud.initialize_server(str(second_config))
 
             with self.assertRaises(sqlite3.ProgrammingError):
                 first_connection.execute("SELECT 1")
             self.assertEqual(session.cursor.execute("SELECT 1").fetchone()[0], 1)
-            self.assertEqual(shinobi_mud.conn.execute("SELECT 1").fetchone()[0], 1)
+            self.assertEqual(veilborn_mud.conn.execute("SELECT 1").fetchone()[0], 1)
             session.connectionLost("test disconnect")
-            shinobi_mud.conn.close()
-            shinobi_mud.conn = None
-            shinobi_mud.cursor = None
+            veilborn_mud.conn.close()
+            veilborn_mud.conn = None
+            veilborn_mud.cursor = None
 
     def test_world_tick_uses_maintenance_connection_after_session_disconnect(self):
         with tempfile.TemporaryDirectory() as temporary_directory:
             database_path = Path(temporary_directory) / "runtime.db"
-            shinobi_mud.conn = self.initialize_database(database_path)
-            shinobi_mud.cursor = shinobi_mud.conn.cursor()
-            session = shinobi_mud.NinjaMUDFactory(str(database_path)).buildProtocol(None)
+            veilborn_mud.conn = self.initialize_database(database_path)
+            veilborn_mud.cursor = veilborn_mud.conn.cursor()
+            session = veilborn_mud.VeilbornMUDFactory(str(database_path)).buildProtocol(None)
             session.connectionLost("test disconnect")
 
-            expected_updates = shinobi_mud.conn.execute(
+            expected_updates = veilborn_mud.conn.execute(
                 "SELECT COUNT(*) FROM npc_instances"
             ).fetchone()[0]
-            updated = shinobi_mud.run_world_tick()
-            shinobi_mud.conn.close()
-            shinobi_mud.conn = None
-            shinobi_mud.cursor = None
+            updated = veilborn_mud.run_world_tick()
+            veilborn_mud.conn.close()
+            veilborn_mud.conn = None
+            veilborn_mud.cursor = None
             self.assertEqual(updated, expected_updates)
 
 

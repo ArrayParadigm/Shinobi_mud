@@ -4,13 +4,13 @@ from pathlib import Path
 from unittest.mock import patch
 
 import general_commands
-import shinobi_mud
+import veilborn_mud
 import utils
 from content import sync_authored_content
 from migrations import apply_migrations, migration_006_combat_reliability
 from npcs import attack_npc, npcs_at, throw_item_at_npc, tick_npcs
 from items import inventory_items, room_items
-from techniques import activate_jutsu
+from expressions import activate_expression
 from tests.test_accounts import TestProtocol
 
 
@@ -21,30 +21,30 @@ class CombatSliceTests(unittest.TestCase):
     def setUp(self):
         self.connection = sqlite3.connect(":memory:")
         self.connection.row_factory = sqlite3.Row
-        shinobi_mud.conn = self.connection
-        shinobi_mud.cursor = self.connection.cursor()
-        shinobi_mud.ensure_tables_exist(self.connection)
+        veilborn_mud.conn = self.connection
+        veilborn_mud.cursor = self.connection.cursor()
+        veilborn_mud.ensure_tables_exist(self.connection)
         apply_migrations(self.connection)
-        shinobi_mud.players_in_rooms.clear()
-        shinobi_mud.WORLD_OVERLAYS.clear()
+        veilborn_mud.players_in_rooms.clear()
+        veilborn_mud.WORLD_OVERLAYS.clear()
         utils.preload_zones_with_anchors(
-            shinobi_mud.WORLD_OVERLAYS,
+            veilborn_mud.WORLD_OVERLAYS,
             str(PROJECT_ROOT / "zones"),
         )
         sync_authored_content(
             self.connection,
             str(PROJECT_ROOT / "zones"),
-            shinobi_mud.WORLD_OVERLAYS,
+            veilborn_mud.WORLD_OVERLAYS,
         )
         self.connection.execute(
             """
             INSERT INTO players (username, password, x, y, health, strength)
             VALUES (?, ?, ?, ?, ?, ?)
             """,
-            ("Fighter", shinobi_mud.hash_password("password"), 500, 499, 10, 10),
+            ("Fighter", veilborn_mud.hash_password("password"), 500, 499, 10, 10),
         )
         self.connection.commit()
-        self.player = TestProtocol(shinobi_mud.cursor)
+        self.player = TestProtocol(veilborn_mud.cursor)
         self.player.username = "Fighter"
         self.player.x = 500
         self.player.y = 499
@@ -70,15 +70,15 @@ class CombatSliceTests(unittest.TestCase):
             "username": player.username,
             "distance": 0,
         }
-        for message, room_message in shinobi_mud._combat_event_messages(event):
+        for message, room_message in veilborn_mud._combat_event_messages(event):
             player.sendLine(message.encode("utf-8"))
             if room_message:
                 general_commands._broadcast_combat(player, room_message)
         return result
 
     def tearDown(self):
-        shinobi_mud.players_in_rooms.clear()
-        shinobi_mud.WORLD_OVERLAYS.clear()
+        veilborn_mud.players_in_rooms.clear()
+        veilborn_mud.WORLD_OVERLAYS.clear()
         self.connection.close()
 
     def test_attack_uses_strength_damage_and_enemy_counterattack(self):
@@ -190,47 +190,47 @@ class CombatSliceTests(unittest.TestCase):
             "Practice Construct strikes you for 2 damage. You are defeated, then recover here with 15 health.",
         )
 
-    def test_substitution_prevents_landing_npc_strike_and_records_jutsu_use(self):
-        activate_jutsu(self.player.cursor, "Fighter", "sub")
+    def test_substitution_prevents_landing_npc_strike_and_records_expression_use(self):
+        activate_expression(self.player.cursor, "Fighter", "sub")
         self.player.messages.clear()
 
         with patch("npcs.random.randint", side_effect=[100, 1]):
             self.resolve_legacy_attack(self.player, "Practice Construct")
 
         player = self.connection.execute(
-            "SELECT health, chakra FROM players WHERE username='Fighter'"
+            "SELECT health, wisp FROM players WHERE username='Fighter'"
         ).fetchone()
         progress = self.connection.execute(
             """
             SELECT progress_percent
-            FROM character_jutsus
-            JOIN players ON players.id=character_jutsus.player_id
-            JOIN jutsu_definitions ON jutsu_definitions.id=character_jutsus.jutsu_definition_id
+            FROM character_expressions
+            JOIN players ON players.id=character_expressions.player_id
+            JOIN expression_definitions ON expression_definitions.id=character_expressions.expression_definition_id
             WHERE players.username='Fighter'
-              AND jutsu_definitions.jutsu_key='substitution-technique'
+              AND expression_definitions.expression_key='substitution-technique'
             """
         ).fetchone()["progress_percent"]
 
-        self.assertEqual((player["health"], player["chakra"]), (10, 7))
+        self.assertEqual((player["health"], player["wisp"]), (10, 7))
         self.assertEqual(progress, 10)
         self.assertEqual(
-            activate_jutsu(self.player.cursor, "Fighter", "sub")["status"],
+            activate_expression(self.player.cursor, "Fighter", "sub")["status"],
             "cooldown",
         )
         self.assertEqual(
             self.player.messages,
             [
                 "You attack Practice Construct, but miss.",
-                "You evade Practice Construct through Substitution Technique. Jutsu: Untrained (10%).",
+                "You evade Practice Construct through Substitution Expression. Expression: Untrained (10%).",
             ],
         )
 
     def test_substitution_progression_failure_rolls_back_combat_turn(self):
-        activate_jutsu(self.player.cursor, "Fighter", "sub")
+        activate_expression(self.player.cursor, "Fighter", "sub")
         self.connection.execute(
             """
             CREATE TRIGGER reject_substitution_progress
-            BEFORE INSERT ON character_jutsus
+            BEFORE INSERT ON character_expressions
             BEGIN
                 SELECT RAISE(ABORT, 'blocked substitution progress');
             END
@@ -251,7 +251,7 @@ class CombatSliceTests(unittest.TestCase):
             """
         ).fetchone()["health"]
         state = self.connection.execute(
-            "SELECT active_until FROM character_jutsu_states"
+            "SELECT active_until FROM character_expression_states"
         ).fetchone()["active_until"]
         self.assertEqual(npc_health, 12)
         self.assertIsNotNone(state)
@@ -262,7 +262,7 @@ class CombatSliceTests(unittest.TestCase):
             self.resolve_legacy_attack(self.player, "Practice Construct")
         self.player.connectionLost("test disconnect")
 
-        returning_player = TestProtocol(shinobi_mud.cursor)
+        returning_player = TestProtocol(veilborn_mud.cursor)
         returning_player.handle_username("Fighter")
         returning_player.handle_password("password")
 
@@ -453,7 +453,7 @@ class CombatSliceTests(unittest.TestCase):
                 "Practice Construct",
                 "A training construct waits for a sparring partner among the luminous flora.",
                 "Health: 12/12",
-                "Stamina: 10/10  Chakra: 10/10",
+                "Stamina: 10/10  Wisp: 10/10",
                 "STR: 4  DEX: 5  AGI: 5  INT: 10  WIS: 10",
                 "Damage bonus: 0  Accuracy bonus: 0  Evasion bonus: 0",
             ],
@@ -468,7 +468,7 @@ class CombatSliceTests(unittest.TestCase):
             ("Observer", "hash", 500, 499),
         )
         self.connection.commit()
-        observer = TestProtocol(shinobi_mud.cursor)
+        observer = TestProtocol(veilborn_mud.cursor)
         observer.username = "Observer"
         observer.x = 500
         observer.y = 499
@@ -495,7 +495,7 @@ class CombatSliceTests(unittest.TestCase):
             ("Teammate", "hash", 500, 499, 10),
         )
         self.connection.commit()
-        teammate = TestProtocol(shinobi_mud.cursor)
+        teammate = TestProtocol(veilborn_mud.cursor)
         teammate.username = "Teammate"
         teammate.x = 500
         teammate.y = 499

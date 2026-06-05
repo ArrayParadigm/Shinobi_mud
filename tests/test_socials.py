@@ -2,7 +2,7 @@ import sqlite3
 import unittest
 
 import general_commands
-import shinobi_mud
+import veilborn_mud
 import social_commands
 from migrations import apply_migrations
 from socials import active_social_states
@@ -13,12 +13,12 @@ class SocialCatalogTests(unittest.TestCase):
     def setUp(self):
         self.connection = sqlite3.connect(":memory:")
         self.connection.row_factory = sqlite3.Row
-        shinobi_mud.conn = self.connection
-        shinobi_mud.cursor = self.connection.cursor()
-        shinobi_mud.ensure_tables_exist(self.connection)
+        veilborn_mud.conn = self.connection
+        veilborn_mud.cursor = self.connection.cursor()
+        veilborn_mud.ensure_tables_exist(self.connection)
         apply_migrations(self.connection)
-        shinobi_mud.players_in_rooms.clear()
-        shinobi_mud.WORLD_OVERLAYS.clear()
+        veilborn_mud.players_in_rooms.clear()
+        veilborn_mud.WORLD_OVERLAYS.clear()
         self.world_map = [list("..."), list("..."), list("...")]
         self.array = self.create_player("Array", 1, 1)
         self.eve = self.create_player("Eve", 1, 1)
@@ -26,8 +26,8 @@ class SocialCatalogTests(unittest.TestCase):
             player.messages.clear()
 
     def tearDown(self):
-        shinobi_mud.players_in_rooms.clear()
-        shinobi_mud.WORLD_OVERLAYS.clear()
+        veilborn_mud.players_in_rooms.clear()
+        veilborn_mud.WORLD_OVERLAYS.clear()
         self.connection.close()
 
     def create_player(self, username, x, y):
@@ -48,7 +48,7 @@ class SocialCatalogTests(unittest.TestCase):
         return player
 
     def test_socials_list_hides_adult_categories_until_opt_in(self):
-        social_commands.handle_socials(self.array, "", [], shinobi_mud.players_in_rooms)
+        social_commands.handle_socials(self.array, "", [], veilborn_mud.players_in_rooms)
 
         rendered = "\n".join(self.array.messages)
         self.assertIn("wave", rendered)
@@ -61,9 +61,9 @@ class SocialCatalogTests(unittest.TestCase):
             self.array,
             "allow intimate",
             ["allow", "intimate"],
-            shinobi_mud.players_in_rooms,
+            veilborn_mud.players_in_rooms,
         )
-        social_commands.handle_socials(self.array, "", [], shinobi_mud.players_in_rooms)
+        social_commands.handle_socials(self.array, "", [], veilborn_mud.players_in_rooms)
 
         rendered = "\n".join(self.array.messages)
         self.assertIn("cuddle", rendered)
@@ -74,7 +74,7 @@ class SocialCatalogTests(unittest.TestCase):
             self.array,
             "Eve",
             ["Eve"],
-            shinobi_mud.players_in_rooms,
+            veilborn_mud.players_in_rooms,
             "hug",
         )
 
@@ -85,7 +85,7 @@ class SocialCatalogTests(unittest.TestCase):
             self.eve,
             "allow friendly Array",
             ["allow", "friendly", "Array"],
-            shinobi_mud.players_in_rooms,
+            veilborn_mud.players_in_rooms,
         )
         self.array.messages.clear()
         self.eve.messages.clear()
@@ -94,7 +94,7 @@ class SocialCatalogTests(unittest.TestCase):
             self.array,
             "Eve",
             ["Eve"],
-            shinobi_mud.players_in_rooms,
+            veilborn_mud.players_in_rooms,
             "hug",
         )
 
@@ -107,7 +107,7 @@ class SocialCatalogTests(unittest.TestCase):
                 self.eve,
                 f"allow {category} Array",
                 ["allow", category, "Array"],
-                shinobi_mud.players_in_rooms,
+                veilborn_mud.players_in_rooms,
             )
         self.array.messages.clear()
         self.eve.messages.clear()
@@ -116,7 +116,7 @@ class SocialCatalogTests(unittest.TestCase):
             self.array,
             "Eve",
             ["Eve"],
-            shinobi_mud.players_in_rooms,
+            veilborn_mud.players_in_rooms,
             "holdhands",
         )
 
@@ -149,13 +149,13 @@ class SocialCatalogTests(unittest.TestCase):
                 self.eve,
                 f"allow {category} Array",
                 ["allow", category, "Array"],
-                shinobi_mud.players_in_rooms,
+                veilborn_mud.players_in_rooms,
             )
         social_commands.handle_consent(
             self.array,
             "allow bdsm",
             ["allow", "bdsm"],
-            shinobi_mud.players_in_rooms,
+            veilborn_mud.players_in_rooms,
         )
         self.array.messages.clear()
         self.eve.messages.clear()
@@ -164,7 +164,7 @@ class SocialCatalogTests(unittest.TestCase):
             self.array,
             "Eve",
             ["Eve"],
-            shinobi_mud.players_in_rooms,
+            veilborn_mud.players_in_rooms,
             "tie",
         )
 
@@ -180,12 +180,12 @@ class SocialCatalogTests(unittest.TestCase):
         self.assertEqual((self.eve.x, self.eve.y), (1, 1))
         self.assertEqual(
             self.eve.messages,
-            ["You are restrained by Array. Use resist or ask them to release you."],
+            ["You are restrained by Array. Use resist or ask them to free you."],
         )
 
-        social_commands.handle_resist(self.eve, "", [], shinobi_mud.players_in_rooms)
+        social_commands.handle_resist(self.eve, "", [], veilborn_mud.players_in_rooms)
 
-        self.assertIn("You resist free from the restraint.", self.eve.messages)
+        self.assertIn("You break free from the restraint.", self.eve.messages)
         self.assertEqual(active_social_states(self.connection.cursor(), "Eve"), [])
 
 

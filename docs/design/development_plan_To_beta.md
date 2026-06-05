@@ -1,4 +1,4 @@
-# Development Plan: Beta Roadmap for Shinobi MUD
+# Development Plan: Beta Roadmap for Veilborn MUD
 
 ## Stage 1: Core World and Systems Setup
 ### 1.1 World Grid and Zones
@@ -29,7 +29,7 @@
   - Integrate with the **character sheet** for stat-based calculations (e.g., Strength, Dexterity).
 
 - **Dependencies**:
-  - Extend the player status system for tracking health, stamina, and chakra in combat.
+  - Extend the player status system for tracking health, stamina, and wisp in combat.
   - Enhance NPC AI to support basic combat actions.
 
 ---
@@ -37,7 +37,7 @@
 ### 1.3 Stances and Styles
 - **Task**: Design the stance system and its effects.
   - Add core stances (Offensive, Defensive, Balanced).
-  - Add style modifiers for future integration (e.g., Taijutsu, Kenjutsu).
+  - Add style modifiers for future integration (e.g., Bodycraft, Bladecraft).
 
 - **Steps**:
   - Create a `stance` attribute for players and NPCs.
@@ -55,9 +55,9 @@
 ### 1.4 Enhanced Character Sheet
 - **Task**: Build a more detailed character sheet with editable stats.
   - Add a comprehensive character status overview:
-    - Stats: Health, Stamina, Chakra.
+    - Stats: Health, Stamina, Wisp.
     - Attributes: Strength, Dexterity, Intelligence, etc.
-    - Chakra Release: Display elemental affinity.
+    - Wisp Essence: Display elemental affinity.
 
 - **Steps**:
   - Refactor the `status` command to include the above.
@@ -75,7 +75,7 @@
 
 - **Steps**:
   - Develop a `world_clock` module to track global time.
-  - Trigger time-based effects (e.g., faster chakra regen at night).
+  - Trigger time-based effects (e.g., faster wisp regen at night).
   - Update zone and NPC behaviors based on time.
 
 ---
@@ -128,13 +128,13 @@
 ## Stage 3: Expanded Systems
 ### 3.1 Advanced Combat Features
 - **Task**: Build on the basic combat system with special abilities and proficiencies.
-  - Add abilities that scale with stats (e.g., faster jutsu with higher Chakra Control).
+  - Add abilities that scale with stats (e.g., faster expression with higher Wisp Control).
   - Include cooldowns and timers for powerful moves.
 
 - **Steps**:
   - Expand the `combat_state` object to track ability usage.
   - Create a **proficiency formula** based on:
-    - Dexterity + Chakra Infused Speed + Elemental Affinity.
+    - Dexterity + Wisp Infused Speed + Elemental Affinity.
 
 ---
 

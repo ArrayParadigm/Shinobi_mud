@@ -2,7 +2,7 @@ import json
 import logging
 import sqlite3
 import presentation
-from body import apply_vacuum_exposure, body_state, body_warnings, chakra_recovery_amount, rest_character
+from body import apply_vacuum_exposure, body_state, body_warnings, wisp_recovery_amount, rest_character
 from character_state import (
     FEATURE_FIELDS,
     feature_state,
@@ -52,17 +52,17 @@ from locations import (
 from npcs import consider_npc, npc_locations, talk_to_npc, throw_item_at_npc
 from socials import move_social_followers, movement_block
 from socials import sight_block as social_sight_block
-from techniques import (
-    activate_jutsu,
-    jutsu_detail,
-    list_jutsus,
+from expressions import (
+    activate_expression,
+    expression_detail,
+    list_expressions,
     list_skills,
     practice_skill,
     proficiency_label,
     skill_detail,
-    train_jutsu,
+    train_expression,
 )
-from shinobi_mud import (
+from veilborn_mud import (
     ACTIVE_CONFIG,
     COMMAND_REGISTRY,
     UTILITIES,
@@ -205,9 +205,9 @@ def handle_score(player, players_in_rooms=None):
     """Display the player's current character sheet."""
     try:
         player.cursor.execute(
-            "SELECT health, max_health, stamina, max_stamina, chakra, max_chakra, "
-            "strength, dexterity, agility, intelligence, wisdom, dojo_alignment, "
-            "role_type, clan, natural_release, fatigue, description, "
+            "SELECT health, max_health, stamina, max_stamina, wisp, max_wisp, "
+            "strength, dexterity, agility, intelligence, wisdom, house_alignment, "
+            "role_type, clan, essence, fatigue, description, "
             "hair, eyes, height, build, complexion, marks "
             "FROM players WHERE username=?",
             (player.username,)
@@ -218,7 +218,7 @@ def handle_score(player, players_in_rooms=None):
             player.sendLine(b"--------------------")
             player.sendLine(f"Health: {stats[0]}/{stats[1]}".encode("utf-8"))
             player.sendLine(f"Stamina: {stats[2]}/{stats[3]}".encode("utf-8"))
-            player.sendLine(f"Chakra: {stats[4]}/{stats[5]}".encode("utf-8"))
+            player.sendLine(f"Wisp: {stats[4]}/{stats[5]}".encode("utf-8"))
             player.sendLine(f"Fatigue: {_fatigue_label(stats[15])}".encode("utf-8"))
             player.sendLine(
                 (
@@ -233,8 +233,8 @@ def handle_score(player, players_in_rooms=None):
                     f"build={stats[20]} complexion={stats[21]} marks={stats[22]}"
                 ).encode("utf-8")
             )
-            player.sendLine(f"Specialty: {stats[12]}  Clan: {stats[13]}  Release: {stats[14]}".encode("utf-8"))
-            player.sendLine(f"Dojo Alignment: {stats[11]}".encode("utf-8"))
+            player.sendLine(f"Specialty: {stats[12]}  Clan: {stats[13]}  Essence: {stats[14]}".encode("utf-8"))
+            player.sendLine(f"House Alignment: {stats[11]}".encode("utf-8"))
             stance = combat_status(player.cursor, player.username)
             if stance:
                 player.sendLine(f"Stance: {stance['stance_name']}".encode("utf-8"))
@@ -469,7 +469,7 @@ def handle_body(player):
         )
         player.sendLine(f"Recovery: {state['recovery_state']}".encode("utf-8"))
         player.sendLine(
-            f"Short-rest chakra recovery: {chakra_recovery_amount(state)}".encode("utf-8")
+            f"Short-rest wisp recovery: {wisp_recovery_amount(state)}".encode("utf-8")
         )
         for warning in body_warnings(state):
             player.sendLine(f"Warning: {warning}".encode("utf-8"))
@@ -479,7 +479,7 @@ def handle_body(player):
 
 
 def handle_rest(player):
-    """Take one deliberate short rest to recover stamina and chakra."""
+    """Take one deliberate short rest to recover stamina and wisp."""
     try:
         flags = _current_room_flags(player)
         result = rest_character(
@@ -498,7 +498,7 @@ def handle_rest(player):
         player.sendLine(
             (
                 f"You rest and recover {result['stamina_restored']} stamina and "
-                f"{result['chakra_restored']} chakra."
+                f"{result['wisp_restored']} wisp."
             ).encode("utf-8")
         )
         if "recovery-friendly" in flags:
@@ -506,7 +506,7 @@ def handle_rest(player):
         player.sendLine(
             (
                 f"Stamina: {result['stamina']}/{result['max_stamina']}  "
-                f"Chakra: {result['chakra']}/{result['max_chakra']}  "
+                f"Wisp: {result['wisp']}/{result['max_wisp']}  "
                 f"Fatigue: {result['fatigue']}/100"
             ).encode("utf-8")
         )
@@ -653,7 +653,7 @@ def handle_consume(player, item_name, expected_type, resource_name, verb):
 
 
 def handle_progression(player, target, kind, allow_all=False):
-    """List or inspect usage-based ordinary skill or jutsu progress."""
+    """List or inspect usage-based ordinary skill or expression progress."""
     try:
         show_all = allow_all and target.strip().casefold() == "all"
         if kind == "skill":
@@ -661,9 +661,9 @@ def handle_progression(player, target, kind, allow_all=False):
             detail = skill_detail
             heading = "All Skills" if show_all else "Skills"
         else:
-            rows = list_jutsus(player.cursor, player.username, include_unavailable=show_all)
-            detail = jutsu_detail
-            heading = "All Jutsus" if show_all else "Jutsus"
+            rows = list_expressions(player.cursor, player.username, include_unavailable=show_all)
+            detail = expression_detail
+            heading = "All Expressions" if show_all else "Expressions"
 
         if not target.strip() or show_all:
             player.sendLine(heading.encode("utf-8"))
@@ -695,7 +695,7 @@ def handle_progression(player, target, kind, allow_all=False):
 
 
 def handle_practice(player, target, kind):
-    """Advance one skill or jutsu through deliberate practice."""
+    """Advance one skill or expression through deliberate practice."""
     if not target.strip():
         handle_progression(player, "", kind)
         return
@@ -704,7 +704,7 @@ def handle_practice(player, target, kind):
             result = practice_skill(player.cursor, player.username, target)
             verb = "practice"
         else:
-            result = train_jutsu(player.cursor, player.username, target)
+            result = train_expression(player.cursor, player.username, target)
             verb = "train"
         if result["status"] == "missing":
             player.sendLine(f"You do not know that {kind}.".encode("utf-8"))
@@ -755,7 +755,7 @@ def handle_consider(player, npc_name):
         player.sendLine(
             (
                 f'Stamina: {npc["stamina"]}/{npc["max_stamina"]}  '
-                f'Chakra: {npc["chakra"]}/{npc["max_chakra"]}'
+                f'Wisp: {npc["wisp"]}/{npc["max_wisp"]}'
             ).encode("utf-8")
         )
         player.sendLine(
@@ -946,18 +946,18 @@ def handle_technique(player, target):
         player.sendLine(b"Unable to use that technique right now.")
 
 
-def handle_usejutsu(player, target):
-    """Activate one implemented jutsu by name or unique prefix."""
+def handle_useexpression(player, target):
+    """Activate one implemented expression by name or unique prefix."""
     try:
-        result = activate_jutsu(player.cursor, player.username, target)
+        result = activate_expression(player.cursor, player.username, target)
         if result["status"] == "missing":
-            player.sendLine(b"You do not know that jutsu.")
+            player.sendLine(b"You do not know that expression.")
         elif result["status"] == "unimplemented":
             player.sendLine(f'{result["name"]} is not implemented yet.'.encode("utf-8"))
         elif result["status"] == "missing_player":
             player.sendLine(b"Your character is unavailable right now.")
-        elif result["status"] == "insufficient_chakra":
-            player.sendLine(f'You do not have enough chakra to activate {result["name"]}.'.encode("utf-8"))
+        elif result["status"] == "insufficient_wisp":
+            player.sendLine(f'You do not have enough wisp to activate {result["name"]}.'.encode("utf-8"))
         elif result["status"] == "active":
             player.sendLine(f'{result["name"]} is already active.'.encode("utf-8"))
         elif result["status"] == "cooldown":
@@ -966,12 +966,12 @@ def handle_usejutsu(player, target):
             player.sendLine(
                 (
                     f'You prepare {result["name"]} for {result["active_seconds"]} seconds. '
-                    f'Chakra: {result["chakra"]}.'
+                    f'Wisp: {result["wisp"]}.'
                 ).encode("utf-8")
             )
     except Exception as exc:
-        logging.error("Unable to activate jutsu for %s: %s", player.username, exc, exc_info=True)
-        player.sendLine(b"Unable to activate that jutsu right now.")
+        logging.error("Unable to activate expression for %s: %s", player.username, exc, exc_info=True)
+        player.sendLine(b"Unable to activate that expression right now.")
 
 
 def handle_throw(player, raw_args):
@@ -1150,7 +1150,7 @@ COMMANDS = {
     "suggest": CommandSpec("suggest", lambda player, rooms, raw, args: handle_feedback(player, raw, "suggestions_file", DEFAULT_SUGGESTIONS_FILE, "suggest", "Suggested", "Suggestion recorded."), "suggest <message>", "Record a player suggestion for builders and maintainers.", min_args=1),
     "bug": CommandSpec("bug", lambda player, rooms, raw, args: handle_feedback(player, raw, "bugs_file", DEFAULT_BUGS_FILE, "bug", "Reported", "Bug report recorded."), "bug <message>", "Record a player-visible bug report.", min_args=1),
     "body": CommandSpec("body", lambda player, rooms, raw, args: handle_body(player), "body", "Display your body resources and recovery readiness.", max_args=0),
-    "rest": CommandSpec("rest", lambda player, rooms, raw, args: handle_rest(player), "rest", "Recover stamina and chakra through a short rest.", max_args=0),
+    "rest": CommandSpec("rest", lambda player, rooms, raw, args: handle_rest(player), "rest", "Recover stamina and wisp through a short rest.", max_args=0),
     "inventory": CommandSpec("inventory", lambda player, rooms, raw, args: handle_inventory(player), "inventory", "List the items you carry.", aliases=("inv",), max_args=0),
     "get": CommandSpec("get", lambda player, rooms, raw, args: handle_get(player, raw), "get <item>", "Pick up an item at your location.", min_args=1),
     "drop": CommandSpec("drop", lambda player, rooms, raw, args: handle_drop(player, raw), "drop <item>", "Drop a carried item at your location.", min_args=1),
@@ -1160,10 +1160,10 @@ COMMANDS = {
     "eat": CommandSpec("eat", lambda player, rooms, raw, args: handle_consume(player, raw, "food", "nutrition", "eat"), "eat <item>", "Eat a carried food item to restore nutrition.", min_args=1),
     "drink": CommandSpec("drink", lambda player, rooms, raw, args: handle_consume(player, raw, "drink", "hydration", "drink"), "drink <item>", "Drink a carried beverage to restore hydration.", min_args=1),
     "prac": CommandSpec("prac", lambda player, rooms, raw, args: handle_practice(player, raw, "skill"), "prac [skill]", "Practice a skill or list available skills.", max_args=2),
-    "train": CommandSpec("train", lambda player, rooms, raw, args: handle_practice(player, raw, "jutsu"), "train [jutsu]", "Train a jutsu or list available jutsus.", max_args=3),
+    "train": CommandSpec("train", lambda player, rooms, raw, args: handle_practice(player, raw, "expression"), "train [expression]", "Train a expression or list available expressions.", max_args=3),
     "skill": CommandSpec("skill", lambda player, rooms, raw, args: handle_progression(player, raw, "skill", allow_all=True), "skill [all|skill]", "List available skills, inspect one, or show the full catalog.", max_args=2),
-    "jutsu": CommandSpec("jutsu", lambda player, rooms, raw, args: handle_progression(player, raw, "jutsu", allow_all=True), "jutsu [all|jutsu]", "List available jutsus, inspect one, or show the full catalog.", max_args=3),
-    "usejutsu": CommandSpec("usejutsu", lambda player, rooms, raw, args: handle_usejutsu(player, raw), "usejutsu <jutsu>", "Activate an implemented jutsu.", min_args=1, max_args=3),
+    "expression": CommandSpec("expression", lambda player, rooms, raw, args: handle_progression(player, raw, "expression", allow_all=True), "expression [all|expression]", "List available expressions, inspect one, or show the full catalog.", max_args=3),
+    "useexpression": CommandSpec("useexpression", lambda player, rooms, raw, args: handle_useexpression(player, raw), "useexpression <expression>", "Activate an implemented expression.", min_args=1, max_args=3),
     "talk": CommandSpec("talk", lambda player, rooms, raw, args: handle_talk(player, raw), "talk <character>", "Talk to a character at your location.", min_args=1),
     "consider": CommandSpec("consider", lambda player, rooms, raw, args: handle_consider(player, raw), "consider <character>", "Inspect a character's combat details.", min_args=1),
     "attack": CommandSpec("attack", lambda player, rooms, raw, args: handle_attack(player, raw), "attack <character>", "Engage a hostile character for round combat.", min_args=1),

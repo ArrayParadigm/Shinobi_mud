@@ -14,7 +14,7 @@ def resolve_database_path(config_path):
     with config_path.open("r", encoding="utf-8") as config_file:
         config = json.load(config_file)
 
-    database_path = (PROJECT_ROOT / config.get("db_file", "shinobi_mud.db")).resolve()
+    database_path = (PROJECT_ROOT / config.get("db_file", "veilborn_mud.db")).resolve()
     if PROJECT_ROOT not in database_path.parents:
         raise ValueError("The development database must stay inside the project directory.")
 
